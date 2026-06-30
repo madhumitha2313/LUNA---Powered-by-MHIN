@@ -64,11 +64,22 @@ transcription — it is never written to storage or the database.
 
 ```bash
 npm install
-cp .env.example .env      # then fill in real credentials
-npm run verify:connections # Step 0 — confirms real Appwrite + Anthropic round-trips
-npm run dev                # http://localhost:5173
-npm run build              # production build
+cp .env.example .env        # then fill in real credentials (Appwrite, Anthropic, Sarvam)
+
+npm run verify:connections  # Step 0 — confirms real Appwrite + Anthropic round-trips
+npm run appwrite:bootstrap  # provision the 3 collections + document-level permissions
+
+# Secret-holding proxy (Anthropic + Sarvam Tamil STT/TTS):
+cd server && npm install && cd ..
+npm run server              # http://localhost:8787  (set VITE_FUNCTIONS_BASE_URL to this)
+
+npm run dev                 # http://localhost:5173
+npm run build               # production build
 ```
+
+The browser never holds a secret: `/extract`, `/stt`, `/tts` all run on the
+`server/` proxy, which is the only process that sees the Anthropic and Sarvam
+keys.
 
 `verify:connections` reports each check as PASS / FAIL / SKIP. Checks whose env
 is missing are SKIPPED (not failed), so you can run it as credentials arrive.
