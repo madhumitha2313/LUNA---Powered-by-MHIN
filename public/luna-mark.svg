@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="moonGlow" cx="38%" cy="36%" r="70%">
+      <stop offset="0%" stop-color="#F5C6D6" />
+      <stop offset="55%" stop-color="#D97BA8" />
+      <stop offset="100%" stop-color="#A78BFA" />
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0D1117" />
+  <path
+    d="M40 14a18 18 0 1 0 10 33 22 22 0 0 1-10-43Z"
+    fill="url(#moonGlow)"
+  />
+  <circle cx="46" cy="20" r="1.4" fill="#F5C6D6" opacity="0.9" />
+  <circle cx="18" cy="24" r="1.1" fill="#F5C6D6" opacity="0.7" />
+  <circle cx="22" cy="44" r="1.2" fill="#A78BFA" opacity="0.8" />
+</svg>
