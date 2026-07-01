@@ -11,6 +11,7 @@ import {
   FileIcon,
   SparklesIcon,
   StethoscopeIcon,
+  UsersIcon,
   ArrowRightIcon,
   MoonIcon,
 } from '../components/ui/icons'
@@ -38,6 +39,7 @@ const QUICK_ACTIONS = [
   { label: 'PCOS / PCOD', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai' },
   { label: 'My Report', to: '/report', icon: FileIcon, tone: 'text-success' },
   { label: 'Find Doctor', to: '/doctors', icon: StethoscopeIcon, tone: 'text-accent-secondary' },
+  { label: 'Readiness Guide', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai' },
 ]
 
 export default function Home() {
@@ -165,7 +167,7 @@ export default function Home() {
         {/* Quick actions */}
         <div className="mt-8">
           <h2 className="mb-4 font-heading text-lg font-semibold animate-fade-up delay-4">Quick actions</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {QUICK_ACTIONS.map((a, i) => (
               <Card
                 key={a.label}

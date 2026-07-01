@@ -11,6 +11,7 @@ import Conditions from './pages/Conditions'
 import Report from './pages/Report'
 import Doctors from './pages/Doctors'
 import Profile from './pages/Profile'
+import Guide from './pages/Guide'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
       <Route path="/report" element={<Report />} />
       <Route path="/doctors" element={<Doctors />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/guide" element={<Guide />} />
     </Routes>
   )
 }

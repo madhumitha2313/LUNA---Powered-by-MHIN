@@ -10,8 +10,8 @@ import { getProfile } from '../../lib/localStore'
  */
 const LINKS = [
   { label: 'Features', to: '/features' },
-  { label: 'How it works', to: '/how-it-works' },
   { label: 'Conditions', to: '/conditions' },
+  { label: 'Readiness Guide', to: '/guide' },
   { label: 'Dashboard', to: '/home' },
 ]
 
