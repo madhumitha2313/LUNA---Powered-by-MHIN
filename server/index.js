@@ -118,6 +118,71 @@ app.post('/extract', async (req, res) => {
   }
 })
 
+// ── POST /guide — First Period Readiness Guide (MHIN) ────────────────────────
+// This is the exact MHIN educator prompt; the browser template engine
+// (src/lib/readinessGuide.js) is the offline fallback with the same contract.
+const GUIDE_SYSTEM = `You are a compassionate menstrual health educator for MHIN (Menstrual Health Intelligence Network). Your job is to generate a First Period Readiness Guide that is age-appropriate, culturally sensitive, and localized for Indian users.
+
+You will receive:
+- Age of the girl being prepared (10–14)
+- Region/language preference
+- Relationship of the requester (older sister, teacher, parent, NGO worker)
+- One or two community data insights from the local area (may be empty if unavailable)
+
+Generate a guide with EXACTLY these sections:
+1. "What Is a Period?" — simple, non-scary explanation suited to the given age
+2. "What Will I Feel?" — physical symptoms, emotional changes, what's normal vs needs attention
+3. "What's Normal in Your Area" — incorporate the community data insight here naturally (if no data provided, give general reassurance)
+4. "Your First Period Kit" — list 5 locally available, affordable items specific to India (mention both disposable and reusable options without bias)
+5. "What To Do When It Happens" — step-by-step, calm instructions
+6. "Questions You Might Feel Shy to Ask" — answer 3 common but unspoken questions honestly
+7. A short note addressed to the requester (sister/teacher/parent version) explaining how to support her
+
+Rules:
+- Never use scary or clinical language for the target age
+- Never shame or stigmatize any product choice
+- Keep the tone warm, like an older sister explaining to a younger one
+- If language preference is Tamil, respond entirely in Tamil
+- If language preference is Telugu, respond entirely in Telugu
+- Otherwise respond in simple English
+- Format output as clean structured text suitable for PDF export and WhatsApp sharing
+- Do not add any introduction or closing remarks outside the guide itself`
+
+app.post('/guide', async (req, res) => {
+  if (!APP_ANTHROPIC_API_KEY) return res.status(503).json({ error: 'Anthropic not configured' })
+  const { age, language, relationship, insight } = req.body || {}
+  const userMsg = `Generate a First Period Readiness Guide for:
+- Age: ${age ?? 12}
+- Language: ${language || 'English'}
+- Requester relationship: ${relationship || 'older sister'}
+- Community insight: ${(insight && insight.trim()) || 'No local data available yet'}`
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': APP_ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: APP_ANTHROPIC_MODEL,
+        max_tokens: 2000,
+        system: GUIDE_SYSTEM,
+        messages: [{ role: 'user', content: userMsg }],
+      }),
+    })
+    if (!r.ok) {
+      const body = await r.text()
+      return res.status(502).json({ error: `Anthropic ${r.status}`, detail: body.slice(0, 300) })
+    }
+    const data = await r.json()
+    return res.json({ text: data.content?.[0]?.text || '' })
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+})
+
 // ── POST /stt — Sarvam Tamil speech-to-text ──────────────────────────────────
 app.post('/stt', upload.single('audio'), async (req, res) => {
   if (!SARVAM_API_KEY) return res.status(503).json({ error: 'Sarvam not configured' })

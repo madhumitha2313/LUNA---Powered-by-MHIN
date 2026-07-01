@@ -6,6 +6,7 @@ import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SparklesIcon, ArrowRightIcon, HeartIcon } from '../components/ui/icons'
 import { generateGuide, guideToText } from '../lib/readinessGuide'
+import { generateGuideAI, guideApiAvailable } from '../lib/guideApi'
 
 const RELATIONSHIPS = [
   { key: 'sister', label: 'Older sister' },
@@ -25,14 +26,35 @@ export default function Guide() {
   const [relationship, setRelationship] = useState('sister')
   const [insight, setInsight] = useState('')
   const [copied, setCopied] = useState(false)
+  const [aiText, setAiText] = useState('')
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiErr, setAiErr] = useState('')
 
   const guide = useMemo(
     () => generateGuide({ age, language, relationship, insight }),
     [age, language, relationship, insight]
   )
 
-  const text = guideToText(guide)
+  // Prefer live AI output when present; otherwise the offline template.
+  const text = aiText || guideToText(guide)
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(text)}`
+
+  async function generateAI() {
+    setAiErr('')
+    setAiBusy(true)
+    try {
+      const t = await generateGuideAI({ age, language, relationship, insight })
+      setAiText(t)
+    } catch {
+      setAiErr(
+        guideApiAvailable
+          ? 'Live generation failed — please retry.'
+          : 'Live AI needs the MIRA server (Anthropic) configured. The guide below already follows the same MHIN prompt.'
+      )
+    } finally {
+      setAiBusy(false)
+    }
+  }
 
   async function copy() {
     try {
@@ -115,6 +137,9 @@ export default function Guide() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
+            <Button onClick={generateAI} variant="ai" size="md" disabled={aiBusy}>
+              <SparklesIcon size={16} /> {aiBusy ? 'Generating…' : 'Generate with AI'}
+            </Button>
             <Button onClick={() => window.print()} size="md">
               Download / Print PDF <ArrowRightIcon size={16} />
             </Button>
@@ -124,7 +149,13 @@ export default function Guide() {
             <Button onClick={copy} variant="ghost" size="md">
               {copied ? 'Copied ✓' : 'Copy text'}
             </Button>
+            {aiText && (
+              <Button onClick={() => setAiText('')} variant="ghost" size="md">
+                Use instant version
+              </Button>
+            )}
           </div>
+          {aiErr && <p className="mt-3 text-caption text-warning">{aiErr}</p>}
         </div>
 
         {/* The guide sheet (printable) */}
@@ -138,26 +169,37 @@ export default function Guide() {
             <Badge tone="ai" icon={<SparklesIcon size={13} />}>{guide.languageLabel}</Badge>
           </div>
 
-          {guide.sections.map((s) => (
-            <section key={s.heading} className="mt-6">
-              <h2 className="report-accent font-heading text-lg font-semibold text-accent-secondary">
-                {s.heading}
-              </h2>
-              <div className="mt-2 space-y-3">
-                {s.blocks.map((b, i) => (
-                  <Block key={i} block={b} />
-                ))}
+          {aiText ? (
+            <div className="mt-6">
+              <Badge tone="ai" icon={<SparklesIcon size={13} />}>AI-generated · MHIN prompt</Badge>
+              <div className="mt-3 whitespace-pre-wrap text-[0.95rem] leading-relaxed text-text-secondary">
+                {aiText}
               </div>
-            </section>
-          ))}
+            </div>
+          ) : (
+            <>
+              {guide.sections.map((s) => (
+                <section key={s.heading} className="mt-6">
+                  <h2 className="report-accent font-heading text-lg font-semibold text-accent-secondary">
+                    {s.heading}
+                  </h2>
+                  <div className="mt-2 space-y-3">
+                    {s.blocks.map((b, i) => (
+                      <Block key={i} block={b} />
+                    ))}
+                  </div>
+                </section>
+              ))}
 
-          {/* Note to requester */}
-          <section className="mt-8 rounded-xl border border-accent-primary/20 bg-accent-primary/[0.06] p-5">
-            <h2 className="report-accent font-heading text-lg font-semibold text-accent-secondary">
-              {guide.note.heading}
-            </h2>
-            <p className="mt-2 text-[0.95rem] leading-relaxed text-text-secondary">{guide.note.text}</p>
-          </section>
+              {/* Note to requester */}
+              <section className="mt-8 rounded-xl border border-accent-primary/20 bg-accent-primary/[0.06] p-5">
+                <h2 className="report-accent font-heading text-lg font-semibold text-accent-secondary">
+                  {guide.note.heading}
+                </h2>
+                <p className="mt-2 text-[0.95rem] leading-relaxed text-text-secondary">{guide.note.text}</p>
+              </section>
+            </>
+          )}
 
           <p className="mt-6 border-t border-white/[0.1] pt-4 text-caption text-text-muted">
             MIRA · powered by MHIN — shared to support, never to diagnose.
