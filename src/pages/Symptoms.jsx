@@ -131,7 +131,7 @@ export default function Symptoms() {
       <Card className="mt-6 flex items-start gap-3 bg-bg-secondary/40">
         <ShieldIcon size={20} className="mt-0.5 shrink-0 text-success" />
         <p className="text-caption text-text-secondary">
-          LUNA does not diagnose PCOS or PCOD. Diagnosis requires a clinical assessment (often
+          MIRA does not diagnose PCOS or PCOD. Diagnosis requires a clinical assessment (often
           including ultrasound and blood tests). Use this tracker to describe your experience clearly
           to a doctor. Your selections are stored privately on your device.
         </p>

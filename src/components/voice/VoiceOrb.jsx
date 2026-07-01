@@ -41,7 +41,7 @@ export default function VoiceOrb({ state = 'idle', onClick, className }) {
       <button
         type="button"
         onClick={onClick}
-        aria-label={isListening ? 'Stop listening' : 'Start talking to Luna'}
+        aria-label={isListening ? 'Stop listening' : 'Start talking to Mira'}
         aria-pressed={isListening}
         className={cn(
           'relative flex h-36 w-36 items-center justify-center rounded-full',

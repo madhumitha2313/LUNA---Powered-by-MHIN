@@ -107,6 +107,30 @@
   }
 }
 
+/* Clinical report print styling: a clean white sheet, chrome hidden. */
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .report-sheet {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+  }
+  .report-sheet * {
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+  }
+  .report-sheet .report-accent {
+    color: #9d174d !important;
+  }
+}
+
 @layer utilities {
   /* Stagger helper for sequential fade-up entrances. */
   .delay-0 { animation-delay: 0ms; }

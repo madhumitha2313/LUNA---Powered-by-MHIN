@@ -22,28 +22,28 @@ const FEATURES = [
     icon: MicIcon,
     title: 'Voice First — in Tamil',
     tone: 'text-accent-secondary',
-    body: 'Skip the forms. Speak naturally in Tamil and Luna turns the conversation into a structured health log — flow, pain, mood, sleep, stress and more.',
+    body: 'Skip the forms. Speak naturally in Tamil and Mira turns the conversation into a structured health log — flow, pain, mood, sleep, stress and more.',
     points: ['Natural Tamil & Tamil-English speech', 'Live transcript with extraction chips', 'Confidence check with a follow-up when unsure'],
   },
   {
     icon: BrainIcon,
     title: 'AI Memory',
     tone: 'text-accent-ai',
-    body: 'Every check-in builds on the last. Luna keeps context across cycles so your history is continuous, not a pile of disconnected entries.',
+    body: 'Every check-in builds on the last. Mira keeps context across cycles so your history is continuous, not a pile of disconnected entries.',
     points: ['Context carried across cycles', 'Trends computed on rolling windows', 'Nothing lost between visits'],
   },
   {
     icon: FileIcon,
     title: 'Document Intelligence',
     tone: 'text-accent-secondary',
-    body: 'Upload a lab report and Luna reads it — pulling hemoglobin, ferritin, vitamin D and hormone values, then folding them into your risk indicators.',
+    body: 'Upload a lab report and Mira reads it — pulling hemoglobin, ferritin, vitamin D and hormone values, then folding them into your risk indicators.',
     points: ['PDF & image reports', 'Auto-extracts key blood/hormone values', 'Low ferritin reinforces anaemia indicators'],
   },
   {
     icon: HeartIcon,
     title: 'Period & Cycle Tracker',
     tone: 'text-accent-secondary',
-    body: 'Track period start dates and Luna estimates your cycle length, current phase and the next predicted date — all computed from your own logs.',
+    body: 'Track period start dates and Mira estimates your cycle length, current phase and the next predicted date — all computed from your own logs.',
     points: ['Cycle length & phase from real data', 'Next-period prediction', 'Regularity signal over time'],
   },
   {
@@ -88,7 +88,7 @@ export default function Features() {
     <PageShell>
       <div className="mx-auto max-w-2xl text-center">
         <Badge tone="ai" icon={<SparklesIcon size={14} />}>
-          Everything LUNA does
+          Everything MIRA does
         </Badge>
         <h1 className="mt-5 font-heading text-3xl font-semibold tracking-tight sm:text-hero">
           Features, in full
@@ -130,7 +130,7 @@ export default function Features() {
         </p>
         <div className="mt-2 flex flex-wrap justify-center gap-3">
           <Button as={Link} to="/voice" size="lg">
-            <MicIcon size={18} /> Talk to Luna
+            <MicIcon size={18} /> Talk to Mira
           </Button>
           <Button as={Link} to="/how-it-works" variant="secondary" size="lg">
             How it works <ArrowRightIcon size={16} />

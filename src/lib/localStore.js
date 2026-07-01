@@ -6,9 +6,10 @@
  * production build these same shapes are written to Appwrite instead
  * (src/lib/logs.js); the app reads whichever backing store is available.
  */
-const LOGS_KEY = 'luna.logs.v1'
-const PERIODS_KEY = 'luna.periods.v1'
-const SYMPTOMS_KEY = 'luna.symptoms.v1'
+const LOGS_KEY = 'mira.logs.v1'
+const PERIODS_KEY = 'mira.periods.v1'
+const SYMPTOMS_KEY = 'mira.symptoms.v1'
+const PROFILE_KEY = 'mira.profile.v1'
 
 function read(key, fallback) {
   try {
@@ -109,4 +110,25 @@ export function getSymptoms() {
 export function saveSymptoms(map) {
   write(SYMPTOMS_KEY, map)
   return map
+}
+
+// ── User profile ─────────────────────────────────────────────────────────────
+export function getProfile() {
+  return read(PROFILE_KEY, { name: '', age: '', condition: '', city: '' })
+}
+export function saveProfile(patch) {
+  const next = { ...getProfile(), ...patch }
+  write(PROFILE_KEY, next)
+  return next
+}
+
+/** Wipe every locally-stored MIRA record (used by the profile's delete action). */
+export function clearAllData() {
+  ;[LOGS_KEY, PERIODS_KEY, SYMPTOMS_KEY, PROFILE_KEY].forEach((k) => {
+    try {
+      localStorage.removeItem(k)
+    } catch {
+      /* ignore */
+    }
+  })
 }

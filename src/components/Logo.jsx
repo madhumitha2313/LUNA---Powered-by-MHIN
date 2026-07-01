@@ -1,7 +1,7 @@
 import { cn } from '../lib/cn'
 
 /**
- * LUNA wordmark + crescent moon glyph. The "powered by MHIN" line is optional
+ * MIRA wordmark + crescent moon glyph. The "powered by MHIN" line is optional
  * and rendered small so the lockup stays clean in tight nav contexts.
  */
 export default function Logo({ withTagline = false, className }) {
@@ -25,7 +25,7 @@ export default function Logo({ withTagline = false, className }) {
       </span>
       <span className="flex flex-col leading-none">
         <span className="font-heading text-lg font-semibold tracking-tight text-text-primary">
-          LUNA
+          MIRA
         </span>
         {withTagline && (
           <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-text-muted">

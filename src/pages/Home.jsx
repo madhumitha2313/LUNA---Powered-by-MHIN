@@ -8,9 +8,9 @@ import VoiceOrb from '../components/voice/VoiceOrb'
 import {
   MicIcon,
   HeartIcon,
-  TrendIcon,
+  FileIcon,
   SparklesIcon,
-  UsersIcon,
+  StethoscopeIcon,
   ArrowRightIcon,
   MoonIcon,
 } from '../components/ui/icons'
@@ -36,8 +36,8 @@ const QUICK_ACTIONS = [
   { label: 'Talk', to: '/voice', icon: MicIcon, tone: 'text-accent-secondary' },
   { label: 'Cycle Tracker', to: '/tracker', icon: HeartIcon, tone: 'text-accent-primary' },
   { label: 'PCOS / PCOD', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai' },
-  { label: 'Features', to: '/features', icon: TrendIcon, tone: 'text-success' },
-  { label: 'Community', to: '/how-it-works', icon: UsersIcon, tone: 'text-accent-ai' },
+  { label: 'My Report', to: '/report', icon: FileIcon, tone: 'text-success' },
+  { label: 'Find Doctor', to: '/doctors', icon: StethoscopeIcon, tone: 'text-accent-secondary' },
 ]
 
 export default function Home() {
@@ -83,7 +83,7 @@ export default function Home() {
           <VoiceOrb state="idle" onClick={() => {}} className="scale-90" />
           <Link to="/voice">
             <Badge tone="accent" icon={<MicIcon size={14} />} className="cursor-pointer">
-              Tap to talk to Luna
+              Tap to talk to Mira
             </Badge>
           </Link>
         </Card>
@@ -133,7 +133,7 @@ export default function Home() {
             ) : (
               <EmptyState
                 title="No insights yet"
-                body="Log your first check-in with Luna and your personalised insight appears here — from your own data."
+                body="Log your first check-in with Mira and your personalised insight appears here — from your own data."
               />
             )}
           </Card>

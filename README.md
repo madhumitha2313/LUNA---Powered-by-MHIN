@@ -1,10 +1,10 @@
-# LUNA · powered by MHIN
+# MIRA · powered by MHIN
 
-A Tamil-voice-first menstrual health companion. Speak naturally; LUNA turns the
+A Tamil-voice-first menstrual health companion. Speak naturally; MIRA turns the
 conversation into structured, trustworthy health intelligence you can understand
 and share with a doctor when it matters.
 
-> LUNA surfaces **risk indicators** and **patterns worth discussing with a
+> MIRA surfaces **risk indicators** and **patterns worth discussing with a
 > doctor** — never a diagnosis.
 
 ---

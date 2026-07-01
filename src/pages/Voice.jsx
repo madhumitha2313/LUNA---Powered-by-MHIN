@@ -6,33 +6,33 @@ import ExtractionChip from '../components/voice/ExtractionChip'
 import Logo from '../components/Logo'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
-import { ArrowRightIcon, SparklesIcon, MicIcon } from '../components/ui/icons'
+import { ArrowRightIcon, SparklesIcon, MicIcon, LeafIcon, HeartIcon } from '../components/ui/icons'
 import { speechSupported, createRecognizer, speak, stopSpeaking } from '../lib/browserVoice'
-import { extractFields, buildReply, glossFields } from '../lib/tamilExtract'
-import { addLog } from '../lib/localStore'
+import { extractFields, respond, glossFields } from '../lib/tamilExtract'
+import { addLog, getCycleStats } from '../lib/localStore'
 
 /**
- * Phase 2 — Voice screen (LIVE in the browser).
+ * Voice screen — LIVE in the browser.
  *
- * Speak Tamil → the Web Speech API transcribes → in-browser extractor pulls
- * structured fields → Luna replies out loud in Tamil. Raw audio is handled by
- * the browser recognizer and never stored by us. A typed fallback runs the same
- * pipeline for browsers without SpeechRecognition.
+ * Speak Tamil → Web Speech transcribes → the extractor pulls structured fields
+ * and detects what you're asking → Mira replies out loud in Tamil with
+ * time-appropriate food & activity tips. Raw audio is handled by the browser
+ * recognizer and never stored by us. A typed fallback runs the same pipeline.
  */
 export default function Voice() {
   const [supported, setSupported] = useState(true)
   const [state, setState] = useState('idle') // idle | listening | thinking | speaking
   const [interim, setInterim] = useState('')
-  const [turns, setTurns] = useState([]) // { role: 'user'|'luna', text }
+  const [turns, setTurns] = useState([])
   const [chips, setChips] = useState([])
   const [confidence, setConfidence] = useState(0)
+  const [recs, setRecs] = useState(null)
   const [typed, setTyped] = useState('')
   const recRef = useRef(null)
   const scrollRef = useRef(null)
 
   useEffect(() => {
     setSupported(speechSupported())
-    // warm up voices for synthesis
     if (window.speechSynthesis) window.speechSynthesis.getVoices()
     return () => stopSpeaking()
   }, [])
@@ -47,28 +47,24 @@ export default function Voice() {
     setInterim('')
     setState('thinking')
 
-    // Extract → chips → reply (small delay so the "understanding" beat is visible)
     setTimeout(() => {
       const result = extractFields(transcript)
-      setChips(glossFields(result.fields))
+      const gloss = glossFields(result.fields)
+      setChips(gloss)
       setConfidence(result.confidence)
 
-      // Persist the check-in (the user's own data) unless it's basically empty
-      if (glossFields(result.fields).length > 0) {
-        addLog({
-          rawTranscript: transcript,
-          confidence: Number(result.confidence.toFixed(2)),
-          ...result.fields,
-        })
+      if (gloss.length > 0) {
+        addLog({ rawTranscript: transcript, confidence: Number(result.confidence.toFixed(2)), ...result.fields })
       }
 
-      const reply = buildReply(result)
-      setTurns((t) => [...t, { role: 'luna', text: reply }])
+      const phase = getCycleStats().phase || null
+      const { speech, recommendations } = respond({ transcript, result, phase })
+      setRecs(recommendations)
+      setTurns((t) => [...t, { role: 'mira', text: speech }])
       setState('speaking')
-      speak(reply)
-      // return to idle shortly after speaking starts
+      speak(speech)
       setTimeout(() => setState('idle'), 1200)
-    }, 650)
+    }, 600)
   }
 
   function startListening() {
@@ -110,7 +106,7 @@ export default function Voice() {
       : state === 'thinking'
         ? 'புரிந்துகொள்கிறேன்…'
         : state === 'speaking'
-          ? 'லூனா பதிலளிக்கிறது…'
+          ? 'மீரா பதிலளிக்கிறது…'
           : 'இன்று எப்படி உணர்கிறீர்கள்?'
 
   return (
@@ -132,27 +128,17 @@ export default function Voice() {
       <main className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col items-center px-5">
         <p className="mt-2 text-center font-heading text-2xl font-semibold sm:text-3xl">{prompt}</p>
         <p className="mt-2 text-center text-text-secondary">
-          தமிழில் பேசுங்கள் — நான் கேட்டு, புரிந்து, பதிலளிக்கிறேன்.
+          தமிழில் பேசுங்கள் — “என்ன சாப்பிடலாம்?”, “ரொம்ப வலி” … எதையும் கேளுங்கள்.
         </p>
 
         <VoiceOrb state={state === 'speaking' ? 'thinking' : state} onClick={startListening} className="my-8" />
 
-        {/* Live interim transcript */}
-        {interim && (
-          <p className="mb-4 max-w-md text-center text-accent-secondary/90">“{interim}”</p>
-        )}
+        {interim && <p className="mb-4 max-w-md text-center text-accent-secondary/90">“{interim}”</p>}
 
-        {/* Extraction chips */}
         {chips.length > 0 && (
           <div className="mb-5 flex flex-wrap justify-center gap-2">
             {chips.map(([field, value], i) => (
-              <ExtractionChip
-                key={field}
-                field={field}
-                value={value}
-                tone={field}
-                style={{ animationDelay: `${i * 70}ms` }}
-              />
+              <ExtractionChip key={field} field={field} value={value} tone={field} style={{ animationDelay: `${i * 70}ms` }} />
             ))}
           </div>
         )}
@@ -160,7 +146,7 @@ export default function Voice() {
         {confidence > 0 && <ConfidenceMeter value={confidence} className="mb-6 max-w-sm" />}
 
         {/* Conversation */}
-        <div ref={scrollRef} className="mb-4 max-h-64 w-full max-w-xl space-y-3 overflow-y-auto">
+        <div ref={scrollRef} className="mb-5 max-h-56 w-full max-w-xl space-y-3 overflow-y-auto">
           {turns.map((t, i) => (
             <div key={i} className={t.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
               <div
@@ -176,19 +162,25 @@ export default function Voice() {
           ))}
         </div>
 
-        {/* Not supported → typed fallback note */}
+        {/* Food + activity recommendations */}
+        {recs && (recs.foods.length > 0 || recs.activities.length > 0) && (
+          <div className="mb-6 grid w-full max-w-xl gap-3 sm:grid-cols-2">
+            <RecCard icon={LeafIcon} tone="text-success" title="Foods for now" items={recs.foods} />
+            <RecCard icon={HeartIcon} tone="text-accent-secondary" title="Activities for now" items={recs.activities} />
+          </div>
+        )}
+
         {!supported && (
           <p className="mb-3 max-w-md text-center text-caption text-warning">
-            Live mic needs Chrome or Edge. You can still type a sentence below and Luna will respond.
+            Live mic needs Chrome or Edge. You can still type a sentence below and Mira will respond.
           </p>
         )}
 
-        {/* Typed fallback (also handy for testing) */}
         <form onSubmit={submitTyped} className="mb-8 flex w-full max-w-xl items-center gap-2">
           <input
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
-            placeholder="…அல்லது இங்கே தமிழில் தட்டச்சு செய்யுங்கள் (e.g. ரொம்ப வலி, அதிக ரத்தப்போக்கு)"
+            placeholder="…தமிழில் தட்டச்சு: “என்ன சாப்பிடலாம்?” / “ரொம்ப வலி, அதிக ரத்தப்போக்கு”"
             className="flex-1 rounded-pill border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary placeholder:text-text-muted focus:border-accent-primary/40 focus:outline-none"
           />
           <Button type="submit" size="md" variant="secondary">
@@ -204,6 +196,25 @@ export default function Voice() {
           Dashboard <ArrowRightIcon size={13} />
         </Link>
       </footer>
+    </div>
+  )
+}
+
+function RecCard({ icon: Icon, tone, title, items }) {
+  return (
+    <div className="card-base p-4 text-left">
+      <div className="mb-3 flex items-center gap-2">
+        <Icon size={18} className={tone} />
+        <span className="font-heading text-[0.95rem] font-semibold">{title}</span>
+      </div>
+      <ul className="space-y-2">
+        {items.map((it) => (
+          <li key={it.en} className="text-caption">
+            <span className="text-text-primary">{it.ta}</span>
+            <span className="text-text-muted"> · {it.en}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

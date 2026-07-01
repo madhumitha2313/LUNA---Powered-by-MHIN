@@ -15,12 +15,12 @@ export default function ClosingCTA() {
             Start your health story tonight.
           </h2>
           <p className="relative mx-auto mt-4 max-w-md text-text-secondary">
-            One short conversation. Luna takes it from there.
+            One short conversation. Mira takes it from there.
           </p>
           <div className="relative mt-8 flex justify-center">
             <Button as={Link} to="/voice" size="lg">
               <MicIcon size={18} />
-              Talk to Luna
+              Talk to Mira
             </Button>
           </div>
         </div>

@@ -52,11 +52,11 @@ export default function ProblemSection() {
           </h2>
           <p className="mt-4 text-text-secondary">
             Your health story is scattered — a symptom here, a lab result there, an app in
-            between. LUNA is the thread that ties them together.
+            between. MIRA is the thread that ties them together.
           </p>
         </div>
 
-        {/* Hub: sources connect through LUNA */}
+        {/* Hub: sources connect through MIRA */}
         <Card className="mt-14 overflow-hidden bg-bg-secondary/50 p-8 sm:p-12">
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-6 sm:gap-x-8">
             {NODES.map((node, i) => (
@@ -77,7 +77,7 @@ export default function ProblemSection() {
             ))}
           </div>
 
-          {/* Converge into LUNA */}
+          {/* Converge into MIRA */}
           <div className="mt-10 flex flex-col items-center">
             <span aria-hidden className="h-8 w-px bg-gradient-to-b from-transparent to-accent-ai/50" />
             <div className="flex items-center gap-3 rounded-pill border border-accent-ai/25 bg-accent-ai/[0.08] px-5 py-2.5 shadow-glow-ai">

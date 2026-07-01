@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
+import DemoModal from '../../components/DemoModal'
 import MoonScene from '../../components/illustrations/MoonScene'
 import {
   MicIcon,
@@ -22,8 +24,10 @@ const FEATURE_BADGES = [
 ]
 
 export default function Hero() {
+  const [demoOpen, setDemoOpen] = useState(false)
   return (
     <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32">
+      <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
       {/* Ambient background glow */}
       <div
         aria-hidden
@@ -43,7 +47,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-5 max-w-md text-[1.05rem] text-text-secondary animate-fade-up delay-2">
-            LUNA turns everyday conversations — in your own voice, in Tamil — into
+            MIRA turns everyday conversations — in your own voice, in Tamil — into
             health intelligence you can understand, trust, and share with a doctor when
             it matters.
           </p>
@@ -51,9 +55,9 @@ export default function Hero() {
           <div className="mt-8 flex flex-wrap items-center gap-3 animate-fade-up delay-3">
             <Button as={Link} to="/voice" size="lg">
               <MicIcon size={18} />
-              Talk to Luna
+              Talk to Mira
             </Button>
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" onClick={() => setDemoOpen(true)}>
               <PlayIcon size={16} />
               Watch Demo
             </Button>

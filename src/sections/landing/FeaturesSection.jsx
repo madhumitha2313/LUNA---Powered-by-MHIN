@@ -18,13 +18,13 @@ const FEATURES = [
   },
   {
     title: 'AI Memory',
-    body: 'Luna remembers context across cycles, so every check-in builds on the last instead of starting over.',
+    body: 'Mira remembers context across cycles, so every check-in builds on the last instead of starting over.',
     icon: BrainIcon,
     tone: 'text-accent-ai',
   },
   {
     title: 'Document Intelligence',
-    body: 'Upload a lab report and Luna reads it — pulling hemoglobin, ferritin and hormone values automatically.',
+    body: 'Upload a lab report and Mira reads it — pulling hemoglobin, ferritin and hormone values automatically.',
     icon: FileIcon,
     tone: 'text-accent-secondary',
   },
@@ -60,7 +60,7 @@ export default function FeaturesSection() {
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-caption font-medium uppercase tracking-[0.2em] text-accent-secondary/80">
-            What Luna does
+            What Mira does
           </p>
           <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight sm:text-section">
             Intelligence that listens first.

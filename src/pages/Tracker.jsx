@@ -63,7 +63,7 @@ export default function Tracker() {
             Cycle tracker
           </h1>
           <p className="mt-2 text-text-secondary">
-            Log the day your period starts — Luna estimates the rest from your own history.
+            Log the day your period starts — Mira estimates the rest from your own history.
           </p>
         </div>
         <div className="flex items-end gap-2">

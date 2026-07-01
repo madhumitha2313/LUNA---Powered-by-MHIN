@@ -52,7 +52,7 @@ export async function transcribeAndDiscard(audioBlob) {
 }
 
 /**
- * Speak Luna's response in Tamil. Returns an audio URL for playback only; the
+ * Speak Mira's response in Tamil. Returns an audio URL for playback only; the
  * synthesized audio is transient and not persisted.
  *
  * @param {string} text Tamil response text

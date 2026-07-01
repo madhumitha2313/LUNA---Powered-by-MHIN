@@ -23,13 +23,13 @@ const STEPS = [
   {
     n: '02',
     icon: SparklesIcon,
-    title: 'Luna understands',
-    body: 'Your speech is transcribed and structured into fields — flow, pain, mood, fatigue, sleep, stress — with a confidence check. If something is unclear, Luna asks a short follow-up instead of guessing.',
+    title: 'Mira understands',
+    body: 'Your speech is transcribed and structured into fields — flow, pain, mood, fatigue, sleep, stress — with a confidence check. If something is unclear, Mira asks a short follow-up instead of guessing.',
   },
   {
     n: '03',
     icon: BrainIcon,
-    title: 'Luna remembers',
+    title: 'Mira remembers',
     body: 'Each entry is added to your continuous history. Context carries across cycles, so today builds on everything that came before.',
   },
   {
