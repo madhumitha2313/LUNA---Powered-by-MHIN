@@ -9,7 +9,7 @@ import { MicIcon } from '../ui/icons'
 const LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'How it works', href: '#problem' },
-  { label: 'Privacy', href: '#trust' },
+  { label: 'Dashboard', href: '/home', route: true },
 ]
 
 export default function Navbar() {
@@ -21,15 +21,25 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {LINKS.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
-            >
-              {l.label}
-            </a>
-          ))}
+          {LINKS.map((l) =>
+            l.route ? (
+              <Link
+                key={l.href}
+                to={l.href}
+                className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
+              >
+                {l.label}
+              </Link>
+            ) : (
+              <a
+                key={l.href}
+                href={l.href}
+                className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
+              >
+                {l.label}
+              </a>
+            )
+          )}
         </div>
 
         <Button as={Link} to="/voice" size="sm" className="shrink-0">

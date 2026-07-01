@@ -1,0 +1,61 @@
+name: Deploy frontend to GitHub Pages
+
+# Builds the Vite frontend and publishes it to GitHub Pages.
+# NOTE: this hosts the static FRONTEND only (landing, dashboard, voice UI).
+# The live backend (Appwrite, Anthropic + Sarvam via server/) is not part of a
+# static Pages deploy — it runs from the server proxy + Appwrite Cloud.
+#
+# One-time setup: repo Settings → Pages → Build and deployment → Source:
+# "GitHub Actions". After that, every push to the branch below redeploys.
+
+on:
+  push:
+    branches:
+      - claude/friendly-sagan-rgb0nq
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Base path must match the project-site URL: /<repo-name>/
+      - name: Build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
