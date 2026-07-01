@@ -1,17 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, HashRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
 
-// Vite injects BASE_URL from the `base` config; strip the trailing slash so the
-// router's basename is correct on GitHub Pages project sites and at '/' locally.
+// The single-file / file:// preview uses hash routing so navigation works with
+// no server; normal builds use clean path-based routing. Vite injects BASE_URL
+// from the `base` config; strip the trailing slash for the router basename.
+const useHash = import.meta.env.VITE_HASH_ROUTER === 'true'
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
+
+const Router = useHash ? HashRouter : BrowserRouter
+const routerProps = useHash ? {} : { basename }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename={basename}>
+    <Router {...routerProps}>
       <App />
-    </BrowserRouter>
+    </Router>
   </React.StrictMode>
 )

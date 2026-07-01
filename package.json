@@ -10,7 +10,8 @@
     "preview": "vite preview --host",
     "verify:connections": "node scripts/verify-connections.mjs",
     "appwrite:bootstrap": "node scripts/appwrite-bootstrap.mjs",
-    "server": "node server/index.js"
+    "server": "node server/index.js",
+    "build:singlefile": "VITE_SINGLEFILE=1 VITE_HASH_ROUTER=true vite build"
   },
   "dependencies": {
     "appwrite": "^16.0.2",
@@ -23,6 +24,7 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vite-plugin-singlefile": "^2.3.3"
   }
 }
