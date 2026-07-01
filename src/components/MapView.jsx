@@ -52,10 +52,13 @@ async function fetchPlaces(center, onResults, onError) {
         const plat = el.lat ?? el.center?.lat
         const plng = el.lon ?? el.center?.lon
         if (plat == null || plng == null) return null
+        const t = el.tags || {}
         return {
           id: el.id,
-          name: el.tags?.name || (el.tags?.amenity ? el.tags.amenity + ' (unnamed)' : 'Healthcare facility'),
-          type: el.tags?.amenity || 'clinic',
+          name: t.name || (t.amenity ? t.amenity + ' (unnamed)' : 'Healthcare facility'),
+          type: t.amenity || 'clinic',
+          // Reception / contact number when OSM has it.
+          phone: t.phone || t['contact:phone'] || t['contact:mobile'] || t['contact:landline'] || null,
           lat: plat,
           lng: plng,
           distanceKm: haversineKm(center, { lat: plat, lng: plng }),
@@ -108,9 +111,10 @@ export default function MapView({ center, onResults, onError, className = '' }) 
       if (cancelled) return
       onResults?.(places)
       places.forEach((p) => {
+        const phoneLine = p.phone ? `<br/><a href="tel:${p.phone}">📞 ${p.phone}</a>` : ''
         L.marker([p.lat, p.lng], { icon: CLINIC_ICON })
           .addTo(layer)
-          .bindPopup(`<strong>${p.name}</strong><br/>${p.type} · ${p.distanceKm.toFixed(1)} km`)
+          .bindPopup(`<strong>${p.name}</strong><br/>${p.type} · ${p.distanceKm.toFixed(1)} km${phoneLine}`)
       })
     }, onError)
     return () => {

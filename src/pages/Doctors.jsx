@@ -66,6 +66,8 @@ export default function Doctors() {
   }
 
   const dirUrl = (p) => `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`
+  const placeUrl = (p) =>
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name)}%20${p.lat},${p.lng}`
   const shareUrl = (p) =>
     `https://wa.me/?text=${encodeURIComponent(`${p.name} (${specialty}) — https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`)}`
 
@@ -145,9 +147,28 @@ export default function Doctors() {
                   <p className="truncate font-medium text-text-primary">{p.name}</p>
                   <p className="text-caption text-text-muted capitalize">
                     {p.type} · {p.distanceKm.toFixed(1)} km away
+                    {p.phone && <span className="normal-case text-accent-secondary"> · 📞 {p.phone}</span>}
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-2">
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  {p.phone ? (
+                    <a
+                      href={`tel:${p.phone}`}
+                      className="rounded-pill border border-accent-primary/30 bg-accent-primary/15 px-3 py-1.5 text-caption font-medium text-accent-secondary hover:bg-accent-primary/25"
+                    >
+                      Call
+                    </a>
+                  ) : (
+                    <a
+                      href={placeUrl(p)}
+                      target="_blank"
+                      rel="noopener"
+                      title="This clinic has no number in OpenStreetMap — open it in Maps to find and call the reception."
+                      className="rounded-pill border border-white/10 px-3 py-1.5 text-caption text-text-muted hover:bg-white/5"
+                    >
+                      Call via Maps
+                    </a>
+                  )}
                   <a
                     href={dirUrl(p)}
                     target="_blank"
