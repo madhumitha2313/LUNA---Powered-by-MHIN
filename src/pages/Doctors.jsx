@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageShell from '../components/layout/PageShell'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
+import MapView from '../components/MapView'
 import { StethoscopeIcon, ShieldIcon, ArrowRightIcon } from '../components/ui/icons'
 import { getSymptoms, getProfile } from '../lib/localStore'
 
@@ -14,7 +15,6 @@ const SPECIALTIES = [
   { key: 'Haematologist', treats: 'Anaemia and blood-related concerns from heavy bleeding.' },
 ]
 
-/** Suggest a starting specialty from what the user has tracked. */
 function suggestSpecialty() {
   const s = getSymptoms()
   const keys = Object.keys(s).filter((k) => s[k])
@@ -25,51 +25,49 @@ function suggestSpecialty() {
 
 export default function Doctors() {
   const [specialty, setSpecialty] = useState(suggestSpecialty())
-  const [coords, setCoords] = useState(null)
+  const [center, setCenter] = useState(null)
   const [city, setCity] = useState(getProfile().city || '')
+  const [results, setResults] = useState([])
   const [status, setStatus] = useState('')
 
   function locate() {
-    if (!navigator.geolocation) {
-      setStatus('Location not available — enter your city below.')
-      return
-    }
+    if (!navigator.geolocation) return setStatus('Location unavailable — search a city instead.')
     setStatus('Locating…')
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setStatus('')
       },
-      () => setStatus('Couldn’t get location — enter your city below.'),
+      () => setStatus('Couldn’t get location — search a city instead.'),
       { enableHighAccuracy: true, timeout: 8000 }
     )
   }
 
-  const mapSrc = useMemo(() => {
-    if (!coords) return null
-    const d = 0.04
-    const bbox = [coords.lng - d, coords.lat - d, coords.lng + d, coords.lat + d].join(',')
-    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${coords.lat},${coords.lng}`
-  }, [coords])
-
-  const mapsUrl = coords
-    ? `https://www.google.com/maps/search/${encodeURIComponent(specialty + ' near me')}/@${coords.lat},${coords.lng},14z`
-    : `https://www.google.com/maps/search/${encodeURIComponent(specialty + (city ? ' in ' + city : ' near me'))}`
-
-  const shareText = `Looking for a ${specialty}${city ? ' in ' + city : ' nearby'}. Here's a map: ${mapsUrl}`
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`
-
-  async function share() {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'MIRA — nearby specialist', text: shareText, url: mapsUrl })
-      } catch {
-        /* user cancelled */
-      }
-    } else {
-      window.open(whatsappUrl, '_blank')
+  async function searchCity(e) {
+    e?.preventDefault()
+    if (!city.trim()) return
+    setStatus('Finding ' + city + '…')
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)}`,
+        { headers: { 'Accept-Language': 'en' } }
+      )
+      const data = await res.json()
+      if (!data.length) return setStatus('Couldn’t find that city — try another spelling.')
+      setCenter({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) })
+      setStatus('')
+    } catch {
+      setStatus('Search failed — check your connection.')
     }
   }
+
+  function onError() {
+    setStatus('Live clinic data is busy right now — try again, or use “Open in Google Maps”.')
+  }
+
+  const dirUrl = (p) => `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`
+  const shareUrl = (p) =>
+    `https://wa.me/?text=${encodeURIComponent(`${p.name} (${specialty}) — https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`)}`
 
   return (
     <PageShell max="max-w-4xl">
@@ -78,15 +76,15 @@ export default function Doctors() {
           Find care
         </Badge>
         <h1 className="mt-5 font-heading text-3xl font-semibold tracking-tight sm:text-hero">
-          Specialists near you
+          Hospitals & specialists near you
         </h1>
         <p className="mt-4 text-text-secondary">
-          Based on what you’ve tracked, here’s the kind of specialist to see — and a live map to find
-          real clinics near you. Share any location straight to WhatsApp.
+          Real hospitals and clinics from OpenStreetMap, pinned on the map. Get directions or share
+          any one straight to WhatsApp.
         </p>
       </div>
 
-      {/* Specialty + locate controls */}
+      {/* Controls */}
       <Card className="mt-10">
         <div className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
           <label className="block">
@@ -97,24 +95,23 @@ export default function Doctors() {
               className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary focus:border-accent-primary/40 focus:outline-none"
             >
               {SPECIALTIES.map((s) => (
-                <option key={s.key} value={s.key} className="bg-bg-card">
-                  {s.key}
-                </option>
+                <option key={s.key} value={s.key} className="bg-bg-card">{s.key}</option>
               ))}
             </select>
           </label>
-          <label className="block">
-            <span className="mb-1.5 block text-caption text-text-muted">City (if no location)</span>
-            <input
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g. Chennai"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary placeholder:text-text-muted focus:border-accent-primary/40 focus:outline-none"
-            />
-          </label>
-          <Button onClick={locate} size="md">
-            Use my location
-          </Button>
+          <form onSubmit={searchCity} className="block">
+            <span className="mb-1.5 block text-caption text-text-muted">Search a city</span>
+            <div className="flex gap-2">
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="e.g. Salem"
+                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary placeholder:text-text-muted focus:border-accent-primary/40 focus:outline-none"
+              />
+              <Button type="submit" size="md" variant="secondary">Go</Button>
+            </div>
+          </form>
+          <Button onClick={locate} size="md">Use my location</Button>
         </div>
         {status && <p className="mt-3 text-caption text-warning">{status}</p>}
         <p className="mt-3 text-caption text-text-secondary">
@@ -122,35 +119,57 @@ export default function Doctors() {
         </p>
       </Card>
 
-      {/* Live map */}
+      {/* Map */}
       <Card className="mt-6 overflow-hidden p-0">
-        {mapSrc ? (
-          <iframe
-            title="Nearby clinics map"
-            src={mapSrc}
-            className="h-80 w-full border-0"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-56 flex-col items-center justify-center gap-3 text-center">
-            <StethoscopeIcon size={28} className="text-accent-secondary" />
-            <p className="max-w-xs text-caption text-text-secondary">
-              Tap “Use my location” to load a live map centred on you — or open results for your city.
-            </p>
+        <MapView center={center} onResults={setResults} onError={onError} className="h-80 w-full" />
+        {!center && (
+          <div className="border-t border-white/[0.06] p-4 text-center text-caption text-text-secondary">
+            Tap “Use my location” or search a city to load nearby hospitals & clinics.
           </div>
         )}
-        <div className="flex flex-wrap gap-2 border-t border-white/[0.06] p-4">
-          <Button as="a" href={mapsUrl} target="_blank" rel="noopener" size="md">
-            Open in Google Maps <ArrowRightIcon size={16} />
-          </Button>
-          <Button as="a" href={whatsappUrl} target="_blank" rel="noopener" variant="secondary" size="md">
-            Share on WhatsApp
-          </Button>
-          <Button onClick={share} variant="ghost" size="md">
-            Share…
-          </Button>
-        </div>
       </Card>
+
+      {/* Results list */}
+      {results.length > 0 && (
+        <Card className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold">
+              {results.length} nearby ({specialty})
+            </h2>
+            <Badge tone="success">OpenStreetMap</Badge>
+          </div>
+          <ul className="divide-y divide-white/[0.06]">
+            {results.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-text-primary">{p.name}</p>
+                  <p className="text-caption text-text-muted capitalize">
+                    {p.type} · {p.distanceKm.toFixed(1)} km away
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <a
+                    href={dirUrl(p)}
+                    target="_blank"
+                    rel="noopener"
+                    className="rounded-pill border border-white/10 px-3 py-1.5 text-caption text-text-secondary hover:bg-white/5"
+                  >
+                    Directions
+                  </a>
+                  <a
+                    href={shareUrl(p)}
+                    target="_blank"
+                    rel="noopener"
+                    className="rounded-pill border border-success/25 bg-success/10 px-3 py-1.5 text-caption text-success hover:bg-success/15"
+                  >
+                    Share
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {/* Specialist guide */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -161,11 +180,8 @@ export default function Doctors() {
               <h3 className="font-heading text-lg font-semibold">{s.key}</h3>
             </div>
             <p className="mt-2 text-caption text-text-secondary">{s.treats}</p>
-            <button
-              onClick={() => setSpecialty(s.key)}
-              className="mt-3 text-caption text-accent-secondary hover:underline"
-            >
-              Find {s.key}s near me →
+            <button onClick={() => setSpecialty(s.key)} className="mt-3 text-caption text-accent-secondary hover:underline">
+              Set as specialist →
             </button>
           </Card>
         ))}
@@ -174,14 +190,14 @@ export default function Doctors() {
       <Card className="mt-6 flex items-start gap-3 bg-bg-secondary/40">
         <ShieldIcon size={20} className="mt-0.5 shrink-0 text-success" />
         <p className="text-caption text-text-secondary">
-          Clinic results come from your maps app in real time — MIRA doesn’t store your location or
-          share it without you tapping share. Bring your MIRA report to the appointment.
+          Hospital pins come live from OpenStreetMap. MIRA doesn’t store your location or share it
+          unless you tap share. Bring your MIRA report to the appointment.
         </p>
       </Card>
 
       <div className="mt-8 flex justify-center">
         <Button as={Link} to="/report" variant="secondary" size="lg">
-          Generate my report first
+          Generate my report first <ArrowRightIcon size={16} />
         </Button>
       </div>
     </PageShell>
