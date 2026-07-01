@@ -28,6 +28,7 @@ export default function Doctors() {
   const [center, setCenter] = useState(null)
   const [city, setCity] = useState(getProfile().city || '')
   const [results, setResults] = useState([])
+  const [selected, setSelected] = useState(null)
   const [status, setStatus] = useState('')
 
   function locate() {
@@ -70,6 +71,24 @@ export default function Doctors() {
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name)}%20${p.lat},${p.lng}`
   const shareUrl = (p) =>
     `https://wa.me/?text=${encodeURIComponent(`${p.name} (${specialty}) — https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`)}`
+
+  // Area-level actions (for the whole search, not one clinic).
+  const areaMapsUrl = center
+    ? `https://www.google.com/maps/search/${encodeURIComponent(specialty)}/@${center.lat},${center.lng},14z`
+    : `https://www.google.com/maps/search/${encodeURIComponent(specialty + (city ? ' in ' + city : ' near me'))}`
+  const areaShareText = `Looking for a ${specialty}${city ? ' in ' + city : ' nearby'}: ${areaMapsUrl}`
+  const areaWhatsapp = `https://wa.me/?text=${encodeURIComponent(areaShareText)}`
+  async function shareArea() {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'MIRA — nearby care', text: areaShareText, url: areaMapsUrl })
+      } catch {
+        /* cancelled */
+      }
+    } else {
+      window.open(areaWhatsapp, '_blank')
+    }
+  }
 
   return (
     <PageShell max="max-w-4xl">
@@ -123,13 +142,78 @@ export default function Doctors() {
 
       {/* Map */}
       <Card className="mt-6 overflow-hidden p-0">
-        <MapView center={center} onResults={setResults} onError={onError} className="h-80 w-full" />
+        <MapView
+          center={center}
+          onResults={setResults}
+          onSelect={setSelected}
+          onError={onError}
+          className="h-80 w-full"
+        />
         {!center && (
-          <div className="border-t border-white/[0.06] p-4 text-center text-caption text-text-secondary">
+          <div className="border-t border-white/[0.06] px-4 py-3 text-center text-caption text-text-secondary">
             Tap “Use my location” or search a city to load nearby hospitals & clinics.
           </div>
         )}
+        {/* Area actions */}
+        <div className="flex flex-wrap gap-2 border-t border-white/[0.06] p-4">
+          <Button as="a" href={areaMapsUrl} target="_blank" rel="noopener" size="md">
+            Open in Google Maps <ArrowRightIcon size={16} />
+          </Button>
+          <Button as="a" href={areaWhatsapp} target="_blank" rel="noopener" variant="secondary" size="md">
+            Share on WhatsApp
+          </Button>
+          <Button onClick={shareArea} variant="ghost" size="md">
+            Share…
+          </Button>
+        </div>
       </Card>
+
+      {/* Selected hospital detail — appears when you tap a pin */}
+      {selected && (
+        <Card className="mt-6 border-accent-primary/30 shadow-glow">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="font-heading text-xl font-semibold">{selected.name}</h2>
+              <p className="mt-1 text-caption text-text-secondary capitalize">
+                {selected.type} · {selected.distanceKm.toFixed(1)} km away
+                {selected.phone && (
+                  <span className="normal-case text-accent-secondary"> · 📞 {selected.phone}</span>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => setSelected(null)}
+              aria-label="Close"
+              className="shrink-0 text-text-muted hover:text-text-primary"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {selected.phone ? (
+              <Button as="a" href={`tel:${selected.phone}`} size="md">
+                📞 Call reception
+              </Button>
+            ) : (
+              <Button as="a" href={placeUrl(selected)} target="_blank" rel="noopener" size="md">
+                Find number in Maps
+              </Button>
+            )}
+            <Button as="a" href={dirUrl(selected)} target="_blank" rel="noopener" variant="secondary" size="md">
+              Directions
+            </Button>
+            <Button as="a" href={shareUrl(selected)} target="_blank" rel="noopener" variant="ghost" size="md">
+              Share
+            </Button>
+          </div>
+          {!selected.phone && (
+            <p className="mt-3 text-caption text-text-muted">
+              No reception number is listed in OpenStreetMap for this facility — open it in Maps to
+              find and call.
+            </p>
+          )}
+        </Card>
+      )}
 
       {/* Results list */}
       {results.length > 0 && (
@@ -143,13 +227,13 @@ export default function Doctors() {
           <ul className="divide-y divide-white/[0.06]">
             {results.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-text-primary">{p.name}</p>
+                <button onClick={() => setSelected(p)} className="min-w-0 text-left">
+                  <p className="truncate font-medium text-text-primary hover:text-accent-secondary">{p.name}</p>
                   <p className="text-caption text-text-muted capitalize">
                     {p.type} · {p.distanceKm.toFixed(1)} km away
                     {p.phone && <span className="normal-case text-accent-secondary"> · 📞 {p.phone}</span>}
                   </p>
-                </div>
+                </button>
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {p.phone ? (
                     <a

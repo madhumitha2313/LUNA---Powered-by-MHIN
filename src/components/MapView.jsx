@@ -76,7 +76,9 @@ async function fetchPlaces(center, onResults, onError) {
   }
 }
 
-export default function MapView({ center, onResults, onError, className = '' }) {
+export default function MapView({ center, onResults, onError, onSelect, className = '' }) {
+  const selectRef = useRef(onSelect)
+  selectRef.current = onSelect
   const elRef = useRef(null)
   const mapRef = useRef(null)
   const layerRef = useRef(null)
@@ -112,9 +114,11 @@ export default function MapView({ center, onResults, onError, className = '' }) 
       onResults?.(places)
       places.forEach((p) => {
         const phoneLine = p.phone ? `<br/><a href="tel:${p.phone}">📞 ${p.phone}</a>` : ''
-        L.marker([p.lat, p.lng], { icon: CLINIC_ICON })
+        const m = L.marker([p.lat, p.lng], { icon: CLINIC_ICON })
           .addTo(layer)
           .bindPopup(`<strong>${p.name}</strong><br/>${p.type} · ${p.distanceKm.toFixed(1)} km${phoneLine}`)
+        // Tapping a pin also surfaces the styled detail card in the app UI.
+        m.on('click', () => selectRef.current?.(p))
       })
     }, onError)
     return () => {
