@@ -34,46 +34,66 @@ function haversineKm(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s))
 }
 
+// The public Overpass servers are shared and frequently busy, so we try a few
+// mirrors in turn (each with a timeout) before giving up.
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+]
+
+function parseElements(data, center) {
+  return (data.elements || [])
+    .map((el) => {
+      const plat = el.lat ?? el.center?.lat
+      const plng = el.lon ?? el.center?.lon
+      if (plat == null || plng == null) return null
+      const t = el.tags || {}
+      return {
+        id: el.id,
+        name: t.name || (t.amenity ? t.amenity + ' (unnamed)' : 'Healthcare facility'),
+        type: t.amenity || 'clinic',
+        phone: t.phone || t['contact:phone'] || t['contact:mobile'] || t['contact:landline'] || null,
+        lat: plat,
+        lng: plng,
+        distanceKm: haversineKm(center, { lat: plat, lng: plng }),
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 20)
+}
+
 async function fetchPlaces(center, onResults, onError) {
   const { lat, lng } = center
-  const q = `[out:json][timeout:20];(
+  const q = `[out:json][timeout:25];(
     node["amenity"~"hospital|clinic|doctors"](around:6000,${lat},${lng});
     way["amenity"~"hospital|clinic|doctors"](around:6000,${lat},${lng});
   );out center 40;`
-  try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: 'data=' + encodeURIComponent(q),
-    })
-    if (!res.ok) throw new Error('overpass ' + res.status)
-    const data = await res.json()
-    const places = (data.elements || [])
-      .map((el) => {
-        const plat = el.lat ?? el.center?.lat
-        const plng = el.lon ?? el.center?.lon
-        if (plat == null || plng == null) return null
-        const t = el.tags || {}
-        return {
-          id: el.id,
-          name: t.name || (t.amenity ? t.amenity + ' (unnamed)' : 'Healthcare facility'),
-          type: t.amenity || 'clinic',
-          // Reception / contact number when OSM has it.
-          phone: t.phone || t['contact:phone'] || t['contact:mobile'] || t['contact:landline'] || null,
-          lat: plat,
-          lng: plng,
-          distanceKm: haversineKm(center, { lat: plat, lng: plng }),
-        }
+
+  for (const url of OVERPASS_ENDPOINTS) {
+    try {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 18000)
+      const res = await fetch(url, {
+        method: 'POST',
+        body: 'data=' + encodeURIComponent(q),
+        signal: ctrl.signal,
       })
-      .filter(Boolean)
-      .sort((a, b) => a.distanceKm - b.distanceKm)
-      .slice(0, 20)
-    onResults(places)
-    return places
-  } catch (err) {
-    onError?.(err)
-    onResults([])
-    return []
+      clearTimeout(timer)
+      if (!res.ok) continue // busy/rate-limited — try the next mirror
+      const data = await res.json()
+      const places = parseElements(data, center)
+      onResults(places)
+      return places
+    } catch {
+      // timeout / network / CORS on this mirror — fall through to the next
+    }
   }
+  // Every mirror was busy or unreachable.
+  onError?.(new Error('all overpass endpoints unavailable'))
+  onResults([])
+  return []
 }
 
 export default function MapView({ center, onResults, onError, onSelect, className = '' }) {

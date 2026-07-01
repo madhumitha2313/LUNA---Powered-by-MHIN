@@ -62,8 +62,12 @@ export default function Doctors() {
     }
   }
 
+  function onResults(list) {
+    setResults(list)
+    if (list.length) setStatus('') // a mirror came through — clear any busy message
+  }
   function onError() {
-    setStatus('Live clinic data is busy right now — try again, or use “Open in Google Maps”.')
+    setStatus('OpenStreetMap’s servers are busy right now — tap “Use my location”/“Go” to retry, or use “Open in Google Maps” below.')
   }
 
   const dirUrl = (p) => `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`
@@ -144,7 +148,7 @@ export default function Doctors() {
       <Card className="mt-6 overflow-hidden p-0">
         <MapView
           center={center}
-          onResults={setResults}
+          onResults={onResults}
           onSelect={setSelected}
           onError={onError}
           className="h-80 w-full"
