@@ -5,11 +5,12 @@ import { MicIcon } from '../ui/icons'
 
 /**
  * Top navigation. Glass blur is used here and ONLY here per the design rules.
+ * Every item routes to a real page.
  */
 const LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'How it works', href: '#problem' },
-  { label: 'Dashboard', href: '/home', route: true },
+  { label: 'Features', to: '/features' },
+  { label: 'How it works', to: '/how-it-works' },
+  { label: 'Dashboard', to: '/home' },
 ]
 
 export default function Navbar() {
@@ -21,31 +22,26 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {LINKS.map((l) =>
-            l.route ? (
-              <Link
-                key={l.href}
-                to={l.href}
-                className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
-              >
-                {l.label}
-              </Link>
-            ) : (
-              <a
-                key={l.href}
-                href={l.href}
-                className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
-              >
-                {l.label}
-              </a>
-            )
-          )}
+          {LINKS.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
+            >
+              {l.label}
+            </Link>
+          ))}
         </div>
 
-        <Button as={Link} to="/voice" size="sm" className="shrink-0">
-          <MicIcon size={16} />
-          Talk to Luna
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button as={Link} to="/login" variant="ghost" size="sm" className="hidden sm:inline-flex">
+            Log in
+          </Button>
+          <Button as={Link} to="/voice" size="sm" className="shrink-0">
+            <MicIcon size={16} />
+            Talk to Luna
+          </Button>
+        </div>
       </nav>
     </header>
   )
