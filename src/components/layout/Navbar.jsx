@@ -4,6 +4,7 @@ import Logo from '../Logo'
 import Button from '../ui/Button'
 import { MicIcon } from '../ui/icons'
 import { getProfile } from '../../lib/localStore'
+import { logout } from '../../lib/auth'
 
 /**
  * Top navigation. Glass blur is used here and ONLY here per the design rules.
@@ -99,6 +100,17 @@ function ProfileMenu({ initials, name }) {
           <MenuLink to="/home" onClick={() => setOpen(false)}>
             Dashboard
           </MenuLink>
+          <div className="my-1 h-px bg-white/[0.06]" />
+          <button
+            onClick={async () => {
+              await logout()
+              setOpen(false)
+              window.location.assign(import.meta.env.BASE_URL || '/')
+            }}
+            className="block w-full rounded-lg px-3 py-2 text-left text-[0.95rem] text-danger transition-colors duration-250 hover:bg-white/5"
+          >
+            Log out
+          </button>
         </div>
       )}
     </div>

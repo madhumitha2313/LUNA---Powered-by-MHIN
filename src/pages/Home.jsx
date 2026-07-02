@@ -12,6 +12,7 @@ import {
   SparklesIcon,
   StethoscopeIcon,
   UsersIcon,
+  TrendIcon,
   ArrowRightIcon,
   MoonIcon,
 } from '../components/ui/icons'
@@ -40,6 +41,7 @@ const QUICK_ACTIONS = [
   { label: 'My Report', to: '/report', icon: FileIcon, tone: 'text-success' },
   { label: 'Find Doctor', to: '/doctors', icon: StethoscopeIcon, tone: 'text-accent-secondary' },
   { label: 'Readiness Guide', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai' },
+  { label: 'Leave Report', to: '/impact', icon: TrendIcon, tone: 'text-success' },
 ]
 
 export default function Home() {

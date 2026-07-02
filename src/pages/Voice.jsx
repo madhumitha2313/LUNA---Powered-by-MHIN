@@ -10,6 +10,7 @@ import { ArrowRightIcon, SparklesIcon, MicIcon, LeafIcon, HeartIcon } from '../c
 import { speechSupported, createRecognizer, speak, stopSpeaking } from '../lib/browserVoice'
 import { extractFields, respond, glossFields } from '../lib/tamilExtract'
 import { addLog, getCycleStats } from '../lib/localStore'
+import { detectSentiment, crisisResponse, comfortOpener } from '../lib/sentiment'
 
 /**
  * Voice screen — LIVE in the browser.
@@ -27,6 +28,7 @@ export default function Voice() {
   const [chips, setChips] = useState([])
   const [confidence, setConfidence] = useState(0)
   const [recs, setRecs] = useState(null)
+  const [crisis, setCrisis] = useState(null)
   const [typed, setTyped] = useState('')
   const recRef = useRef(null)
   const scrollRef = useRef(null)
@@ -45,8 +47,25 @@ export default function Voice() {
     if (!transcript.trim()) return
     setTurns((t) => [...t, { role: 'user', text: transcript }])
     setInterim('')
-    setState('thinking')
 
+    const sentiment = detectSentiment(transcript)
+
+    // Safety first: any sign of self-harm → comfort + real helplines, nothing else.
+    if (sentiment === 'crisis') {
+      const c = crisisResponse()
+      setCrisis(c)
+      setChips([])
+      setRecs(null)
+      setConfidence(0)
+      setTurns((t) => [...t, { role: 'mira', text: c.message }])
+      setState('speaking')
+      stopSpeaking()
+      speak(c.speech)
+      setTimeout(() => setState('idle'), 1400)
+      return // never log or "extract" from crisis speech
+    }
+
+    setState('thinking')
     setTimeout(() => {
       const result = extractFields(transcript)
       const gloss = glossFields(result.fields)
@@ -58,7 +77,8 @@ export default function Voice() {
       }
 
       const phase = getCycleStats().phase || null
-      const { speech, recommendations } = respond({ transcript, result, phase })
+      let { speech, recommendations } = respond({ transcript, result, phase })
+      if (sentiment === 'low') speech = comfortOpener() + ' ' + speech // acknowledge feelings first
       setRecs(recommendations)
       setTurns((t) => [...t, { role: 'mira', text: speech }])
       setState('speaking')
@@ -130,6 +150,37 @@ export default function Voice() {
         <p className="mt-2 text-center text-text-secondary">
           தமிழில் பேசுங்கள் — “என்ன சாப்பிடலாம்?”, “ரொம்ப வலி” … எதையும் கேளுங்கள்.
         </p>
+
+        {/* Crisis support — shown when distress is detected. Calm, not alarming. */}
+        {crisis && (
+          <div className="mt-6 w-full max-w-xl rounded-card border border-accent-primary/40 bg-accent-primary/[0.08] p-5 shadow-glow">
+            <div className="flex items-center gap-2">
+              <HeartIcon size={20} className="text-accent-secondary" />
+              <h2 className="font-heading text-lg font-semibold">{crisis.title}</h2>
+            </div>
+            <p className="mt-2 text-left text-[0.95rem] leading-relaxed text-text-secondary">
+              {crisis.message}
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {crisis.helplines.map((h) => (
+                <a
+                  key={h.number}
+                  href={`tel:${h.number}`}
+                  className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-left transition-colors duration-250 hover:bg-white/[0.09]"
+                >
+                  <span className="text-caption text-text-secondary">{h.name}</span>
+                  <span className="font-stat font-semibold text-accent-secondary">📞 {h.display}</span>
+                </a>
+              ))}
+            </div>
+            <button
+              onClick={() => setCrisis(null)}
+              className="mt-4 text-caption text-text-muted hover:text-text-primary"
+            >
+              I'm safe for now — close
+            </button>
+          </div>
+        )}
 
         <VoiceOrb state={state === 'speaking' ? 'thinking' : state} onClick={startListening} className="my-8" />
 
