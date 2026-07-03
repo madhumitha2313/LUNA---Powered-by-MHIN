@@ -10,7 +10,7 @@
  * null and the data layer returns empty results instead of throwing.
  */
 import { Client, Account, Databases } from 'appwrite'
-import { appwriteConfig, isAppwriteConfigured } from './config'
+import { appwriteConfig, isAppwriteConfigured, isAppwriteDataConfigured } from './config'
 
 let client = null
 let account = null
@@ -23,4 +23,4 @@ if (isAppwriteConfigured) {
 }
 
 export { client, account, databases }
-export { appwriteConfig, isAppwriteConfigured }
+export { appwriteConfig, isAppwriteConfigured, isAppwriteDataConfigured }

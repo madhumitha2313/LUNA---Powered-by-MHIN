@@ -13,6 +13,8 @@ import Doctors from './pages/Doctors'
 import Profile from './pages/Profile'
 import Guide from './pages/Guide'
 import Impact from './pages/Impact'
+import Settings from './pages/Settings'
+import Timeline from './pages/Timeline'
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/guide" element={<Guide />} />
       <Route path="/impact" element={<Impact />} />
+      <Route path="/timeline" element={<Timeline />} />
+      <Route path="/settings" element={<Settings />} />
     </Routes>
   )
 }

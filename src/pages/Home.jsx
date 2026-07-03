@@ -18,7 +18,7 @@ import {
 } from '../components/ui/icons'
 import { getCurrentUser } from '../lib/auth'
 import { getRecentLogs } from '../lib/logs'
-import { isAppwriteConfigured } from '../lib/config'
+import { isAppwriteDataConfigured } from '../lib/config'
 import { getLogs as getLocalLogs, getCycleStats } from '../lib/localStore'
 
 function greeting(h = new Date().getHours()) {
@@ -57,7 +57,7 @@ export default function Home() {
       if (!alive) return
       setUser(u)
       // Real data: Appwrite when configured, else the browser-local check-ins.
-      const recent = isAppwriteConfigured && u ? await getRecentLogs(u.$id, 7) : getLocalLogs().slice(0, 7)
+      const recent = isAppwriteDataConfigured && u ? await getRecentLogs(u.$id, 7) : getLocalLogs().slice(0, 7)
       if (!alive) return
       setLogs(recent)
       setLoading(false)

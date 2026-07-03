@@ -9,7 +9,7 @@ import Button from '../components/ui/Button'
 import { ArrowRightIcon, SparklesIcon, MicIcon, LeafIcon, HeartIcon } from '../components/ui/icons'
 import { speechSupported, createRecognizer, speak, stopSpeaking } from '../lib/browserVoice'
 import { extractFields, respond, glossFields } from '../lib/tamilExtract'
-import { addLog, getCycleStats } from '../lib/localStore'
+import { addLog, getCycleStats, getSettings } from '../lib/localStore'
 import { detectSentiment, crisisResponse, comfortOpener } from '../lib/sentiment'
 
 /**
@@ -161,6 +161,17 @@ export default function Voice() {
             <p className="mt-2 text-left text-[0.95rem] leading-relaxed text-text-secondary">
               {crisis.message}
             </p>
+            {getSettings().emergencyPhone && (
+              <a
+                href={`tel:${getSettings().emergencyPhone}`}
+                className="mt-4 flex items-center justify-between gap-2 rounded-xl border border-accent-primary/40 bg-accent-primary/15 px-4 py-3 transition-colors duration-250 hover:bg-accent-primary/25"
+              >
+                <span className="text-[0.95rem] font-medium text-text-primary">
+                  Call {getSettings().emergencyName || 'your emergency contact'}
+                </span>
+                <span className="font-stat font-semibold text-accent-secondary">📞 {getSettings().emergencyPhone}</span>
+              </a>
+            )}
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               {crisis.helplines.map((h) => (
                 <a

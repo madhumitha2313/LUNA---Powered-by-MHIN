@@ -100,6 +100,12 @@ function ProfileMenu({ initials, name }) {
           <MenuLink to="/home" onClick={() => setOpen(false)}>
             Dashboard
           </MenuLink>
+          <MenuLink to="/timeline" onClick={() => setOpen(false)}>
+            Timeline
+          </MenuLink>
+          <MenuLink to="/settings" onClick={() => setOpen(false)}>
+            Settings
+          </MenuLink>
           <div className="my-1 h-px bg-white/[0.06]" />
           <button
             onClick={async () => {

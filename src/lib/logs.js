@@ -6,7 +6,7 @@
  * honest empty states rather than crashing or inventing data.
  */
 import { Query, Permission, Role, ID } from 'appwrite'
-import { databases, isAppwriteConfigured } from './appwrite'
+import { databases, isAppwriteDataConfigured } from './appwrite'
 import { appwriteConfig } from './config'
 
 const DB = appwriteConfig.databaseId
@@ -14,7 +14,7 @@ const COLL = appwriteConfig.collections.logs
 
 /** Most-recent logs for a user, newest first. Returns [] when unconfigured. */
 export async function getRecentLogs(userId, limit = 10) {
-  if (!isAppwriteConfigured || !userId) return []
+  if (!isAppwriteDataConfigured || !userId) return []
   const res = await databases.listDocuments(DB, COLL, [
     Query.equal('userId', userId),
     Query.orderDesc('date'),
@@ -29,7 +29,7 @@ export async function getRecentLogs(userId, limit = 10) {
  * the collection's documentSecurity setting.
  */
 export async function createLog(userId, fields) {
-  if (!isAppwriteConfigured || !userId) throw new Error('Appwrite not configured')
+  if (!isAppwriteDataConfigured || !userId) throw new Error('Appwrite not configured')
   return databases.createDocument(DB, COLL, ID.unique(), { userId, ...fields }, [
     Permission.read(Role.user(userId)),
     Permission.update(Role.user(userId)),

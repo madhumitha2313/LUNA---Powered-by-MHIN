@@ -10,6 +10,8 @@ const LOGS_KEY = 'mira.logs.v1'
 const PERIODS_KEY = 'mira.periods.v1'
 const SYMPTOMS_KEY = 'mira.symptoms.v1'
 const PROFILE_KEY = 'mira.profile.v1'
+const APPWRITE_KEY = 'mira.appwrite.v1'
+const SETTINGS_KEY = 'mira.settings.v1'
 
 function read(key, fallback) {
   try {
@@ -122,7 +124,7 @@ export function saveProfile(patch) {
   return next
 }
 
-/** Wipe every locally-stored MIRA record (used by the profile's delete action). */
+/** Wipe every locally-stored MIRA HEALTH record (keeps the Appwrite connection). */
 export function clearAllData() {
   ;[LOGS_KEY, PERIODS_KEY, SYMPTOMS_KEY, PROFILE_KEY].forEach((k) => {
     try {
@@ -131,4 +133,34 @@ export function clearAllData() {
       /* ignore */
     }
   })
+}
+
+// ── Appwrite runtime connection (browser-safe: endpoint + project id only) ────
+export function getAppwriteConfig() {
+  return read(APPWRITE_KEY, { endpoint: '', projectId: '', databaseId: '' })
+}
+export function saveAppwriteConfig(cfg) {
+  write(APPWRITE_KEY, { ...getAppwriteConfig(), ...cfg })
+  return getAppwriteConfig()
+}
+export function clearAppwriteConfig() {
+  try {
+    localStorage.removeItem(APPWRITE_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+// ── App settings (emergency contact, language, notifications) ─────────────────
+export function getSettings() {
+  return read(SETTINGS_KEY, {
+    language: 'English',
+    notifications: true,
+    emergencyName: '',
+    emergencyPhone: '',
+  })
+}
+export function saveSettings(patch) {
+  write(SETTINGS_KEY, { ...getSettings(), ...patch })
+  return getSettings()
 }
