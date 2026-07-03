@@ -5,6 +5,7 @@ import Button from '../ui/Button'
 import { MicIcon } from '../ui/icons'
 import { getProfile } from '../../lib/localStore'
 import { logout } from '../../lib/auth'
+import { useT } from '../../lib/i18n.jsx'
 
 /**
  * Top navigation. Glass blur is used here and ONLY here per the design rules.
@@ -19,6 +20,7 @@ const LINKS = [
 ]
 
 export default function Navbar() {
+  const { t } = useT()
   const profile = getProfile()
   const initials = (profile.name || 'M').trim().slice(0, 1).toUpperCase()
 
@@ -43,11 +45,11 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2.5">
           <Button as={Link} to="/login" variant="ghost" size="sm" className="hidden sm:inline-flex">
-            Log in
+            {t('navLogin')}
           </Button>
           <Button as={Link} to="/voice" size="sm" className="shrink-0">
             <MicIcon size={16} />
-            <span className="hidden sm:inline">Talk to Mira</span>
+            <span className="hidden sm:inline">{t('navTalk')}</span>
           </Button>
           <ProfileMenu initials={initials} name={profile.name} />
         </div>

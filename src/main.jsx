@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 import App from './App.jsx'
+import { LanguageProvider } from './lib/i18n.jsx'
 import './index.css'
 
 // The single-file / file:// preview uses hash routing so navigation works with
@@ -16,7 +17,9 @@ const routerProps = useHash ? {} : { basename }
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Router {...routerProps}>
-      <App />
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
     </Router>
   </React.StrictMode>
 )

@@ -1,7 +1,15 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { isOnboarded } from './lib/i18n.jsx'
 import Landing from './pages/Landing'
 import Voice from './pages/Voice'
 import Home from './pages/Home'
+import Onboarding from './pages/Onboarding'
+import Legal from './pages/Legal'
+
+/** First-run gate: send new users through onboarding before the app. */
+function RequireOnboarding({ children }) {
+  return isOnboarded() ? children : <Navigate to="/onboarding" replace />
+}
 import Login from './pages/Login'
 import Features from './pages/Features'
 import HowItWorks from './pages/HowItWorks'
@@ -21,8 +29,11 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/voice" element={<Voice />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/terms" element={<Legal doc="terms" />} />
+      <Route path="/privacy" element={<Legal doc="privacy" />} />
+      <Route path="/home" element={<RequireOnboarding><Home /></RequireOnboarding>} />
+      <Route path="/voice" element={<RequireOnboarding><Voice /></RequireOnboarding>} />
       <Route path="/login" element={<Login />} />
       <Route path="/features" element={<Features />} />
       <Route path="/how-it-works" element={<HowItWorks />} />

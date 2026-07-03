@@ -19,12 +19,13 @@ import {
 import { getCurrentUser } from '../lib/auth'
 import { getRecentLogs } from '../lib/logs'
 import { isAppwriteDataConfigured } from '../lib/config'
-import { getLogs as getLocalLogs, getCycleStats } from '../lib/localStore'
+import { getLogs as getLocalLogs, getCycleStats, getProfile } from '../lib/localStore'
+import { useT } from '../lib/i18n.jsx'
 
-function greeting(h = new Date().getHours()) {
-  if (h < 12) return 'Good Morning'
-  if (h < 17) return 'Good Afternoon'
-  return 'Good Evening'
+function greetingKey(h = new Date().getHours()) {
+  if (h < 12) return 'greetMorning'
+  if (h < 17) return 'greetAfternoon'
+  return 'greetEvening'
 }
 
 const PHASE_LABEL = {
@@ -45,6 +46,7 @@ const QUICK_ACTIONS = [
 ]
 
 export default function Home() {
+  const { t } = useT()
   const [user, setUser] = useState(null)
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -67,7 +69,7 @@ export default function Home() {
     }
   }, [])
 
-  const name = user?.name?.split(' ')[0] || 'there'
+  const name = (user?.name || getProfile().name || 'there').split(' ')[0]
   const latest = logs[0]
 
   return (
@@ -77,17 +79,17 @@ export default function Home() {
         <div className="flex items-center gap-2 animate-fade-up delay-0">
           <MoonIcon size={22} className="text-accent-secondary" />
           <h1 className="font-heading text-2xl font-semibold sm:text-3xl">
-            {greeting()}, {name}
+            {t(greetingKey())}, {name}
           </h1>
         </div>
-        <p className="mt-2 text-text-secondary animate-fade-up delay-1">How are you feeling today?</p>
+        <p className="mt-2 text-text-secondary animate-fade-up delay-1">{t('howFeeling')}</p>
 
         {/* Mic hub */}
         <Card className="mt-8 flex flex-col items-center gap-6 bg-bg-secondary/40 py-12 animate-fade-up delay-2">
           <VoiceOrb state="idle" onClick={() => {}} className="scale-90" />
           <Link to="/voice">
             <Badge tone="accent" icon={<MicIcon size={14} />} className="cursor-pointer">
-              Tap to talk to Mira
+              {t('tapToTalk')}
             </Badge>
           </Link>
         </Card>
