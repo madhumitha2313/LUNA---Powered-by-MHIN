@@ -4,10 +4,15 @@ import Logo from '../components/Logo'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT, LANGS, setOnboarded } from '../lib/i18n'
-import { saveProfile, saveSettings } from '../lib/localStore'
+import { saveProfile, saveSettings, addPeriod } from '../lib/localStore'
 import { isAppwriteConfigured, account } from '../lib/appwrite'
 
 const YEARS = Array.from({ length: 2015 - 1955 + 1 }, (_, i) => 2015 - i) // 2015 → 1955
+
+// Steps that carry the 1/5 … 5/5 progress bar (the cycle-setup wizard).
+const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod']
+// Order used by the ← back button (splash and the loader are excluded).
+const ORDER = ['lang', 'consent', 'signup', ...TRACKED, 'reminders']
 
 export default function Onboarding() {
   const { t, lang, setLang } = useT()
@@ -15,6 +20,13 @@ export default function Onboarding() {
   const [step, setStep] = useState('splash')
   const [name, setName] = useState('')
   const [year, setYear] = useState(2003)
+  const [periodLen, setPeriodLen] = useState(5)
+  const [cycleLen, setCycleLen] = useState(28)
+  const [lastPeriod, setLastPeriod] = useState(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  })
   const [consent, setConsent] = useState({ tos: false, privacy: false, health: false })
   const [consentErr, setConsentErr] = useState(false)
 
@@ -25,31 +37,54 @@ export default function Onboarding() {
     return () => clearTimeout(timer)
   }, [step])
 
-  function finish(dest = '/home') {
+  // Persist everything the user entered (called once we reach the loader).
+  function persistAll(reminders) {
     if (name.trim()) saveProfile({ name: name.trim() })
-    saveProfile({ birthYear: year })
-    saveSettings({ language: LANGS.find((l) => l.code === lang)?.label || 'English' })
+    saveProfile({ birthYear: year, periodLength: periodLen, cycleLength: cycleLen })
+    addPeriod(lastPeriod.toISOString())
+    saveSettings({
+      language: LANGS.find((l) => l.code === lang)?.label || 'English',
+      notifications: !!reminders,
+    })
     setOnboarded(true)
-    navigate(dest)
   }
 
+  // Personalising loader → persist, then into the app.
+  useEffect(() => {
+    if (step !== 'personalizing') return
+    const timer = setTimeout(() => navigate('/home'), 2400)
+    return () => clearTimeout(timer)
+  }, [step, navigate])
+
   function chooseGoogle() {
-    setOnboarded(true)
     if (name.trim()) saveProfile({ name: name.trim() })
     const isFile = typeof window !== 'undefined' && window.location.protocol === 'file:'
     if (isAppwriteConfigured && account && !isFile) {
       const base = window.location.origin + window.location.pathname
       try {
-        account.createOAuth2Session('google', base + '#/home', base + '#/login')
+        account.createOAuth2Session('google', base + '#/onboarding', base + '#/onboarding')
         return
       } catch {
-        /* provider not enabled — fall through */
+        /* provider not enabled — fall through into the setup wizard */
       }
     }
-    finish('/home')
+    setStep('name')
+  }
+
+  async function askReminders(allow) {
+    if (allow && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission()
+      } catch {
+        /* ignore — the toggle in Settings still works */
+      }
+    }
+    persistAll(allow)
+    setStep('personalizing')
   }
 
   const allConsent = consent.tos && consent.privacy && consent.health
+  const trackedIndex = TRACKED.indexOf(step)
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-bg-primary">
@@ -81,15 +116,56 @@ export default function Onboarding() {
         </div>
       )}
 
+      {/* PERSONALISING LOADER */}
+      {step === 'personalizing' && (
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
+          <div className="relative flex h-36 w-36 items-center justify-center">
+            <svg className="h-36 w-36 -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+              <circle
+                cx="50"
+                cy="50"
+                r="44"
+                fill="none"
+                stroke="#D97BA8"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray="276"
+                strokeDashoffset="70"
+                className="animate-spin"
+                style={{ transformOrigin: '50% 50%' }}
+              />
+            </svg>
+            <span className="absolute font-stat text-3xl font-bold text-text-primary">{cycleLen}</span>
+          </div>
+          <h1 className="mt-8 text-center font-heading text-2xl font-semibold tracking-tight">
+            {t('personalizing')}
+          </h1>
+          <p className="mt-2 text-center text-text-secondary">{t('personalizingSub')}</p>
+          <p className="mt-5 rounded-pill bg-white/[0.05] px-4 py-1.5 text-caption text-text-secondary">
+            {t('avgCycleLabel')}: {cycleLen} {t('daysUnit').toLowerCase()}
+          </p>
+        </div>
+      )}
+
       {/* Steps share a header + footer */}
-      {step !== 'splash' && (
+      {step !== 'splash' && step !== 'personalizing' && (
         <>
           <header className="relative z-10 mx-auto flex w-full max-w-md items-center justify-between px-5 py-5">
-            <button onClick={() => back(step, setStep)} className="text-accent-secondary hover:text-text-primary">
+            <button
+              onClick={() => back(step, setStep)}
+              className="text-accent-secondary transition-colors hover:text-text-primary"
+            >
               ← {t('back')}
             </button>
             <Logo />
           </header>
+
+          {trackedIndex >= 0 && (
+            <div className="relative z-10 mx-auto w-full max-w-md px-5">
+              <ProgressBar step={trackedIndex + 1} total={TRACKED.length} />
+            </div>
+          )}
 
           <main className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-5">
             {/* LANGUAGE */}
@@ -120,47 +196,7 @@ export default function Onboarding() {
                     </button>
                   ))}
                 </div>
-                <Footer onNext={() => setStep('name')} label={t('cont')} />
-              </Step>
-            )}
-
-            {/* NAME */}
-            {step === 'name' && (
-              <Step title={t('nameTitle')} subtitle={t('nameSubtitle')}>
-                <input
-                  autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t('namePlaceholder')}
-                  className="mt-8 w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-center text-xl text-text-primary placeholder:text-text-muted focus:border-accent-primary/40 focus:outline-none"
-                />
-                <Footer onNext={() => setStep('birth')} label={t('next')} disabled={!name.trim()} />
-              </Step>
-            )}
-
-            {/* BIRTH YEAR */}
-            {step === 'birth' && (
-              <Step title={t('birthTitle')} subtitle={t('birthSubtitle')}>
-                <div className="mt-6 h-64 overflow-y-auto rounded-2xl border border-white/[0.06] bg-white/[0.02] py-24 [scrollbar-width:none]">
-                  {YEARS.map((y) => (
-                    <button
-                      key={y}
-                      onClick={() => setYear(y)}
-                      className={`block w-full py-3 text-center transition-all duration-250 ${
-                        y === year
-                          ? 'text-2xl font-semibold text-text-primary'
-                          : 'text-lg text-text-muted hover:text-text-secondary'
-                      }`}
-                    >
-                      {y === year ? (
-                        <span className="mx-auto inline-block rounded-pill bg-white/[0.06] px-8 py-1.5">{y}</span>
-                      ) : (
-                        y
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <Footer onNext={() => setStep('consent')} label={t('next')} />
+                <Footer onNext={() => setStep('consent')} label={t('cont')} />
               </Step>
             )}
 
@@ -203,13 +239,13 @@ export default function Onboarding() {
                     <GoogleG /> {t('signupGoogle')}
                   </button>
                   <button
-                    onClick={() => finish('/login')}
+                    onClick={() => setStep('name')}
                     className="flex w-full items-center justify-center gap-2 rounded-pill border border-accent-primary/40 bg-accent-primary/10 px-5 py-3.5 font-medium text-accent-secondary hover:bg-accent-primary/20"
                   >
                     {t('signupEmail')}
                   </button>
                   <button
-                    onClick={() => finish('/home')}
+                    onClick={() => setStep('name')}
                     className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary"
                   >
                     {t('signupGuest')}
@@ -217,10 +253,97 @@ export default function Onboarding() {
                 </div>
                 <p className="mt-6 text-center text-caption text-text-muted">
                   {t('signupHave')}{' '}
-                  <button onClick={() => finish('/login')} className="text-accent-secondary hover:underline">
+                  <button
+                    onClick={() => {
+                      setOnboarded(true)
+                      navigate('/login')
+                    }}
+                    className="text-accent-secondary hover:underline"
+                  >
                     {t('signin')}
                   </button>
                 </p>
+              </Step>
+            )}
+
+            {/* NAME — 1/5 */}
+            {step === 'name' && (
+              <Step title={t('nameTitle')} subtitle={t('nameSubtitle')}>
+                <input
+                  autoFocus
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('namePlaceholder')}
+                  className="mt-8 w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-center text-xl text-text-primary placeholder:text-text-muted focus:border-accent-primary/40 focus:outline-none"
+                />
+                <Footer onNext={() => setStep('birth')} label={t('next')} disabled={!name.trim()} />
+              </Step>
+            )}
+
+            {/* BIRTH YEAR — 2/5 */}
+            {step === 'birth' && (
+              <Step title={t('birthTitle')} subtitle={t('birthSubtitle')}>
+                <div className="mt-6 h-64 overflow-y-auto rounded-2xl border border-white/[0.06] bg-white/[0.02] py-24 [scrollbar-width:none]">
+                  {YEARS.map((y) => (
+                    <button
+                      key={y}
+                      onClick={() => setYear(y)}
+                      className={`block w-full py-3 text-center transition-all duration-250 ${
+                        y === year
+                          ? 'text-2xl font-semibold text-text-primary'
+                          : 'text-lg text-text-muted hover:text-text-secondary'
+                      }`}
+                    >
+                      {y === year ? (
+                        <span className="mx-auto inline-block rounded-pill bg-white/[0.06] px-8 py-1.5">{y}</span>
+                      ) : (
+                        y
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <Footer onNext={() => setStep('periodLen')} label={t('next')} />
+              </Step>
+            )}
+
+            {/* PERIOD LENGTH — 3/5 */}
+            {step === 'periodLen' && (
+              <Step title={t('periodLenTitle')}>
+                <NumberPicker min={2} max={10} value={periodLen} onChange={setPeriodLen} unit={t('daysUnit')} />
+                <Footer onNext={() => setStep('cycleLen')} label={t('next')} />
+              </Step>
+            )}
+
+            {/* CYCLE LENGTH — 4/5 */}
+            {step === 'cycleLen' && (
+              <Step title={t('cycleLenTitle')}>
+                <NumberPicker min={21} max={40} value={cycleLen} onChange={setCycleLen} unit={t('daysUnit')} />
+                <Footer onNext={() => setStep('lastPeriod')} label={t('next')} />
+              </Step>
+            )}
+
+            {/* LAST PERIOD — 5/5 */}
+            {step === 'lastPeriod' && (
+              <Step title={t('lastPeriodTitle')}>
+                <MiniCalendar value={lastPeriod} onChange={setLastPeriod} />
+                <Footer onNext={() => setStep('reminders')} label={t('next')} />
+              </Step>
+            )}
+
+            {/* REMINDERS */}
+            {step === 'reminders' && (
+              <Step icon iconEl={<BellIcon />} title={t('remindersTitle')} subtitle={t('remindersSub')}>
+                <div className="mt-auto space-y-3 pt-10">
+                  <Button onClick={() => askReminders(true)} size="lg" className="w-full">
+                    {t('allow')}
+                  </Button>
+                  <button
+                    onClick={() => askReminders(false)}
+                    className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary"
+                  >
+                    {t('notNow')}
+                  </button>
+                </div>
               </Step>
             )}
           </main>
@@ -231,23 +354,38 @@ export default function Onboarding() {
 }
 
 function back(step, setStep) {
-  const order = ['lang', 'name', 'birth', 'consent', 'signup']
-  const i = order.indexOf(step)
-  if (i > 0) setStep(order[i - 1])
+  const i = ORDER.indexOf(step)
+  if (i > 0) setStep(ORDER[i - 1])
 }
 
-function Step({ title, subtitle, icon, children }) {
+function ProgressBar({ step, total }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-pill bg-white/[0.08]">
+        <div
+          className="h-full rounded-pill bg-gradient-to-r from-accent-secondary to-accent-primary transition-all duration-500 ease-luna"
+          style={{ width: `${(step / total) * 100}%` }}
+        />
+      </div>
+      <span className="font-stat text-caption text-text-muted">
+        {step}/{total}
+      </span>
+    </div>
+  )
+}
+
+function Step({ title, subtitle, icon, iconEl, children }) {
   return (
     <div className="flex flex-1 flex-col pb-8 pt-4">
       {icon && (
         <div className="mb-4 flex justify-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-primary/15 text-accent-secondary">
-            <ShieldIcon size={30} />
+            {iconEl || <ShieldIcon size={30} />}
           </span>
         </div>
       )}
       <h1 className="text-center font-heading text-3xl font-semibold tracking-tight">{title}</h1>
-      <p className="mx-auto mt-3 max-w-sm text-center text-text-secondary">{subtitle}</p>
+      {subtitle && <p className="mx-auto mt-3 max-w-sm text-center text-text-secondary">{subtitle}</p>}
       {children}
     </div>
   )
@@ -259,6 +397,109 @@ function Footer({ onNext, label, disabled }) {
       <Button onClick={onNext} size="lg" className="w-full" disabled={disabled}>
         {label} <ArrowRightIcon size={18} />
       </Button>
+    </div>
+  )
+}
+
+/** Horizontal wheel-style picker centred on the selected value. */
+function NumberPicker({ min, max, value, onChange, unit }) {
+  return (
+    <div className="mt-10 flex items-center justify-center gap-2">
+      {[-2, -1, 0, 1, 2].map((offset) => {
+        const v = value + offset
+        if (v < min || v > max) return <span key={offset} className="w-16" />
+        const center = offset === 0
+        return (
+          <button
+            key={offset}
+            onClick={() => onChange(v)}
+            className={`flex flex-col items-center transition-all duration-250 ${
+              center ? 'w-24' : 'w-16'
+            }`}
+          >
+            <span
+              className={
+                center
+                  ? 'flex h-24 w-24 items-center justify-center rounded-full border border-accent-primary/50 bg-accent-primary/10 font-stat text-4xl font-bold text-text-primary'
+                  : 'font-stat text-2xl text-text-muted'
+              }
+            >
+              {v}
+            </span>
+            {center && <span className="mt-3 text-caption text-accent-secondary">{unit}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Compact month calendar; future dates are disabled. */
+function MiniCalendar({ value, onChange }) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const [view, setView] = useState(() => new Date(value.getFullYear(), value.getMonth(), 1))
+  const y = view.getFullYear()
+  const m = view.getMonth()
+  const firstWeekday = new Date(y, m, 1).getDay()
+  const daysInMonth = new Date(y, m + 1, 0).getDate()
+  const monthLabel = view.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+  const canNext = new Date(y, m + 1, 1) <= new Date(today.getFullYear(), today.getMonth(), 1)
+
+  const cells = []
+  for (let i = 0; i < firstWeekday; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(y, m, d))
+
+  return (
+    <div className="mt-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+      <div className="flex items-center justify-between px-1 pb-3">
+        <button
+          onClick={() => setView(new Date(y, m - 1, 1))}
+          className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary hover:bg-white/5 hover:text-text-primary"
+          aria-label="Previous month"
+        >
+          ‹
+        </button>
+        <span className="font-heading text-lg font-semibold">{monthLabel}</span>
+        <button
+          onClick={() => canNext && setView(new Date(y, m + 1, 1))}
+          disabled={!canNext}
+          className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary hover:bg-white/5 hover:text-text-primary disabled:opacity-30"
+          aria-label="Next month"
+        >
+          ›
+        </button>
+      </div>
+      <div className="grid grid-cols-7 text-center text-caption text-text-muted">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => (
+          <span key={i} className="py-1">
+            {w}
+          </span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1 pt-1">
+        {cells.map((d, i) => {
+          if (!d) return <span key={i} />
+          const future = d > today
+          const selected = d.toDateString() === value.toDateString()
+          return (
+            <button
+              key={i}
+              disabled={future}
+              onClick={() => onChange(d)}
+              className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-[0.9rem] transition-colors duration-200 ${
+                selected
+                  ? 'bg-gradient-to-br from-accent-secondary to-accent-primary font-semibold text-bg-primary'
+                  : future
+                  ? 'text-text-muted/30'
+                  : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'
+              }`}
+            >
+              {d.getDate()}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -279,6 +520,15 @@ function ConsentRow({ checked, onToggle, children }) {
       </span>
       <span className="text-[0.95rem] leading-relaxed text-text-secondary">{children}</span>
     </button>
+  )
+}
+
+function BellIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
   )
 }
 

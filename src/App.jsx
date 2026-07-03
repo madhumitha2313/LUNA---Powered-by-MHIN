@@ -10,6 +10,11 @@ import Legal from './pages/Legal'
 function RequireOnboarding({ children }) {
   return isOnboarded() ? children : <Navigate to="/onboarding" replace />
 }
+
+/** Root: first-run users land in onboarding; returning users see the landing page. */
+function RootEntry() {
+  return isOnboarded() ? <Landing /> : <Navigate to="/onboarding" replace />
+}
 import Login from './pages/Login'
 import Features from './pages/Features'
 import HowItWorks from './pages/HowItWorks'
@@ -28,7 +33,7 @@ import Community from './pages/Community'
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<RootEntry />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/terms" element={<Legal doc="terms" />} />
       <Route path="/privacy" element={<Legal doc="privacy" />} />

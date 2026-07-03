@@ -75,7 +75,10 @@ export function getCycleStats() {
   for (let i = 1; i < dates.length; i++) {
     gaps.push(Math.round((dates[i] - dates[i - 1]) / 86400000))
   }
-  const avg = gaps.length ? Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length) : 28
+  // With <2 logged periods we can't measure a gap, so fall back to the cycle
+  // length the user gave during onboarding (defaults to 28).
+  const profileCycle = Number(getProfile().cycleLength) || 28
+  const avg = gaps.length ? Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length) : profileCycle
   const last = dates[dates.length - 1]
   const predictedNext = new Date(last.getTime() + avg * 86400000)
   const today = new Date()

@@ -5,6 +5,7 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { ShieldIcon, HeartIcon, SparklesIcon } from '../components/ui/icons'
 import { isAppwriteConfigured, isAppwriteDataConfigured, appwriteConfig } from '../lib/config'
+import { useT, LANGS } from '../lib/i18n.jsx'
 import {
   getAppwriteConfig,
   saveAppwriteConfig,
@@ -15,6 +16,7 @@ import {
 } from '../lib/localStore'
 
 export default function Settings() {
+  const { t, lang, setLang } = useT()
   const cfg = getAppwriteConfig()
   // Show the ACTIVE resolved config (baked-in MIRA project) so the fields reflect
   // what the app is really connected to, not just any local override.
@@ -135,14 +137,20 @@ export default function Settings() {
         <h2 className="mb-4 font-heading text-lg font-semibold">Preferences</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-caption text-text-muted">Default language</span>
+            <span className="mb-1.5 block text-caption text-text-muted">{t('appLanguage')}</span>
             <select
-              value={settings.language}
-              onChange={(e) => setSetting('language', e.target.value)}
+              value={lang}
+              onChange={(e) => {
+                const code = e.target.value
+                setLang(code) // switch the whole app immediately
+                setSetting('language', LANGS.find((l) => l.code === code)?.label || 'English')
+              }}
               className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary focus:border-accent-primary/40 focus:outline-none"
             >
-              {['English', 'Tamil', 'Telugu'].map((l) => (
-                <option key={l} value={l} className="bg-bg-card">{l}</option>
+              {LANGS.map((l) => (
+                <option key={l.code} value={l.code} className="bg-bg-card">
+                  {l.native} — {l.label}
+                </option>
               ))}
             </select>
           </label>
