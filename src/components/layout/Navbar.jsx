@@ -13,7 +13,8 @@ import { logout } from '../../lib/auth'
 const LINKS = [
   { label: 'Features', to: '/features' },
   { label: 'Conditions', to: '/conditions' },
-  { label: 'Readiness Guide', to: '/guide' },
+  { label: 'Community', to: '/community' },
+  { label: 'Guide', to: '/guide' },
   { label: 'Dashboard', to: '/home' },
 ]
 
