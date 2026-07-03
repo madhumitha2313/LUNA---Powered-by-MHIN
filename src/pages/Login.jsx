@@ -38,7 +38,9 @@ export default function Login() {
     e.preventDefault()
     setError('')
     if (form.name) saveProfile({ name: form.name })
-    if (!isAppwriteConfigured) {
+    // Real Appwrite auth needs an http(s) origin; the file:// preview stays local.
+    const isFile = typeof window !== 'undefined' && window.location.protocol === 'file:'
+    if (!isAppwriteConfigured || isFile) {
       navigate('/home')
       return
     }
@@ -205,10 +207,17 @@ export default function Login() {
             </Button>
           </form>
 
-          {!isAppwriteConfigured && (
-            <p className="mt-4 rounded-xl border border-accent-ai/20 bg-accent-ai/[0.06] px-3 py-2 text-caption text-text-secondary">
-              Preview mode — this opens the dashboard directly. Real sign-in activates once Appwrite is configured.
+          {isAppwriteConfigured && typeof window !== 'undefined' && window.location.protocol === 'file:' ? (
+            <p className="mt-4 rounded-xl border border-warning/20 bg-warning/[0.06] px-3 py-2 text-caption text-text-secondary">
+              Connected to Appwrite — but this double-click <code>file://</code> preview can't reach it. Run{' '}
+              <code>npm run dev</code> or open the deployed site to create a real account.
             </p>
+          ) : (
+            !isAppwriteConfigured && (
+              <p className="mt-4 rounded-xl border border-accent-ai/20 bg-accent-ai/[0.06] px-3 py-2 text-caption text-text-secondary">
+                Preview mode — this opens the dashboard directly.
+              </p>
+            )
           )}
 
           <p className="mt-6 text-center text-caption text-text-muted">

@@ -4,7 +4,7 @@ import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { ShieldIcon, HeartIcon, SparklesIcon } from '../components/ui/icons'
-import { isAppwriteConfigured, isAppwriteDataConfigured } from '../lib/config'
+import { isAppwriteConfigured, isAppwriteDataConfigured, appwriteConfig } from '../lib/config'
 import {
   getAppwriteConfig,
   saveAppwriteConfig,
@@ -16,10 +16,12 @@ import {
 
 export default function Settings() {
   const cfg = getAppwriteConfig()
+  // Show the ACTIVE resolved config (baked-in MIRA project) so the fields reflect
+  // what the app is really connected to, not just any local override.
   const [aw, setAw] = useState({
-    endpoint: cfg.endpoint || 'https://cloud.appwrite.io/v1',
-    projectId: cfg.projectId || '',
-    databaseId: cfg.databaseId || '',
+    endpoint: cfg.endpoint || appwriteConfig.endpoint,
+    projectId: cfg.projectId || appwriteConfig.projectId,
+    databaseId: cfg.databaseId || appwriteConfig.databaseId,
   })
   const [settings, setSettings] = useState(getSettings())
   const [savedMsg, setSavedMsg] = useState('')

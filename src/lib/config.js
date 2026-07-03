@@ -16,9 +16,15 @@ function runtimeAppwrite() {
 }
 const rt = runtimeAppwrite() || {}
 
+// The MIRA Appwrite project (public values — project id + endpoint are exposed
+// in every browser request; not secrets). A runtime override in Settings or a
+// VITE_* env var still takes precedence.
+const DEFAULT_ENDPOINT = 'https://fra.cloud.appwrite.io/v1'
+const DEFAULT_PROJECT_ID = '6a474b7b000721c88976'
+
 export const appwriteConfig = {
-  endpoint: rt.endpoint || import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1',
-  projectId: rt.projectId || import.meta.env.VITE_APPWRITE_PROJECT_ID || '',
+  endpoint: rt.endpoint || import.meta.env.VITE_APPWRITE_ENDPOINT || DEFAULT_ENDPOINT,
+  projectId: rt.projectId || import.meta.env.VITE_APPWRITE_PROJECT_ID || DEFAULT_PROJECT_ID,
   databaseId: rt.databaseId || import.meta.env.VITE_APPWRITE_DATABASE_ID || '',
   collections: {
     logs: import.meta.env.VITE_APPWRITE_COLLECTION_LOGS || 'logs',
