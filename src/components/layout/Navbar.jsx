@@ -12,11 +12,11 @@ import { useT } from '../../lib/i18n.jsx'
  * The right corner carries a profile menu (log in / profile).
  */
 const LINKS = [
-  { label: 'Features', to: '/features' },
-  { label: 'Conditions', to: '/conditions' },
-  { label: 'Community', to: '/community' },
-  { label: 'Guide', to: '/guide' },
-  { label: 'Dashboard', to: '/home' },
+  { key: 'navFeatures', to: '/features' },
+  { key: 'navConditions', to: '/conditions' },
+  { key: 'navCommunity', to: '/community' },
+  { key: 'navGuide', to: '/guide' },
+  { key: 'navDashboard', to: '/home' },
 ]
 
 export default function Navbar() {
@@ -27,7 +27,7 @@ export default function Navbar() {
   return (
     <header className="glass-nav fixed inset-x-0 top-0 z-50">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Link to="/" aria-label="MIRA home">
+        <Link to="/home" aria-label="MIRA home">
           <Logo withTagline />
         </Link>
 
@@ -38,7 +38,7 @@ export default function Navbar() {
               to={l.to}
               className="text-[0.95rem] text-text-secondary transition-colors duration-250 ease-luna hover:text-text-primary"
             >
-              {l.label}
+              {t(l.key)}
             </Link>
           ))}
         </div>
@@ -59,6 +59,7 @@ export default function Navbar() {
 }
 
 function ProfileMenu({ initials, name }) {
+  const { t } = useT()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -90,24 +91,24 @@ function ProfileMenu({ initials, name }) {
       {open && (
         <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-bg-card p-1.5 shadow-lift">
           <div className="px-3 py-2">
-            <p className="text-caption text-text-muted">Signed in as</p>
-            <p className="truncate font-medium text-text-primary">{name || 'Guest'}</p>
+            <p className="text-caption text-text-muted">{t('menuSignedIn')}</p>
+            <p className="truncate font-medium text-text-primary">{name || t('menuGuest')}</p>
           </div>
           <div className="my-1 h-px bg-white/[0.06]" />
           <MenuLink to="/login" onClick={() => setOpen(false)}>
-            Log in / Sign up
+            {t('menuLoginSignup')}
           </MenuLink>
           <MenuLink to="/profile" onClick={() => setOpen(false)}>
-            Your profile
+            {t('menuProfile')}
           </MenuLink>
           <MenuLink to="/home" onClick={() => setOpen(false)}>
-            Dashboard
+            {t('navDashboard')}
           </MenuLink>
           <MenuLink to="/timeline" onClick={() => setOpen(false)}>
-            Timeline
+            {t('menuTimeline')}
           </MenuLink>
           <MenuLink to="/settings" onClick={() => setOpen(false)}>
-            Settings
+            {t('menuSettings')}
           </MenuLink>
           <div className="my-1 h-px bg-white/[0.06]" />
           <button
@@ -118,7 +119,7 @@ function ProfileMenu({ initials, name }) {
             }}
             className="block w-full rounded-lg px-3 py-2 text-left text-[0.95rem] text-danger transition-colors duration-250 hover:bg-white/5"
           >
-            Log out
+            {t('menuLogout')}
           </button>
         </div>
       )}

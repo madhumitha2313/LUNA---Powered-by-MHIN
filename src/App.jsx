@@ -11,8 +11,17 @@ function RequireOnboarding({ children }) {
   return isOnboarded() ? children : <Navigate to="/onboarding" replace />
 }
 
-/** Root: first-run users land in onboarding; returning users see the landing page. */
+/**
+ * Root entry.
+ * In the single-file / preview build we ALWAYS open into the onboarding flow so
+ * the demo starts with the logo animation + questions every time it's opened —
+ * even if a previous run already stored the "onboarded" flag. In a normal
+ * deployed build, returning users see the landing page and only first-run users
+ * are sent to onboarding.
+ */
+const PREVIEW_BUILD = import.meta.env.VITE_HASH_ROUTER === 'true'
 function RootEntry() {
+  if (PREVIEW_BUILD) return <Navigate to="/onboarding" replace />
   return isOnboarded() ? <Landing /> : <Navigate to="/onboarding" replace />
 }
 import Login from './pages/Login'

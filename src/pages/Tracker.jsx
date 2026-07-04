@@ -6,32 +6,34 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { HeartIcon, TrendIcon, SparklesIcon, ArrowRightIcon } from '../components/ui/icons'
 import { getPeriods, addPeriod, removePeriod, getCycleStats } from '../lib/localStore'
+import { useT } from '../lib/i18n.jsx'
 
 // Static class strings only — Tailwind JIT can't see interpolated class names.
+// Labels/notes are translation KEYS resolved with t() at render time.
 const PHASES = {
   menstrual: {
-    label: 'Menstrual',
+    label: 'phaseMenstrual',
     badge: 'danger',
     wrap: 'bg-danger/10 text-danger',
-    note: 'Period days — rest and iron-rich food help.',
+    note: 'noteMenstrual',
   },
   follicular: {
-    label: 'Follicular',
+    label: 'phaseFollicular',
     badge: 'success',
     wrap: 'bg-success/10 text-success',
-    note: 'Energy usually rises through this phase.',
+    note: 'noteFollicular',
   },
   ovulation: {
-    label: 'Ovulation',
+    label: 'phaseOvulation',
     badge: 'warning',
     wrap: 'bg-warning/10 text-warning',
-    note: 'Most fertile window, around mid-cycle.',
+    note: 'noteOvulation',
   },
   luteal: {
-    label: 'Luteal',
+    label: 'phaseLuteal',
     badge: 'ai',
     wrap: 'bg-accent-ai/10 text-accent-ai',
-    note: 'PMS symptoms can appear before the next period.',
+    note: 'notePMS',
   },
 }
 
@@ -40,6 +42,7 @@ function fmt(iso) {
 }
 
 export default function Tracker() {
+  const { t } = useT()
   const [periods, setPeriods] = useState(getPeriods())
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const stats = getCycleStats()
@@ -57,18 +60,16 @@ export default function Tracker() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Badge tone="accent" icon={<HeartIcon size={14} />}>
-            Period & cycle
+            {t('trackerBadge')}
           </Badge>
           <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            Cycle tracker
+            {t('trackerTitle')}
           </h1>
-          <p className="mt-2 text-text-secondary">
-            Log the day your period starts — Mira estimates the rest from your own history.
-          </p>
+          <p className="mt-2 text-text-secondary">{t('trackerSub')}</p>
         </div>
         <div className="flex items-end gap-2">
           <label className="block">
-            <span className="mb-1.5 block text-caption text-text-muted">Period start</span>
+            <span className="mb-1.5 block text-caption text-text-muted">{t('periodStart')}</span>
             <input
               type="date"
               value={date}
@@ -78,25 +79,25 @@ export default function Tracker() {
             />
           </label>
           <Button onClick={logPeriod} size="md">
-            Log
+            {t('log')}
           </Button>
         </div>
       </div>
 
       {/* Stat cards */}
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label="Cycle day" value={stats.cycleDay ?? '—'} sub={phase ? phase.label : 'log to begin'} />
+        <Stat label={t('cycleDayLabel')} value={stats.cycleDay ?? '—'} sub={phase ? t(phase.label) : t('logToBegin')} />
         <Stat
-          label="Avg cycle"
-          value={stats.avgCycleLength ? `${stats.avgCycleLength}d` : '—'}
-          sub={stats.regularity || 'needs 3+ logs'}
+          label={t('avgCycle')}
+          value={stats.avgCycleLength ? `${stats.avgCycleLength}${t('dShort')}` : '—'}
+          sub={stats.regularity ? t(regularityKey(stats.regularity)) : t('needsLogs')}
         />
         <Stat
-          label="Next period"
-          value={stats.daysUntilNext != null ? daysLabel(stats.daysUntilNext) : '—'}
+          label={t('nextPeriod')}
+          value={stats.daysUntilNext != null ? daysLabel(stats.daysUntilNext, t) : '—'}
           sub={fmt(stats.predictedNext)}
         />
-        <Stat label="Last start" value={fmt(stats.lastPeriodStart)} sub={`${periods.length} logged`} />
+        <Stat label={t('lastStart')} value={fmt(stats.lastPeriodStart)} sub={`${periods.length} ${t('loggedWord')}`} />
       </div>
 
       {/* Current phase */}
@@ -107,10 +108,10 @@ export default function Tracker() {
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-heading text-lg font-semibold">{phase.label} phase</span>
-              <Badge tone={phase.badge}>day {stats.cycleDay}</Badge>
+              <span className="font-heading text-lg font-semibold">{t(phase.label)} {t('phaseWord')}</span>
+              <Badge tone={phase.badge}>{t('dayWord')} {stats.cycleDay}</Badge>
             </div>
-            <p className="mt-0.5 text-caption text-text-secondary">{phase.note}</p>
+            <p className="mt-0.5 text-caption text-text-secondary">{t(phase.note)}</p>
           </div>
         </Card>
       )}
@@ -118,7 +119,7 @@ export default function Tracker() {
       {/* Forward strip */}
       {strip.length > 0 && (
         <Card className="mt-6">
-          <h2 className="mb-4 font-heading text-lg font-semibold">Next 4 weeks</h2>
+          <h2 className="mb-4 font-heading text-lg font-semibold">{t('next4weeks')}</h2>
           <div className="flex gap-1.5 overflow-x-auto pb-1">
             {strip.map((d) => (
               <div
@@ -138,23 +139,19 @@ export default function Tracker() {
             ))}
           </div>
           <div className="mt-3 flex flex-wrap gap-4 text-caption text-text-muted">
-            <Legend className="bg-danger/40" label="Predicted period" />
-            <Legend className="bg-warning/40" label="Fertile window" />
-            <Legend className="bg-accent-primary/60" label="Today" />
+            <Legend className="bg-danger/40" label={t('predictedPeriodLabel')} />
+            <Legend className="bg-warning/40" label={t('fertileWindow')} />
+            <Legend className="bg-accent-primary/60" label={t('todayLabel')} />
           </div>
-          <p className="mt-3 text-caption text-text-muted">
-            Predictions are estimates from your logged dates — not a guarantee, and not contraceptive advice.
-          </p>
+          <p className="mt-3 text-caption text-text-muted">{t('predictionsNote')}</p>
         </Card>
       )}
 
       {/* History */}
       <Card className="mt-6">
-        <h2 className="mb-3 font-heading text-lg font-semibold">Logged period starts</h2>
+        <h2 className="mb-3 font-heading text-lg font-semibold">{t('loggedStarts')}</h2>
         {periods.length === 0 ? (
-          <p className="text-caption text-text-secondary">
-            No dates logged yet. Use “Log” above to add your most recent period start.
-          </p>
+          <p className="text-caption text-text-secondary">{t('noDatesLogged')}</p>
         ) : (
           <ul className="divide-y divide-white/[0.06]">
             {periods.map((d) => (
@@ -163,7 +160,7 @@ export default function Tracker() {
                   {new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
                 <button onClick={() => remove(d)} className="text-caption text-text-muted hover:text-danger">
-                  Remove
+                  {t('remove')}
                 </button>
               </li>
             ))}
@@ -173,14 +170,20 @@ export default function Tracker() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button as={Link} to="/symptoms" variant="secondary" size="lg">
-          <SparklesIcon size={16} /> PCOS / PCOD symptoms
+          <SparklesIcon size={16} /> {t('pcosSymptoms')}
         </Button>
         <Button as={Link} to="/voice" size="lg">
-          Log by voice <ArrowRightIcon size={16} />
+          {t('logByVoice')} <ArrowRightIcon size={16} />
         </Button>
       </div>
     </PageShell>
   )
+}
+
+function regularityKey(r) {
+  if (r === 'regular') return 'regRegular'
+  if (r === 'slightly irregular') return 'regSlightly'
+  return 'regIrregular'
 }
 
 function Stat({ label, value, sub }) {
@@ -202,10 +205,10 @@ function Legend({ className, label }) {
   )
 }
 
-function daysLabel(n) {
-  if (n === 0) return 'today'
-  if (n < 0) return `${-n}d late`
-  return `${n}d`
+function daysLabel(n, t) {
+  if (n === 0) return t('today')
+  if (n < 0) return `${-n}${t('dShort')} ${t('lateWord')}`
+  return `${n}${t('dShort')}`
 }
 
 function buildStrip(stats) {

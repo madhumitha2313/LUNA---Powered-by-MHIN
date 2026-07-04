@@ -28,21 +28,21 @@ function greetingKey(h = new Date().getHours()) {
   return 'greetEvening'
 }
 
-const PHASE_LABEL = {
-  menstrual: 'Menstrual phase',
-  follicular: 'Follicular phase',
-  ovulation: 'Ovulation window',
-  luteal: 'Luteal phase',
+const PHASE_KEY = {
+  menstrual: 'phaseMenstrualFull',
+  follicular: 'phaseFollicularFull',
+  ovulation: 'phaseOvulationFull',
+  luteal: 'phaseLutealFull',
 }
 
 const QUICK_ACTIONS = [
-  { label: 'Talk', to: '/voice', icon: MicIcon, tone: 'text-accent-secondary' },
-  { label: 'Cycle Tracker', to: '/tracker', icon: HeartIcon, tone: 'text-accent-primary' },
-  { label: 'PCOS / PCOD', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai' },
-  { label: 'My Report', to: '/report', icon: FileIcon, tone: 'text-success' },
-  { label: 'Find Doctor', to: '/doctors', icon: StethoscopeIcon, tone: 'text-accent-secondary' },
-  { label: 'Readiness Guide', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai' },
-  { label: 'Leave Report', to: '/impact', icon: TrendIcon, tone: 'text-success' },
+  { key: 'qaTalk', to: '/voice', icon: MicIcon, tone: 'text-accent-secondary' },
+  { key: 'qaTracker', to: '/tracker', icon: HeartIcon, tone: 'text-accent-primary' },
+  { key: 'qaPcos', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai' },
+  { key: 'qaReport', to: '/report', icon: FileIcon, tone: 'text-success' },
+  { key: 'qaDoctor', to: '/doctors', icon: StethoscopeIcon, tone: 'text-accent-secondary' },
+  { key: 'qaGuide', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai' },
+  { key: 'qaImpact', to: '/impact', icon: TrendIcon, tone: 'text-success' },
 ]
 
 export default function Home() {
@@ -100,21 +100,20 @@ export default function Home() {
           <Card hover as={Link} to="/tracker" className="animate-fade-up delay-3">
             <div className="mb-4 flex items-center gap-2">
               <HeartIcon size={18} className="text-accent-primary" />
-              <h2 className="font-heading text-lg font-semibold">Cycle</h2>
+              <h2 className="font-heading text-lg font-semibold">{t('homeCycle')}</h2>
             </div>
             {stats.cycleDay ? (
               <>
-                <p className="font-stat text-3xl font-bold text-text-primary">Day {stats.cycleDay}</p>
-                <p className="mt-1 text-caption text-accent-secondary">{PHASE_LABEL[stats.phase]}</p>
+                <p className="font-stat text-3xl font-bold text-text-primary">{t('dayWord')} {stats.cycleDay}</p>
+                <p className="mt-1 text-caption text-accent-secondary">{t(PHASE_KEY[stats.phase])}</p>
                 <p className="mt-3 text-caption text-text-secondary">
-                  Next period {stats.daysUntilNext >= 0 ? `in ${stats.daysUntilNext} days` : 'expected'} ·
-                  avg {stats.avgCycleLength}d
+                  {t('nextPeriod')}{' '}
+                  {stats.daysUntilNext >= 0 ? `${t('inWord')} ${stats.daysUntilNext} ${t('daysLower')}` : t('expected')} ·{' '}
+                  {t('avgWord')} {stats.avgCycleLength}{t('dShort')}
                 </p>
               </>
             ) : (
-              <p className="text-caption text-text-secondary">
-                Log your period start in the tracker to see your cycle day and next-period estimate.
-              </p>
+              <p className="text-caption text-text-secondary">{t('homeCycleEmpty')}</p>
             )}
           </Card>
 
@@ -122,35 +121,32 @@ export default function Home() {
           <Card className="animate-fade-up delay-3">
             <div className="mb-4 flex items-center gap-2">
               <SparklesIcon size={18} className="text-accent-ai" />
-              <h2 className="font-heading text-lg font-semibold">Today's Insight</h2>
+              <h2 className="font-heading text-lg font-semibold">{t('todayInsight')}</h2>
             </div>
             {loading ? (
               <Skeleton />
             ) : latest ? (
               <p className="text-[0.95rem] text-text-secondary">
-                Last check-in noted{' '}
+                {t('lastCheckinNoted')}{' '}
                 <span className="text-text-primary">
-                  {[latest.flow, latest.pain != null ? `pain ${latest.pain}` : null, latest.mood]
+                  {[latest.flow, latest.pain != null ? `${t('painWord')} ${latest.pain}` : null, latest.mood]
                     .filter(Boolean)
-                    .join(', ') || 'your update'}
+                    .join(', ') || t('yourUpdate')}
                 </span>
-                . Keep logging to unlock trend insights across cycles.
+                . {t('keepLogging')}
               </p>
             ) : (
-              <EmptyState
-                title="No insights yet"
-                body="Log your first check-in with Mira and your personalised insight appears here — from your own data."
-              />
+              <EmptyState title={t('noInsights')} body={t('noInsightsBody')} />
             )}
           </Card>
 
           {/* Recent */}
           <Card className="animate-fade-up delay-4">
-            <h2 className="mb-4 font-heading text-lg font-semibold">Recent</h2>
+            <h2 className="mb-4 font-heading text-lg font-semibold">{t('recent')}</h2>
             {loading ? (
               <Skeleton rows={3} />
             ) : logs.length === 0 ? (
-              <EmptyState compact title="Nothing logged yet" body="Your recent check-ins will show here." />
+              <EmptyState compact title={t('nothingLogged')} body={t('recentEmpty')} />
             ) : (
               <ul className="space-y-3">
                 {logs.slice(0, 5).map((l) => (
@@ -170,11 +166,11 @@ export default function Home() {
 
         {/* Quick actions */}
         <div className="mt-8">
-          <h2 className="mb-4 font-heading text-lg font-semibold animate-fade-up delay-4">Quick actions</h2>
+          <h2 className="mb-4 font-heading text-lg font-semibold animate-fade-up delay-4">{t('quickActions')}</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {QUICK_ACTIONS.map((a, i) => (
               <Card
-                key={a.label}
+                key={a.key}
                 hover
                 as={Link}
                 to={a.to}
@@ -183,7 +179,7 @@ export default function Home() {
                 <span className={`flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] ${a.tone}`}>
                   <a.icon size={22} />
                 </span>
-                <span className="text-caption text-text-secondary">{a.label}</span>
+                <span className="text-caption text-text-secondary">{t(a.key)}</span>
               </Card>
             ))}
           </div>
@@ -191,9 +187,9 @@ export default function Home() {
 
         {!user && (
           <p className="mt-10 flex items-center justify-center gap-2 text-caption text-text-muted">
-            <span>Sign in to sync across devices — or keep going, everything works right here.</span>
+            <span>{t('signInSync')}</span>
             <Link to="/login" className="inline-flex items-center gap-1 text-accent-secondary hover:underline">
-              Log in <ArrowRightIcon size={13} />
+              {t('navLogin')} <ArrowRightIcon size={13} />
             </Link>
           </p>
         )}

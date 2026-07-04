@@ -57,8 +57,8 @@ export default function Settings() {
   return (
     <PageShell max="max-w-3xl">
       <div className="mb-8">
-        <Badge tone="neutral" icon={<ShieldIcon size={14} />}>Settings</Badge>
-        <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight">Settings</h1>
+        <Badge tone="neutral" icon={<ShieldIcon size={14} />}>{t('menuSettings')}</Badge>
+        <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight">{t('menuSettings')}</h1>
         {savedMsg && <p className="mt-2 text-caption text-success">{savedMsg}</p>}
       </div>
 
@@ -67,17 +67,13 @@ export default function Settings() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <SparklesIcon size={18} className="text-accent-ai" />
-            <h2 className="font-heading text-lg font-semibold">Account sync (Appwrite)</h2>
+            <h2 className="font-heading text-lg font-semibold">{t('accountSync')}</h2>
           </div>
           <Badge tone={isAppwriteConfigured ? 'success' : 'neutral'}>
-            {isAppwriteDataConfigured ? 'Connected (auth + data)' : isAppwriteConfigured ? 'Connected (auth)' : 'Not connected'}
+            {isAppwriteDataConfigured ? t('connBadgeAuthData') : isAppwriteConfigured ? t('connBadgeAuth') : t('connBadgeNone')}
           </Badge>
         </div>
-        <p className="mb-4 text-caption text-text-secondary">
-          Paste your Appwrite <strong>Project ID</strong> to enable real accounts and cloud sync.
-          The endpoint and project id are public (not secrets). Add a Database ID too to sync your
-          logs across devices.
-        </p>
+        <p className="mb-4 text-caption text-text-secondary">{t('accountSyncDesc')}</p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Endpoint" value={aw.endpoint} onChange={setAwField('endpoint')} placeholder="https://cloud.appwrite.io/v1" />
@@ -87,11 +83,11 @@ export default function Settings() {
 
         <div className="mt-5 flex flex-wrap gap-2">
           <Button onClick={connectAppwrite} size="md" disabled={!aw.projectId.trim()}>
-            Connect & reload
+            {t('connectReload')}
           </Button>
           {isAppwriteConfigured && (
             <Button onClick={disconnectAppwrite} variant="secondary" size="md">
-              Disconnect
+              {t('disconnect')}
             </Button>
           )}
         </div>
@@ -109,21 +105,19 @@ export default function Settings() {
       <Card className="mb-6">
         <div className="mb-4 flex items-center gap-2">
           <HeartIcon size={18} className="text-accent-secondary" />
-          <h2 className="font-heading text-lg font-semibold">Emergency contact</h2>
+          <h2 className="font-heading text-lg font-semibold">{t('emergencyContact')}</h2>
         </div>
-        <p className="mb-4 text-caption text-text-secondary">
-          If you ever tell Mira you're in distress, this person appears first — one tap to call them.
-        </p>
+        <p className="mb-4 text-caption text-text-secondary">{t('emergencyDesc')}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="Name"
+            label={t('nameLabel')}
             value={settings.emergencyName}
             onChange={(e) => setSettings((s) => ({ ...s, emergencyName: e.target.value }))}
             onBlur={() => setSetting('emergencyName', settings.emergencyName)}
             placeholder="e.g. Amma"
           />
           <Field
-            label="Phone"
+            label={t('phoneLabel')}
             value={settings.emergencyPhone}
             onChange={(e) => setSettings((s) => ({ ...s, emergencyPhone: e.target.value }))}
             onBlur={() => setSetting('emergencyPhone', settings.emergencyPhone)}
@@ -134,7 +128,7 @@ export default function Settings() {
 
       {/* Preferences */}
       <Card className="mb-6">
-        <h2 className="mb-4 font-heading text-lg font-semibold">Preferences</h2>
+        <h2 className="mb-4 font-heading text-lg font-semibold">{t('preferences')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1.5 block text-caption text-text-muted">{t('appLanguage')}</span>
@@ -161,23 +155,20 @@ export default function Settings() {
               onChange={(e) => setSetting('notifications', e.target.checked)}
               className="h-4 w-4 accent-accent-primary"
             />
-            Cycle & check-in reminders
+            {t('cycleReminders')}
           </label>
         </div>
-        <p className="mt-3 text-caption text-text-muted">Dark mode is the default MIRA theme.</p>
+        <p className="mt-3 text-caption text-text-muted">{t('darkDefault')}</p>
       </Card>
 
       {/* Data */}
       <Card className="flex flex-col gap-3 bg-bg-secondary/40 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <ShieldIcon size={20} className="mt-0.5 shrink-0 text-success" />
-          <p className="text-caption text-text-secondary">
-            Your health data is stored on this device (and in Appwrite if connected). Delete it any
-            time — this actually removes every local record.
-          </p>
+          <p className="text-caption text-text-secondary">{t('dataDesc')}</p>
         </div>
         <Button onClick={wipe} variant="secondary" size="md" className="text-danger">
-          Delete my data
+          {t('deleteData')}
         </Button>
       </Card>
     </PageShell>
