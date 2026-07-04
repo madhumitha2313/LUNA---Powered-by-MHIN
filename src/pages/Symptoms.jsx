@@ -6,46 +6,49 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { SparklesIcon, StethoscopeIcon, ShieldIcon, ArrowRightIcon } from '../components/ui/icons'
 import { getSymptoms, saveSymptoms } from '../lib/localStore'
+import { useT } from '../lib/i18n.jsx'
 
 // Common PCOS/PCOD symptoms, grouped. Educational — never diagnostic.
+// title/label are translation KEYS resolved with t() at render.
 const GROUPS = [
   {
-    title: 'Cycle',
+    title: 'grpCycle',
     items: [
-      ['irregular', 'Irregular or missed periods'],
-      ['heavy', 'Heavy or prolonged bleeding'],
-      ['spotting', 'Spotting between periods'],
-      ['pelvic_pain', 'Pelvic or lower-abdomen pain'],
+      ['irregular', 'symIrregular'],
+      ['heavy', 'symHeavy'],
+      ['spotting', 'symSpotting'],
+      ['pelvic_pain', 'symPelvic'],
     ],
   },
   {
-    title: 'Skin & hair',
+    title: 'grpSkin',
     items: [
-      ['acne', 'Acne or oily skin'],
-      ['hirsutism', 'Excess facial / body hair'],
-      ['hair_thinning', 'Scalp hair thinning'],
-      ['dark_patches', 'Dark skin patches (neck/underarms)'],
+      ['acne', 'symAcne'],
+      ['hirsutism', 'symHirsutism'],
+      ['hair_thinning', 'symHairThin'],
+      ['dark_patches', 'symDarkPatch'],
     ],
   },
   {
-    title: 'Metabolic',
+    title: 'grpMetabolic',
     items: [
-      ['weight', 'Weight gain / hard to lose'],
-      ['cravings', 'Strong sugar cravings'],
-      ['bloating', 'Bloating'],
+      ['weight', 'symWeight'],
+      ['cravings', 'symCravings'],
+      ['bloating', 'symBloating'],
     ],
   },
   {
-    title: 'Mood & energy',
+    title: 'grpMood',
     items: [
-      ['mood', 'Mood swings / anxiety'],
-      ['fatigue', 'Fatigue or low energy'],
-      ['sleep', 'Sleep problems'],
+      ['mood', 'symMood'],
+      ['fatigue', 'symFatigue'],
+      ['sleep', 'symSleep'],
     ],
   },
 ]
 
 export default function Symptoms() {
+  const { t } = useT()
   const [selected, setSelected] = useState(() => getSymptoms())
 
   function toggle(key) {
@@ -66,26 +69,19 @@ export default function Symptoms() {
           PCOS / PCOD
         </Badge>
         <h1 className="mt-5 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-          Symptom tracker
+          {t('symTitle')}
         </h1>
-        <p className="mt-4 text-text-secondary">
-          Tick the symptoms you’ve been noticing. Tracking them over time builds a clear picture to
-          bring to a gynaecologist — this is a guide, not a diagnosis.
-        </p>
+        <p className="mt-4 text-text-secondary">{t('symIntro')}</p>
       </div>
 
       {/* Summary */}
       <Card className="mt-10 flex flex-wrap items-center justify-between gap-4 bg-bg-secondary/50">
         <div>
           <p className="font-stat text-3xl font-bold text-text-primary">{count}</p>
-          <p className="text-caption text-text-secondary">symptom{count === 1 ? '' : 's'} tracked</p>
+          <p className="text-caption text-text-secondary">{t('symTracked')}</p>
         </div>
         <p className="max-w-sm text-caption text-text-secondary">
-          {count === 0
-            ? 'Nothing selected yet. Tap any symptom below to start tracking it.'
-            : count >= 4
-              ? 'Several symptoms noted. Consider discussing PCOS/PCOD screening with a healthcare professional — this is a risk indicator, not a diagnosis.'
-              : 'Keep tracking over a few cycles to see which symptoms persist.'}
+          {count === 0 ? t('symSummary0') : count >= 4 ? t('symSummaryMany') : t('symSummaryFew')}
         </p>
       </Card>
 
@@ -93,7 +89,7 @@ export default function Symptoms() {
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         {GROUPS.map((g) => (
           <Card key={g.title}>
-            <h2 className="mb-4 font-heading text-lg font-semibold">{g.title}</h2>
+            <h2 className="mb-4 font-heading text-lg font-semibold">{t(g.title)}</h2>
             <div className="space-y-2.5">
               {g.items.map(([key, label]) => {
                 const on = !!selected[key]
@@ -118,7 +114,7 @@ export default function Symptoms() {
                         </svg>
                       )}
                     </span>
-                    {label}
+                    {t(label)}
                   </button>
                 )
               })}
@@ -130,19 +126,15 @@ export default function Symptoms() {
       {/* Safety note */}
       <Card className="mt-6 flex items-start gap-3 bg-bg-secondary/40">
         <ShieldIcon size={20} className="mt-0.5 shrink-0 text-success" />
-        <p className="text-caption text-text-secondary">
-          MIRA does not diagnose PCOS or PCOD. Diagnosis requires a clinical assessment (often
-          including ultrasound and blood tests). Use this tracker to describe your experience clearly
-          to a doctor. Your selections are stored privately on your device.
-        </p>
+        <p className="text-caption text-text-secondary">{t('symSafety')}</p>
       </Card>
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button as={Link} to="/tracker" variant="secondary" size="lg">
-          Cycle tracker
+          {t('trackerTitle')}
         </Button>
         <Button as={Link} to="/voice" size="lg">
-          <StethoscopeIcon size={16} /> Log by voice <ArrowRightIcon size={16} />
+          <StethoscopeIcon size={16} /> {t('logByVoice')} <ArrowRightIcon size={16} />
         </Button>
       </div>
     </PageShell>

@@ -59,7 +59,17 @@ export default function Onboarding() {
   function chooseGoogle() {
     if (name.trim()) saveProfile({ name: name.trim() })
     const isFile = typeof window !== 'undefined' && window.location.protocol === 'file:'
-    if (isAppwriteConfigured && account && !isFile) {
+    // In an embedded preview (artifact iframe) a top-level OAuth redirect is
+    // blocked by the sandbox and shows an error page — so only attempt the real
+    // Google redirect on a genuine, top-level http(s) deployment. Everywhere
+    // else we simply continue the onboarding flow (no error, flow unchanged).
+    let inFrame = false
+    try {
+      inFrame = window.self !== window.top
+    } catch {
+      inFrame = true
+    }
+    if (isAppwriteConfigured && account && !isFile && !inFrame) {
       const base = window.location.origin + window.location.pathname
       try {
         account.createOAuth2Session('google', base + '#/onboarding', base + '#/onboarding')
