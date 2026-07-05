@@ -24,6 +24,7 @@ function RootEntry() {
   if (PREVIEW_BUILD) return <Navigate to="/onboarding" replace />
   return isOnboarded() ? <Landing /> : <Navigate to="/onboarding" replace />
 }
+
 import Login from './pages/Login'
 import Features from './pages/Features'
 import HowItWorks from './pages/HowItWorks'
