@@ -9,6 +9,13 @@ import { isAppwriteConfigured, account } from '../lib/appwrite'
 
 const YEARS = Array.from({ length: 2015 - 1955 + 1 }, (_, i) => 2015 - i) // 2015 → 1955
 
+// Sample Google accounts shown in the "choose an account" chooser (preview mock —
+// a browser can't read your real Google sessions, so we show representative ones).
+const SEEDED_ACCOUNTS = [
+  { name: 'Madhumitha', email: 'madhumitha231332@gmail.com', initial: 'M', color: '#1a73e8' },
+  { name: 'Kishore Raam', email: 'kishoreraammskj@gmail.com', initial: 'K', color: '#34a853' },
+]
+
 // Steps that carry the 1/5 … 5/5 progress bar (the cycle-setup wizard).
 const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod']
 // Order used by the ← back button (splash and the loader are excluded).
@@ -30,7 +37,9 @@ export default function Onboarding() {
   const [consent, setConsent] = useState({ tos: false, privacy: false, health: false })
   const [consentErr, setConsentErr] = useState(false)
   const [email, setEmail] = useState('')
+  const [pass, setPass] = useState('')
   const [emailErr, setEmailErr] = useState(false)
+  const [googleView, setGoogleView] = useState('chooser') // 'chooser' | 'signin'
 
   // Splash: logo animation, then move to language.
   useEffect(() => {
@@ -80,14 +89,25 @@ export default function Onboarding() {
         /* provider not enabled — fall through to the email sign-in step */
       }
     }
-    // Preview / no real OAuth: collect the Google email on a Google-style
-    // sign-in screen, then continue the flow.
+    // Preview / no real OAuth: show the Google "choose an account" screen,
+    // then continue the flow.
+    setGoogleView('chooser')
+    setEmail('')
+    setPass('')
+    setEmailErr(false)
     setStep('google')
   }
 
-  function submitGoogleEmail() {
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-    if (!ok) {
+  // Pick one of the accounts already on the device.
+  function pickAccount(acc) {
+    saveProfile({ email: acc.email })
+    setStep('name')
+  }
+
+  // "Use another account" → sign in / create with email + password.
+  function submitGoogleSignin() {
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    if (!emailOk || pass.trim().length < 4) {
       setEmailErr(true)
       return
     }
@@ -290,43 +310,101 @@ export default function Onboarding() {
               </Step>
             )}
 
-            {/* GOOGLE SIGN-IN (email) */}
+            {/* GOOGLE — account chooser + "use another account" (email + password) */}
             {step === 'google' && (
               <div className="flex flex-1 flex-col pb-8 pt-6">
-                <div className="mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-white p-8 text-[#202124] shadow-lift">
-                  <GoogleFullLogo />
-                  <h2 className="mt-6 font-heading text-2xl font-medium text-[#202124]">{t('gSignInTitle')}</h2>
-                  <p className="mt-1.5 text-[0.95rem] text-[#5f6368]">{t('gSignInSub')}</p>
-                  <input
-                    autoFocus
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value)
-                      setEmailErr(false)
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && submitGoogleEmail()}
-                    placeholder={t('gEmailPlaceholder')}
-                    className={`mt-7 w-full rounded-lg border bg-white px-4 py-3.5 text-[1rem] text-[#202124] outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] ${
-                      emailErr ? 'border-[#d93025]' : 'border-[#dadce0]'
-                    }`}
-                  />
-                  {emailErr && <p className="mt-1.5 text-caption text-[#d93025]">{t('gEmailErr')}</p>}
-                  <p className="mt-4 text-caption text-[#5f6368]">{t('gGuestNote')}</p>
-                  <div className="mt-7 flex items-center justify-between">
-                    <button
-                      onClick={() => setStep('signup')}
-                      className="text-[0.95rem] font-medium text-[#1a73e8] hover:underline"
-                    >
-                      {t('gCreateAccount')}
-                    </button>
-                    <button
-                      onClick={submitGoogleEmail}
-                      className="rounded-lg bg-[#1a73e8] px-6 py-2.5 text-[0.95rem] font-medium text-white hover:bg-[#1765cc]"
-                    >
-                      {t('gNext')}
-                    </button>
-                  </div>
+                <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-white text-[#202124] shadow-lift">
+                  {googleView === 'chooser' ? (
+                    <div className="p-8">
+                      <GoogleFullLogo />
+                      <h2 className="mt-6 font-heading text-[1.55rem] font-normal text-[#202124]">{t('gChooseAccount')}</h2>
+                      <p className="mt-1 text-[0.95rem] text-[#5f6368]">{t('gSignInSub')}</p>
+                      <div className="mt-6 divide-y divide-[#e8eaed] border-y border-[#e8eaed]">
+                        {SEEDED_ACCOUNTS.map((a) => (
+                          <button
+                            key={a.email}
+                            onClick={() => pickAccount(a)}
+                            className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-[#f7f8f8]"
+                          >
+                            <span
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.95rem] font-medium text-white"
+                              style={{ background: a.color }}
+                            >
+                              {a.initial}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-[0.95rem] font-medium text-[#202124]">{a.name}</span>
+                              <span className="block truncate text-caption text-[#5f6368]">{a.email}</span>
+                            </span>
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => {
+                            setGoogleView('signin')
+                            setEmail('')
+                            setPass('')
+                            setEmailErr(false)
+                          }}
+                          className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-[#f7f8f8]"
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#dadce0] text-[#5f6368]">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                              <path d="M12 5v14M5 12h14" />
+                            </svg>
+                          </span>
+                          <span className="text-[0.95rem] font-medium text-[#202124]">{t('gUseAnother')}</span>
+                        </button>
+                      </div>
+                      <p className="mt-5 text-caption text-[#5f6368]">{t('gGuestNote')}</p>
+                    </div>
+                  ) : (
+                    <div className="p-8">
+                      <GoogleFullLogo />
+                      <h2 className="mt-6 font-heading text-[1.55rem] font-normal text-[#202124]">{t('gSignInTitle')}</h2>
+                      <p className="mt-1 text-[0.95rem] text-[#5f6368]">{t('gSignInSub')}</p>
+                      <input
+                        autoFocus
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value)
+                          setEmailErr(false)
+                        }}
+                        placeholder={t('gEmailPlaceholder')}
+                        className={`mt-6 w-full rounded-lg border bg-white px-4 py-3.5 text-[1rem] text-[#202124] outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] ${
+                          emailErr ? 'border-[#d93025]' : 'border-[#dadce0]'
+                        }`}
+                      />
+                      <input
+                        type="password"
+                        value={pass}
+                        onChange={(e) => {
+                          setPass(e.target.value)
+                          setEmailErr(false)
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && submitGoogleSignin()}
+                        placeholder={t('gPassPlaceholder')}
+                        className={`mt-3 w-full rounded-lg border bg-white px-4 py-3.5 text-[1rem] text-[#202124] outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] ${
+                          emailErr ? 'border-[#d93025]' : 'border-[#dadce0]'
+                        }`}
+                      />
+                      {emailErr && <p className="mt-1.5 text-caption text-[#d93025]">{t('gEmailErr')}</p>}
+                      <div className="mt-7 flex items-center justify-between">
+                        <button
+                          onClick={() => setGoogleView('chooser')}
+                          className="text-[0.95rem] font-medium text-[#1a73e8] hover:underline"
+                        >
+                          {t('back')}
+                        </button>
+                        <button
+                          onClick={submitGoogleSignin}
+                          className="rounded-lg bg-[#1a73e8] px-6 py-2.5 text-[0.95rem] font-medium text-white hover:bg-[#1765cc]"
+                        >
+                          {t('gNext')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
