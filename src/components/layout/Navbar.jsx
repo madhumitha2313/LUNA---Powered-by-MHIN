@@ -14,7 +14,6 @@ import { useT } from '../../lib/i18n.jsx'
 const LINKS = [
   { key: 'navFeatures', to: '/features' },
   { key: 'navConditions', to: '/conditions' },
-  { key: 'navCommunity', to: '/community' },
   { key: 'navGuide', to: '/guide' },
   { key: 'navDashboard', to: '/home' },
 ]

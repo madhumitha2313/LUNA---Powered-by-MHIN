@@ -29,6 +29,8 @@ export default function Onboarding() {
   })
   const [consent, setConsent] = useState({ tos: false, privacy: false, health: false })
   const [consentErr, setConsentErr] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailErr, setEmailErr] = useState(false)
 
   // Splash: logo animation, then move to language.
   useEffect(() => {
@@ -75,9 +77,21 @@ export default function Onboarding() {
         account.createOAuth2Session('google', base + '#/onboarding', base + '#/onboarding')
         return
       } catch {
-        /* provider not enabled — fall through into the setup wizard */
+        /* provider not enabled — fall through to the email sign-in step */
       }
     }
+    // Preview / no real OAuth: collect the Google email on a Google-style
+    // sign-in screen, then continue the flow.
+    setStep('google')
+  }
+
+  function submitGoogleEmail() {
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    if (!ok) {
+      setEmailErr(true)
+      return
+    }
+    saveProfile({ email: email.trim() })
     setStep('name')
   }
 
@@ -276,6 +290,47 @@ export default function Onboarding() {
               </Step>
             )}
 
+            {/* GOOGLE SIGN-IN (email) */}
+            {step === 'google' && (
+              <div className="flex flex-1 flex-col pb-8 pt-6">
+                <div className="mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-white p-8 text-[#202124] shadow-lift">
+                  <GoogleFullLogo />
+                  <h2 className="mt-6 font-heading text-2xl font-medium text-[#202124]">{t('gSignInTitle')}</h2>
+                  <p className="mt-1.5 text-[0.95rem] text-[#5f6368]">{t('gSignInSub')}</p>
+                  <input
+                    autoFocus
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      setEmailErr(false)
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && submitGoogleEmail()}
+                    placeholder={t('gEmailPlaceholder')}
+                    className={`mt-7 w-full rounded-lg border bg-white px-4 py-3.5 text-[1rem] text-[#202124] outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] ${
+                      emailErr ? 'border-[#d93025]' : 'border-[#dadce0]'
+                    }`}
+                  />
+                  {emailErr && <p className="mt-1.5 text-caption text-[#d93025]">{t('gEmailErr')}</p>}
+                  <p className="mt-4 text-caption text-[#5f6368]">{t('gGuestNote')}</p>
+                  <div className="mt-7 flex items-center justify-between">
+                    <button
+                      onClick={() => setStep('signup')}
+                      className="text-[0.95rem] font-medium text-[#1a73e8] hover:underline"
+                    >
+                      {t('gCreateAccount')}
+                    </button>
+                    <button
+                      onClick={submitGoogleEmail}
+                      className="rounded-lg bg-[#1a73e8] px-6 py-2.5 text-[0.95rem] font-medium text-white hover:bg-[#1765cc]"
+                    >
+                      {t('gNext')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* NAME — 1/5 */}
             {step === 'name' && (
               <Step title={t('nameTitle')} subtitle={t('nameSubtitle')}>
@@ -364,6 +419,10 @@ export default function Onboarding() {
 }
 
 function back(step, setStep) {
+  if (step === 'google') {
+    setStep('signup')
+    return
+  }
   const i = ORDER.indexOf(step)
   if (i > 0) setStep(ORDER[i - 1])
 }
@@ -539,6 +598,22 @@ function BellIcon() {
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
+  )
+}
+
+function GoogleFullLogo() {
+  const colors = ['#4285F4', '#EA4335', '#FBBC05', '#4285F4', '#34A853', '#EA4335']
+  return (
+    <div className="flex items-center gap-2">
+      <GoogleG />
+      <span className="font-heading text-2xl font-medium tracking-tight">
+        {'Google'.split('').map((ch, i) => (
+          <span key={i} style={{ color: colors[i] }}>
+            {ch}
+          </span>
+        ))}
+      </span>
+    </div>
   )
 }
 

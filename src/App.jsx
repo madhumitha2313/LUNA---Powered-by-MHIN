@@ -37,7 +37,6 @@ import Guide from './pages/Guide'
 import Impact from './pages/Impact'
 import Settings from './pages/Settings'
 import Timeline from './pages/Timeline'
-import Community from './pages/Community'
 
 export default function App() {
   return (
@@ -61,7 +60,6 @@ export default function App() {
       <Route path="/impact" element={<Impact />} />
       <Route path="/timeline" element={<Timeline />} />
       <Route path="/settings" element={<Settings />} />
-      <Route path="/community" element={<Community />} />
     </Routes>
   )
 }
