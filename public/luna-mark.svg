@@ -1,17 +1,12 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="moonGlow" cx="38%" cy="36%" r="70%">
-      <stop offset="0%" stop-color="#F5C6D6" />
-      <stop offset="55%" stop-color="#D97BA8" />
-      <stop offset="100%" stop-color="#A78BFA" />
-    </radialGradient>
+    <linearGradient id="miraPink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF8FC0"/>
+      <stop offset="45%" stop-color="#FF4F9D"/>
+      <stop offset="100%" stop-color="#FF2E8A"/>
+    </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="#0D1117" />
-  <path
-    d="M40 14a18 18 0 1 0 10 33 22 22 0 0 1-10-43Z"
-    fill="url(#moonGlow)"
-  />
-  <circle cx="46" cy="20" r="1.4" fill="#F5C6D6" opacity="0.9" />
-  <circle cx="18" cy="24" r="1.1" fill="#F5C6D6" opacity="0.7" />
-  <circle cx="22" cy="44" r="1.2" fill="#A78BFA" opacity="0.8" />
+  <circle cx="50" cy="50" r="47" fill="#08080a" stroke="url(#miraPink)" stroke-width="4"/>
+  <path fill="url(#miraPink)" d="M 43 70 C 41.5 66 40.5 64 40 62 C 37.5 61.5 35 60.5 34 58 C 33 57 33.5 55.5 34.5 55 C 32.8 53.8 32.6 52 33.6 50.8 C 32.4 50 32 48.8 32.8 47.8 C 31.4 47.4 30.6 46.2 31.6 45 C 29.8 44.6 28.6 43.4 29.8 42 C 31 40.6 32.4 40 33 38 C 34 32 39 27.5 45.5 26.5 C 52 25.5 58 27.5 62 32 C 66.5 37 68.5 44 67.5 51.5 C 66.3 60 61.5 67 54.5 70.5 C 58 66 60.5 60 61 54 C 61.5 47 60 40.5 55.5 36 C 52 32.5 47.5 31 43.5 32 C 47 33 50 35.5 51.5 40 C 53 44.5 53 50 52 56 C 51.2 61 49 66 46.5 70 Z"/>
+  <path d="M55 22.5 a5.5 5.5 0 1 0 4.8 8.2 A4.3 4.3 0 0 1 55 22.5 Z" fill="#FFC2DE"/>
 </svg>

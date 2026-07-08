@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
+import MiraMark, { MiraWordmark } from '../components/MiraMark'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT, LANGS, setOnboarded } from '../lib/i18n'
@@ -141,21 +142,11 @@ export default function Onboarding() {
       {step === 'splash' && (
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
           <div className="animate-breathe">
-            <span className="relative inline-flex h-28 w-28 items-center justify-center">
-              <span className="absolute inset-0 rounded-full bg-accent-primary/25 blur-2xl" />
-              <svg viewBox="0 0 24 24" className="relative h-24 w-24">
-                <defs>
-                  <radialGradient id="obMoon" cx="38%" cy="36%" r="72%">
-                    <stop offset="0%" stopColor="#F5C6D6" />
-                    <stop offset="55%" stopColor="#D97BA8" />
-                    <stop offset="100%" stopColor="#A78BFA" />
-                  </radialGradient>
-                </defs>
-                <path d="M15 2a10 10 0 1 0 5.5 18.4A12 12 0 0 1 15 2Z" fill="url(#obMoon)" />
-              </svg>
-            </span>
+            <MiraMark size={128} className="relative" />
           </div>
-          <h1 className="mt-6 font-heading text-4xl font-semibold tracking-tight animate-fade-up delay-1">MIRA</h1>
+          <h1 className="mt-6 font-heading text-4xl font-bold tracking-tight animate-fade-up delay-1">
+            <MiraWordmark />
+          </h1>
           <p className="mt-2 text-text-secondary animate-fade-up delay-2">{t('splashTagline')}</p>
         </div>
       )}
