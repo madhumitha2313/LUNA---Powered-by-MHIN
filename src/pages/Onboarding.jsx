@@ -17,10 +17,18 @@ const SEEDED_ACCOUNTS = [
   { name: 'Kishore Raam', email: 'kishoreraammskj@gmail.com', initial: 'K', color: '#34a853' },
 ]
 
-// Steps that carry the 1/5 … 5/5 progress bar (the cycle-setup wizard).
-const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod']
+// Short, friendly primer shown to first-time trackers (title/body are i18n keys).
+const EDU_SLIDES = [
+  { emoji: '🌙', t: 'edu1T', b: 'edu1B' },
+  { emoji: '🌸', t: 'edu2T', b: 'edu2B' },
+  { emoji: '💗', t: 'edu3T', b: 'edu3B' },
+  { emoji: '🤝', t: 'edu4T', b: 'edu4B' },
+]
+
+// Steps that carry the progress bar (the personalisation + cycle-setup wizard).
+const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod', 'regularity']
 // Order used by the ← back button (splash and the loader are excluded).
-const ORDER = ['lang', 'consent', 'signup', ...TRACKED, 'reminders']
+const ORDER = ['lang', 'welcome', 'consent', 'signup', ...TRACKED, 'firstTime', 'education', 'reminders']
 
 export default function Onboarding() {
   const { t, lang, setLang } = useT()
@@ -41,18 +49,27 @@ export default function Onboarding() {
   const [pass, setPass] = useState('')
   const [emailErr, setEmailErr] = useState(false)
   const [googleView, setGoogleView] = useState('chooser') // 'chooser' | 'signin'
+  const [regularity, setRegularity] = useState('')
+  const [firstTime, setFirstTime] = useState(null)
+  const [eduSlide, setEduSlide] = useState(0)
 
-  // Splash: logo animation, then move to language.
+  // Splash: logo animation (~2.8s), then move to language.
   useEffect(() => {
     if (step !== 'splash') return
-    const timer = setTimeout(() => setStep('lang'), 2200)
+    const timer = setTimeout(() => setStep('lang'), 2800)
     return () => clearTimeout(timer)
   }, [step])
 
   // Persist everything the user entered (called once we reach the loader).
   function persistAll(reminders) {
     if (name.trim()) saveProfile({ name: name.trim() })
-    saveProfile({ birthYear: year, periodLength: periodLen, cycleLength: cycleLen })
+    saveProfile({
+      birthYear: year,
+      periodLength: periodLen,
+      cycleLength: cycleLen,
+      regularity: regularity || 'unsure',
+      firstTime: !!firstTime,
+    })
     addPeriod(lastPeriod.toISOString())
     saveSettings({
       language: LANGS.find((l) => l.code === lang)?.label || 'English',
@@ -138,16 +155,30 @@ export default function Onboarding() {
         className="pointer-events-none absolute left-1/2 top-1/4 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-accent-primary/10 blur-[120px]"
       />
 
-      {/* SPLASH */}
+      {/* SPLASH — two logo halves slide in, merge, glow, then the wordmark fades in */}
       {step === 'splash' && (
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
-          <div className="animate-breathe">
-            <MiraMark size={128} className="relative" />
+          <div className="relative h-32 w-32">
+            {/* left half */}
+            <div className="absolute inset-0 animate-slide-in-left" style={{ clipPath: 'inset(0 50% 0 0)' }}>
+              <MiraMark size={128} glow={false} />
+            </div>
+            {/* right half */}
+            <div className="absolute inset-0 animate-slide-in-right" style={{ clipPath: 'inset(0 0 0 50%)' }}>
+              <MiraMark size={128} glow={false} />
+            </div>
+            {/* merge glow */}
+            <div className="pointer-events-none absolute inset-0 animate-glow-pulse rounded-full bg-[#FF4F9D]/40 blur-2xl" />
           </div>
-          <h1 className="mt-6 font-heading text-4xl font-bold tracking-tight animate-fade-up delay-1">
+          <h1
+            className="mt-7 font-heading text-4xl font-bold tracking-tight opacity-0 animate-fade-up"
+            style={{ animationDelay: '1200ms' }}
+          >
             <MiraWordmark />
           </h1>
-          <p className="mt-2 text-text-secondary animate-fade-up delay-2">{t('splashTagline')}</p>
+          <p className="mt-2 text-text-secondary opacity-0 animate-fade-up" style={{ animationDelay: '1500ms' }}>
+            {t('splashTagline')}
+          </p>
         </div>
       )}
 
@@ -231,8 +262,32 @@ export default function Onboarding() {
                     </button>
                   ))}
                 </div>
-                <Footer onNext={() => setStep('consent')} label={t('cont')} />
+                <Footer onNext={() => setStep('welcome')} label={t('cont')} />
               </Step>
+            )}
+
+            {/* WELCOME */}
+            {step === 'welcome' && (
+              <div className="flex flex-1 flex-col items-center pb-8 pt-8 text-center">
+                <div className="animate-breathe">
+                  <MiraMark size={104} />
+                </div>
+                <h1 className="mt-8 font-heading text-3xl font-bold tracking-tight">
+                  {t('welcomeTitle')} <MiraWordmark />
+                </h1>
+                <p className="mx-auto mt-3 max-w-sm text-text-secondary">{t('welcomeSub')}</p>
+                <div className="mt-auto w-full space-y-3 pt-10">
+                  <Button onClick={() => setStep('consent')} size="lg" className="w-full">
+                    {t('getStarted')} <ArrowRightIcon size={18} />
+                  </Button>
+                  <button
+                    onClick={() => navigate('/features')}
+                    className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary"
+                  >
+                    {t('learnMore')}
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* CONSENT */}
@@ -456,11 +511,106 @@ export default function Onboarding() {
               </Step>
             )}
 
-            {/* LAST PERIOD — 5/5 */}
+            {/* LAST PERIOD */}
             {step === 'lastPeriod' && (
               <Step title={t('lastPeriodTitle')}>
                 <MiniCalendar value={lastPeriod} onChange={setLastPeriod} />
-                <Footer onNext={() => setStep('reminders')} label={t('next')} />
+                <Footer onNext={() => setStep('regularity')} label={t('next')} />
+              </Step>
+            )}
+
+            {/* CYCLE REGULARITY */}
+            {step === 'regularity' && (
+              <Step title={t('regularityTitle')}>
+                <div className="mt-8 space-y-3">
+                  {[
+                    ['regular', t('regRegularOpt')],
+                    ['irregular', t('regIrregularOpt')],
+                    ['unsure', t('regNotSure')],
+                  ].map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => setRegularity(val)}
+                      className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 text-left text-[1.05rem] transition-all duration-250 ${
+                        regularity === val
+                          ? 'border-accent-primary/50 bg-accent-primary/10 text-text-primary'
+                          : 'border-white/10 bg-white/[0.02] text-text-secondary hover:border-white/20'
+                      }`}
+                    >
+                      {label}
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                          regularity === val ? 'border-accent-primary bg-accent-primary text-bg-primary' : 'border-white/25'
+                        }`}
+                      >
+                        {regularity === val && '✓'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <Footer onNext={() => setStep('firstTime')} label={t('next')} disabled={!regularity} />
+              </Step>
+            )}
+
+            {/* FIRST-TIME DETECTION */}
+            {step === 'firstTime' && (
+              <Step title={t('firstTimeTitle')} subtitle={t('firstTimeSub')}>
+                <div className="mt-8 grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      setFirstTime(true)
+                      setEduSlide(0)
+                      setStep('education')
+                    }}
+                    className="rounded-2xl border border-white/10 bg-white/[0.02] py-8 text-lg font-medium text-text-primary transition-all duration-250 hover:border-accent-primary/40 hover:bg-accent-primary/[0.06]"
+                  >
+                    🌸 {t('yesOpt')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFirstTime(false)
+                      setStep('reminders')
+                    }}
+                    className="rounded-2xl border border-white/10 bg-white/[0.02] py-8 text-lg font-medium text-text-primary transition-all duration-250 hover:border-accent-primary/40 hover:bg-accent-primary/[0.06]"
+                  >
+                    🌸 {t('noOpt')}
+                  </button>
+                </div>
+              </Step>
+            )}
+
+            {/* AI EDUCATION (first-time users) — a short, friendly primer */}
+            {step === 'education' && (
+              <Step title={t('eduTitle')} subtitle={t('eduSub')}>
+                <div className="mt-6 rounded-2xl border border-accent-primary/20 bg-accent-primary/[0.05] p-6">
+                  <div className="text-4xl">{EDU_SLIDES[eduSlide].emoji}</div>
+                  <h3 className="mt-4 font-heading text-xl font-semibold">{t(EDU_SLIDES[eduSlide].t)}</h3>
+                  <p className="mt-2 text-[0.95rem] leading-relaxed text-text-secondary">{t(EDU_SLIDES[eduSlide].b)}</p>
+                  <div className="mt-5 flex justify-center gap-1.5">
+                    {EDU_SLIDES.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-1.5 rounded-pill transition-all ${i === eduSlide ? 'w-6 bg-accent-primary' : 'w-1.5 bg-white/20'}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-auto flex items-center justify-between pt-8">
+                  <button
+                    onClick={() => setStep('reminders')}
+                    className="rounded-pill px-4 py-3 text-caption text-text-muted hover:text-text-secondary"
+                  >
+                    {t('skip')}
+                  </button>
+                  <Button
+                    onClick={() =>
+                      eduSlide < EDU_SLIDES.length - 1 ? setEduSlide((s) => s + 1) : setStep('reminders')
+                    }
+                    size="lg"
+                  >
+                    {eduSlide < EDU_SLIDES.length - 1 ? t('cont') : t('eduDone')} <ArrowRightIcon size={18} />
+                  </Button>
+                </div>
               </Step>
             )}
 

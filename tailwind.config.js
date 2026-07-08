@@ -103,6 +103,21 @@ export default {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        // Splash: two logo halves slide in from the sides and merge.
+        'slide-in-left': {
+          '0%': { opacity: '0', transform: 'translateX(-60px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'slide-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(60px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        // Glow pulse after the halves merge.
+        'glow-pulse': {
+          '0%': { opacity: '0', transform: 'scale(0.6)' },
+          '60%': { opacity: '1', transform: 'scale(1.15)' },
+          '100%': { opacity: '0', transform: 'scale(1.5)' },
+        },
       },
       animation: {
         breathe: 'breathe 4s ease-in-out infinite',
@@ -111,6 +126,9 @@ export default {
         'chip-in': 'chip-in 250ms cubic-bezier(0.4, 0, 0.2, 1) both',
         float: 'float 7s ease-in-out infinite',
         shimmer: 'shimmer 2.5s linear infinite',
+        'slide-in-left': 'slide-in-left 900ms cubic-bezier(0.22, 1, 0.36, 1) both',
+        'slide-in-right': 'slide-in-right 900ms cubic-bezier(0.22, 1, 0.36, 1) both',
+        'glow-pulse': 'glow-pulse 1200ms ease-out 700ms both',
       },
     },
   },
