@@ -1,26 +1,24 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
-import Footer from '../components/layout/Footer'
+import BottomNav from '../components/layout/BottomNav'
 import DashboardTour from '../components/DashboardTour'
 import Card from '../components/ui/Card'
-import Badge from '../components/ui/Badge'
-import VoiceOrb from '../components/voice/VoiceOrb'
 import {
   MicIcon,
   HeartIcon,
   FileIcon,
   SparklesIcon,
-  StethoscopeIcon,
   UsersIcon,
   TrendIcon,
+  LeafIcon,
   ArrowRightIcon,
   MoonIcon,
 } from '../components/ui/icons'
 import { getCurrentUser } from '../lib/auth'
 import { getRecentLogs } from '../lib/logs'
 import { isAppwriteDataConfigured } from '../lib/config'
-import { getLogs as getLocalLogs, getCycleStats, getProfile } from '../lib/localStore'
+import { getLogs as getLocalLogs, getCycleStats, getProfile, addLog } from '../lib/localStore'
 import { useT } from '../lib/i18n.jsx'
 
 function greetingKey(h = new Date().getHours()) {
@@ -35,23 +33,81 @@ const PHASE_KEY = {
   ovulation: 'phaseOvulationFull',
   luteal: 'phaseLutealFull',
 }
+const PHASE_MSG = {
+  menstrual: 'phaseMsgMenstrual',
+  follicular: 'phaseMsgFollicular',
+  ovulation: 'phaseMsgOvulation',
+  luteal: 'phaseMsgLuteal',
+}
+const ENERGY = { menstrual: 'energyLow', follicular: 'energyHigh', ovulation: 'energyHigh', luteal: 'energyMid' }
 
+// 8 quick actions — horizontally scrollable.
 const QUICK_ACTIONS = [
-  { key: 'qaTalk', to: '/voice', icon: MicIcon, tone: 'text-accent-secondary' },
-  { key: 'qaTracker', to: '/tracker', icon: HeartIcon, tone: 'text-accent-primary' },
-  { key: 'qaPcos', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai' },
-  { key: 'qaReport', to: '/report', icon: FileIcon, tone: 'text-success' },
-  { key: 'qaDoctor', to: '/doctors', icon: StethoscopeIcon, tone: 'text-accent-secondary' },
-  { key: 'qaGuide', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai' },
-  { key: 'qaImpact', to: '/impact', icon: TrendIcon, tone: 'text-success' },
+  { key: 'qaTalk', to: '/voice', icon: MicIcon, tone: 'text-accent-secondary', emoji: '🎤' },
+  { key: 'qaLogSym', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai', emoji: '🩸' },
+  { key: 'qaMood', scroll: 'mood-card', icon: HeartIcon, tone: 'text-accent-primary', emoji: '😊' },
+  { key: 'qaWater', to: '/guide', icon: LeafIcon, tone: 'text-accent-secondary', emoji: '💧' },
+  { key: 'qaFood', to: '/guide', icon: LeafIcon, tone: 'text-success', emoji: '🥗' },
+  { key: 'qaUpload', to: '/report', icon: FileIcon, tone: 'text-success', emoji: '📄' },
+  { key: 'qaWellness', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai', emoji: '🧘' },
+  { key: 'qaCalendar', to: '/tracker', icon: TrendIcon, tone: 'text-accent-secondary', emoji: '📅' },
 ]
+
+const MOODS = [
+  { key: 'moodHappy', emoji: '😊', val: 'happy' },
+  { key: 'moodCalm', emoji: '😌', val: 'calm' },
+  { key: 'moodTired', emoji: '😴', val: 'tired' },
+  { key: 'moodSad', emoji: '😢', val: 'sad' },
+  { key: 'moodAnxious', emoji: '😰', val: 'anxious' },
+  { key: 'moodEmotional', emoji: '😭', val: 'emotional' },
+]
+
+// Phase-aware daily recommendation cards (title/body are i18n keys).
+const RECS = {
+  menstrual: [
+    { emoji: '🛌', t: 'recRestT', b: 'recRestB' },
+    { emoji: '🥬', t: 'recIronT', b: 'recIronB' },
+    { emoji: '🫖', t: 'recWarmT', b: 'recWarmB' },
+  ],
+  follicular: [
+    { emoji: '🏃‍♀️', t: 'recMoveT', b: 'recMoveB' },
+    { emoji: '💧', t: 'recHydrateT', b: 'recHydrateB' },
+    { emoji: '🥗', t: 'recFreshT', b: 'recFreshB' },
+  ],
+  ovulation: [
+    { emoji: '💧', t: 'recHydrateT', b: 'recHydrateB' },
+    { emoji: '🏃‍♀️', t: 'recMoveT', b: 'recMoveB' },
+    { emoji: '🧘‍♀️', t: 'recBreatheT', b: 'recBreatheB' },
+  ],
+  luteal: [
+    { emoji: '🧘‍♀️', t: 'recBreatheT', b: 'recBreatheB' },
+    { emoji: '🍫', t: 'recComfortT', b: 'recComfortB' },
+    { emoji: '💧', t: 'recHydrateT', b: 'recHydrateB' },
+  ],
+}
+
+function healthScore(stats, latest) {
+  let s = 72
+  if (latest && (Date.now() - new Date(latest.date)) < 2 * 864e5) s += 6
+  if (stats.regularity === 'regular') s += 5
+  if (latest?.pain != null && latest.pain >= 7) s -= 12
+  if (latest?.mood && ['sad', 'anxious', 'emotional'].includes(latest.mood)) s -= 5
+  return Math.max(45, Math.min(98, s))
+}
+function isFertile(stats) {
+  if (stats.phase === 'ovulation') return true
+  if (stats.daysUntilNext != null) return stats.daysUntilNext >= 12 && stats.daysUntilNext <= 16
+  return false
+}
 
 export default function Home() {
   const { t } = useT()
   const [user, setUser] = useState(null)
   const [logs, setLogs] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [savedInsight, setSavedInsight] = useState(false)
+  const [moodSaved, setMoodSaved] = useState(false)
   const stats = getCycleStats()
+  const profile = getProfile()
 
   useEffect(() => {
     let alive = true
@@ -59,136 +115,207 @@ export default function Home() {
       const u = await getCurrentUser()
       if (!alive) return
       setUser(u)
-      // Real data: Appwrite when configured, else the browser-local check-ins.
       const recent = isAppwriteDataConfigured && u ? await getRecentLogs(u.$id, 7) : getLocalLogs().slice(0, 7)
       if (!alive) return
       setLogs(recent)
-      setLoading(false)
     })()
     return () => {
       alive = false
     }
   }, [])
 
-  const name = (user?.name || getProfile().name || 'there').split(' ')[0]
+  const name = (user?.name || profile.name || 'there').split(' ')[0]
   const latest = logs[0]
+  const phase = stats.phase || null
+  const score = healthScore(stats, latest)
+  const fertile = isFertile(stats)
+
+  const insightKey = latest?.pain != null && latest.pain >= 5
+    ? 'insightPain'
+    : phase
+      ? { menstrual: 'insightMenstrual', follicular: 'insightFollicular', ovulation: 'insightOvulation', luteal: 'insightLuteal' }[phase]
+      : 'insightNoData'
+
+  // Data-derived "Mira Remembers" cards.
+  const memories = []
+  if (stats.avgCycleLength) memories.push(`${t('memAvgPre')} ${stats.avgCycleLength} ${t('daysLower')}.`)
+  if (stats.regularity) memories.push(`${t('memRegularPre')} ${t(regKey(stats.regularity))}.`)
+  if (latest?.mood) memories.push(`${t('memMoodPre')} ${latest.mood}.`)
+  if (memories.length < 3) memories.push(t('memFirst'))
+
+  const recs = RECS[phase] || RECS.follicular
+
+  function logMood(val) {
+    addLog({ mood: val, source: 'mood-snapshot' })
+    setMoodSaved(true)
+    setLogs(getLocalLogs().slice(0, 7))
+  }
 
   return (
     <div className="min-h-screen bg-bg-primary">
       <DashboardTour />
       <Navbar />
-      <main className="mx-auto max-w-5xl px-5 pb-24 pt-28 sm:px-8">
+      <main className="mx-auto max-w-5xl px-5 pb-32 pt-28 sm:px-8">
+        {/* Greeting + dynamic phase message */}
         <div className="flex items-center gap-2 animate-fade-up delay-0">
           <MoonIcon size={22} className="text-accent-secondary" />
           <h1 className="font-heading text-2xl font-semibold sm:text-3xl">
-            {t(greetingKey())}, {name}
+            {t(greetingKey())}, {name} <span className="text-accent-primary">🌸</span>
           </h1>
         </div>
-        <p className="mt-2 text-text-secondary animate-fade-up delay-1">{t('howFeeling')}</p>
+        <p className="mt-2 text-text-secondary animate-fade-up delay-1">
+          {phase ? t(PHASE_MSG[phase]) : t('phaseMsgNoData')}
+        </p>
 
-        {/* Mic hub */}
-        <Card className="mt-8 flex flex-col items-center gap-6 bg-bg-secondary/40 py-12 animate-fade-up delay-2">
-          <VoiceOrb state="idle" onClick={() => {}} className="scale-90" />
-          <Link to="/voice">
-            <Badge tone="accent" icon={<MicIcon size={14} />} className="cursor-pointer">
-              {t('tapToTalk')}
-            </Badge>
-          </Link>
-        </Card>
-
-        {/* Cycle + insight + recent */}
-        <div className="mt-8 grid gap-5 lg:grid-cols-3">
-          {/* Cycle snapshot */}
-          <Card hover as={Link} to="/tracker" className="animate-fade-up delay-3">
-            <div className="mb-4 flex items-center gap-2">
-              <HeartIcon size={18} className="text-accent-primary" />
-              <h2 className="font-heading text-lg font-semibold">{t('homeCycle')}</h2>
+        {/* TODAY'S HEALTH — hero card */}
+        <div className="mt-7 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#FF4F9D]/[0.14] via-[#A855F7]/[0.06] to-transparent p-6 animate-fade-up delay-2 sm:p-7">
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold">{t('todayHealth')}</h2>
+            <Link to="/tracker" className="text-caption text-accent-secondary hover:underline">
+              {t('seeAll')} <ArrowRightIcon size={12} className="inline" />
+            </Link>
+          </div>
+          <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
+            {/* Health score ring */}
+            <div className="relative flex h-32 w-32 shrink-0 items-center justify-center self-center">
+              <svg className="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+                <circle
+                  cx="50" cy="50" r="44" fill="none" stroke="url(#hs)" strokeWidth="8" strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 44}
+                  strokeDashoffset={2 * Math.PI * 44 * (1 - score / 100)}
+                />
+                <defs>
+                  <linearGradient id="hs" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#FF8FC0" />
+                    <stop offset="100%" stopColor="#A855F7" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute text-center">
+                <p className="font-stat text-3xl font-bold text-text-primary">{score}</p>
+                <p className="text-[10px] uppercase tracking-wide text-text-muted">{t('healthScore')}</p>
+              </div>
             </div>
-            {stats.cycleDay ? (
-              <>
-                <p className="font-stat text-3xl font-bold text-text-primary">{t('dayWord')} {stats.cycleDay}</p>
-                <p className="mt-1 text-caption text-accent-secondary">{t(PHASE_KEY[stats.phase])}</p>
-                <p className="mt-3 text-caption text-text-secondary">
-                  {t('nextPeriod')}{' '}
-                  {stats.daysUntilNext >= 0 ? `${t('inWord')} ${stats.daysUntilNext} ${t('daysLower')}` : t('expected')} ·{' '}
-                  {t('avgWord')} {stats.avgCycleLength}{t('dShort')}
-                </p>
-              </>
-            ) : (
-              <p className="text-caption text-text-secondary">{t('homeCycleEmpty')}</p>
-            )}
-          </Card>
-
-          {/* Today's insight */}
-          <Card className="animate-fade-up delay-3">
-            <div className="mb-4 flex items-center gap-2">
-              <SparklesIcon size={18} className="text-accent-ai" />
-              <h2 className="font-heading text-lg font-semibold">{t('todayInsight')}</h2>
+            {/* Stat grid */}
+            <div className="grid flex-1 grid-cols-2 gap-3">
+              <Stat label={t('cycleDayLabel')} value={stats.cycleDay ?? '—'} sub={phase ? t(PHASE_KEY[phase]) : t('logToBegin')} />
+              <Stat
+                label={t('nextPeriod')}
+                value={stats.daysUntilNext != null ? `${Math.max(stats.daysUntilNext, 0)}${t('dShort')}` : '—'}
+                sub={t('avgWord') + ' ' + (stats.avgCycleLength || '—') + t('dShort')}
+              />
+              <Stat label={t('ovulationLabel')} value={fertile ? '🌱' : '—'} sub={fertile ? t('ovFertile') : t('ovNot')} />
+              <Stat label={t('energyLabel')} value={<EnergyDots level={phase ? ENERGY[phase] : 'energyMid'} />} sub={t(phase ? ENERGY[phase] : 'energyMid')} />
             </div>
-            {loading ? (
-              <Skeleton />
-            ) : latest ? (
-              <p className="text-[0.95rem] text-text-secondary">
-                {t('lastCheckinNoted')}{' '}
-                <span className="text-text-primary">
-                  {[latest.flow, latest.pain != null ? `${t('painWord')} ${latest.pain}` : null, latest.mood]
-                    .filter(Boolean)
-                    .join(', ') || t('yourUpdate')}
-                </span>
-                . {t('keepLogging')}
-              </p>
-            ) : (
-              <EmptyState title={t('noInsights')} body={t('noInsightsBody')} />
-            )}
-          </Card>
-
-          {/* Recent */}
-          <Card className="animate-fade-up delay-4">
-            <h2 className="mb-4 font-heading text-lg font-semibold">{t('recent')}</h2>
-            {loading ? (
-              <Skeleton rows={3} />
-            ) : logs.length === 0 ? (
-              <EmptyState compact title={t('nothingLogged')} body={t('recentEmpty')} />
-            ) : (
-              <ul className="space-y-3">
-                {logs.slice(0, 5).map((l) => (
-                  <li key={l.id || l.$id} className="flex items-center justify-between text-caption">
-                    <span className="text-text-secondary">
-                      {new Date(l.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                    </span>
-                    <span className="font-stat text-text-primary">
-                      {[l.flow, l.pain != null ? `pain ${l.pain}` : null].filter(Boolean).join(' · ') || '—'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
-
-        {/* Quick actions */}
-        <div className="mt-8">
-          <h2 className="mb-4 font-heading text-lg font-semibold animate-fade-up delay-4">{t('quickActions')}</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {QUICK_ACTIONS.map((a, i) => (
-              <Card
-                key={a.key}
-                hover
-                as={Link}
-                to={a.to}
-                className={`flex flex-col items-center gap-3 py-6 text-center animate-fade-up delay-${Math.min(i, 5)}`}
-              >
-                <span className={`flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] ${a.tone}`}>
-                  <a.icon size={22} />
-                </span>
-                <span className="text-caption text-text-secondary">{t(a.key)}</span>
-              </Card>
-            ))}
           </div>
         </div>
 
+        {/* Talk to Mira CTA */}
+        <Card hover as={Link} to="/voice" className="mt-6 flex items-center gap-4 bg-bg-secondary/40 animate-fade-up delay-2">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF7BB5] to-[#FF2E8A] text-white shadow-[0_0_20px_rgba(255,79,157,0.45)]">
+            <MicIcon size={22} />
+          </span>
+          <div>
+            <p className="font-heading font-semibold">{t('navTalk')}</p>
+            <p className="text-caption text-text-secondary">{t('tapToTalk')}</p>
+          </div>
+          <ArrowRightIcon size={18} className="ml-auto text-text-muted" />
+        </Card>
+
+        {/* QUICK ACTIONS — horizontal scroll */}
+        <h2 className="mb-3 mt-8 font-heading text-lg font-semibold animate-fade-up delay-3">{t('quickActions')}</h2>
+        <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0">
+          {QUICK_ACTIONS.map((a) => {
+            const inner = (
+              <>
+                <span className="text-2xl">{a.emoji}</span>
+                <span className="text-caption text-text-secondary">{t(a.key)}</span>
+              </>
+            )
+            const cls = 'flex min-w-[92px] shrink-0 flex-col items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-4 text-center transition-all duration-250 hover:border-accent-primary/40 hover:bg-accent-primary/[0.06] active:scale-95'
+            return a.scroll ? (
+              <button key={a.key} onClick={() => document.getElementById(a.scroll)?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className={cls}>
+                {inner}
+              </button>
+            ) : (
+              <Link key={a.key} to={a.to} className={cls}>
+                {inner}
+              </Link>
+            )
+          })}
+        </div>
+
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          {/* Today's AI Insight */}
+          <Card className="animate-fade-up delay-3">
+            <div className="mb-3 flex items-center gap-2">
+              <SparklesIcon size={18} className="text-accent-ai" />
+              <h2 className="font-heading text-lg font-semibold">{t('todayInsight')}</h2>
+            </div>
+            <p className="text-[0.95rem] leading-relaxed text-text-secondary">{t(insightKey)}</p>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setSavedInsight((v) => !v)}
+                className={`rounded-pill border px-4 py-1.5 text-caption transition-colors ${
+                  savedInsight ? 'border-accent-primary/50 bg-accent-primary/10 text-accent-secondary' : 'border-white/15 text-text-secondary hover:border-white/30'
+                }`}
+              >
+                {savedInsight ? `✓ ${t('insightSaved')}` : t('insightSave')}
+              </button>
+              <Link to="/voice" className="rounded-pill border border-white/15 px-4 py-1.5 text-caption text-text-secondary hover:border-white/30">
+                {t('insightAsk')}
+              </Link>
+            </div>
+          </Card>
+
+          {/* Mood snapshot */}
+          <Card id="mood-card" className="animate-fade-up delay-4">
+            <h2 className="mb-3 font-heading text-lg font-semibold">{t('moodTitle')}</h2>
+            <div className="grid grid-cols-3 gap-2.5">
+              {MOODS.map((m) => (
+                <button
+                  key={m.key}
+                  onClick={() => logMood(m.val)}
+                  className="flex flex-col items-center gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.02] py-3 transition-all duration-250 hover:border-accent-primary/40 hover:bg-accent-primary/[0.06] active:scale-95"
+                >
+                  <span className="text-2xl">{m.emoji}</span>
+                  <span className="text-[0.8rem] text-text-secondary">{t(m.key)}</span>
+                </button>
+              ))}
+            </div>
+            {moodSaved && <p className="mt-3 text-caption text-success">{t('moodSaved')}</p>}
+          </Card>
+        </div>
+
+        {/* MIRA Remembers */}
+        <h2 className="mb-3 mt-8 flex items-center gap-2 font-heading text-lg font-semibold animate-fade-up delay-4">
+          <SparklesIcon size={18} className="text-accent-secondary" /> {t('miraRemembers')}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {memories.slice(0, 3).map((m, i) => (
+            <Card key={i} className="bg-bg-secondary/40">
+              <p className="text-[0.95rem] leading-relaxed text-text-secondary">{m}</p>
+            </Card>
+          ))}
+        </div>
+
+        {/* Daily recommendations */}
+        <h2 className="mb-3 mt-8 font-heading text-lg font-semibold animate-fade-up delay-5">{t('dailyRecs')}</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {recs.map((r) => (
+            <Card key={r.t} hover as={Link} to="/guide" className="flex items-start gap-3">
+              <span className="text-2xl">{r.emoji}</span>
+              <div>
+                <p className="font-heading font-semibold">{t(r.t)}</p>
+                <p className="mt-1 text-caption text-text-secondary">{t(r.b)}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+
         {!user && (
-          <p className="mt-10 flex items-center justify-center gap-2 text-caption text-text-muted">
+          <p className="mt-10 flex flex-wrap items-center justify-center gap-2 text-caption text-text-muted">
             <span>{t('signInSync')}</span>
             <Link to="/login" className="inline-flex items-center gap-1 text-accent-secondary hover:underline">
               {t('navLogin')} <ArrowRightIcon size={13} />
@@ -196,26 +323,34 @@ export default function Home() {
           </p>
         )}
       </main>
-      <Footer />
+      <BottomNav />
     </div>
   )
 }
 
-function EmptyState({ title, body, compact }) {
+function regKey(r) {
+  if (r === 'regular') return 'regRegular'
+  if (r === 'slightly irregular') return 'regSlightly'
+  return 'regIrregular'
+}
+
+function Stat({ label, value, sub }) {
   return (
-    <div className={compact ? '' : 'py-2'}>
-      <p className="font-medium text-text-primary">{title}</p>
-      <p className="mt-1 text-caption text-text-secondary">{body}</p>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+      <p className="text-caption text-text-muted">{label}</p>
+      <p className="mt-0.5 font-stat text-xl font-bold text-text-primary">{value}</p>
+      <p className="text-[0.72rem] text-text-secondary">{sub}</p>
     </div>
   )
 }
 
-function Skeleton({ rows = 2 }) {
+function EnergyDots({ level }) {
+  const n = level === 'energyHigh' ? 3 : level === 'energyMid' ? 2 : 1
   return (
-    <div className="space-y-3">
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-3 animate-pulse rounded-pill bg-white/[0.06]" style={{ width: `${90 - i * 15}%` }} />
+    <span className="inline-flex gap-1">
+      {[0, 1, 2].map((i) => (
+        <span key={i} className={`h-2.5 w-2.5 rounded-full ${i < n ? 'bg-accent-primary' : 'bg-white/15'}`} />
       ))}
-    </div>
+    </span>
   )
 }
