@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
 import MiraMark, { MiraWordmark } from '../components/MiraMark'
+import { armDashboardTour } from '../components/DashboardTour'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT, LANGS, setOnboarded } from '../lib/i18n'
@@ -76,6 +77,7 @@ export default function Onboarding() {
       notifications: !!reminders,
     })
     setOnboarded(true)
+    armDashboardTour() // show the guided tour on the first home visit
   }
 
   // Personalising loader → persist, then into the app.

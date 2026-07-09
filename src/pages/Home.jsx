@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
+import DashboardTour from '../components/DashboardTour'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import VoiceOrb from '../components/voice/VoiceOrb'
@@ -74,6 +75,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-bg-primary">
+      <DashboardTour />
       <Navbar />
       <main className="mx-auto max-w-5xl px-5 pb-24 pt-28 sm:px-8">
         <div className="flex items-center gap-2 animate-fade-up delay-0">
