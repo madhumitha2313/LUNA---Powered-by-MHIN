@@ -26,3 +26,6 @@ yarn-error.log*
 coverage/
 .playwright/
 *.local
+
+# Local single-file preview copies (generated)
+MIRA-app.html

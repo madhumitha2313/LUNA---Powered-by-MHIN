@@ -518,6 +518,12 @@ const DICT = {
     ceMood: 'Mood', ceEnergy: 'Energy', ceFood: 'Food', ceExercise: 'Exercise', ceSymptoms: 'Symptoms', ceCare: 'Self-care',
     phase_menstrual: 'Menstrual', phase_follicular: 'Follicular', phase_ovulation: 'Ovulation', phase_luteal: 'Luteal',
     learnCycleCta: 'Explore your 28-day cycle', learnCycleSub: 'Interactive · drag the timeline, hear it explained',
+    // anatomy explorer (Part 05)
+    anTitle: 'Explore your anatomy', anSub: 'Tap an organ to learn what it does and its role in your cycle.',
+    anTapHint: 'Tap the uterus, ovaries, tubes or cervix to explore.',
+    anWatch: 'Watch ovulation', anWatching: 'Watching…',
+    an_uterus: 'Uterus', an_ovaries: 'Ovaries', an_tubes: 'Fallopian tubes', an_cervix: 'Cervix', an_endometrium: 'Endometrium',
+    learnAnatomyCta: 'Explore your anatomy', learnAnatomySub: 'Interactive · tap organs, watch ovulation',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -975,6 +981,12 @@ const DICT = {
     ceMood: 'மனநிலை', ceEnergy: 'ஆற்றல்', ceFood: 'உணவு', ceExercise: 'உடற்பயிற்சி', ceSymptoms: 'அறிகுறிகள்', ceCare: 'சுய பராமரிப்பு',
     phase_menstrual: 'மாதவிடாய்', phase_follicular: 'ஃபாலிகுலர்', phase_ovulation: 'அண்டவிடுப்பு', phase_luteal: 'லூட்டியல்',
     learnCycleCta: 'உங்கள் 28-நாள் சுழற்சியை ஆராயுங்கள்', learnCycleSub: 'ஊடாடும் · காலக்கோட்டை இழுங்கள், விளக்கத்தைக் கேளுங்கள்',
+    // anatomy explorer (Part 05)
+    anTitle: 'உங்கள் உடற்கூறை ஆராயுங்கள்', anSub: 'ஒவ்வொரு உறுப்பையும் தொட்டு அதன் பணியையும் சுழற்சியில் அதன் பங்கையும் அறியுங்கள்.',
+    anTapHint: 'கருப்பை, சினைப்பைகள், குழாய்கள் அல்லது கர்ப்பப்பை வாயைத் தொட்டு ஆராயுங்கள்.',
+    anWatch: 'அண்டவிடுப்பைப் பாருங்கள்', anWatching: 'பார்க்கிறது…',
+    an_uterus: 'கருப்பை', an_ovaries: 'சினைப்பைகள்', an_tubes: 'ஃபாலோபியன் குழாய்கள்', an_cervix: 'கர்ப்பப்பை வாய்', an_endometrium: 'கருப்பை உள்ளடுக்கு',
+    learnAnatomyCta: 'உங்கள் உடற்கூறை ஆராயுங்கள்', learnAnatomySub: 'ஊடாடும் · உறுப்புகளைத் தொடுங்கள், அண்டவிடுப்பைப் பாருங்கள்',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
@@ -1386,6 +1398,12 @@ const DICT = {
     ceMood: 'मूड', ceEnergy: 'ऊर्जा', ceFood: 'भोजन', ceExercise: 'व्यायाम', ceSymptoms: 'लक्षण', ceCare: 'स्व-देखभाल',
     phase_menstrual: 'मासिक धर्म', phase_follicular: 'फॉलिक्युलर', phase_ovulation: 'ओव्यूलेशन', phase_luteal: 'ल्यूटियल',
     learnCycleCta: 'अपने 28-दिन के चक्र को जानें', learnCycleSub: 'इंटरैक्टिव · टाइमलाइन खींचें, समझाया हुआ सुनें',
+    // anatomy explorer (Part 05)
+    anTitle: 'अपनी शारीरिक रचना जानें', anSub: 'हर अंग को छूकर जानें कि वह क्या करता है और चक्र में उसकी भूमिका क्या है।',
+    anTapHint: 'गर्भाशय, अंडाशय, ट्यूब या गर्भाशय ग्रीवा को छूकर जानें।',
+    anWatch: 'ओव्यूलेशन देखें', anWatching: 'देख रहे हैं…',
+    an_uterus: 'गर्भाशय', an_ovaries: 'अंडाशय', an_tubes: 'फैलोपियन ट्यूब', an_cervix: 'गर्भाशय ग्रीवा', an_endometrium: 'एंडोमेट्रियम',
+    learnAnatomyCta: 'अपनी शारीरिक रचना जानें', learnAnatomySub: 'इंटरैक्टिव · अंगों को छुएँ, ओव्यूलेशन देखें',
   },
   ml: {
     splashTagline: 'നിങ്ങളുടെ ആരോഗ്യം, നിങ്ങളുടെ ശബ്ദം.',
@@ -1797,6 +1815,12 @@ const DICT = {
     ceMood: 'മാനസികാവസ്ഥ', ceEnergy: 'ഊർജ്ജം', ceFood: 'ഭക്ഷണം', ceExercise: 'വ്യായാമം', ceSymptoms: 'ലക്ഷണങ്ങൾ', ceCare: 'സ്വയം പരിചരണം',
     phase_menstrual: 'ആർത്തവം', phase_follicular: 'ഫോളിക്യുലർ', phase_ovulation: 'അണ്ഡോത്പാദനം', phase_luteal: 'ലൂട്ടിയൽ',
     learnCycleCta: 'നിങ്ങളുടെ 28-ദിവസ ചക്രം പര്യവേക്ഷണം ചെയ്യൂ', learnCycleSub: 'ഇന്ററാക്ടീവ് · ടൈംലൈൻ വലിക്കൂ, വിശദീകരണം കേൾക്കൂ',
+    // anatomy explorer (Part 05)
+    anTitle: 'നിങ്ങളുടെ ശരീരഘടന പര്യവേക്ഷണം ചെയ്യൂ', anSub: 'ഓരോ അവയവവും തൊട്ട് അതിന്റെ ധർമ്മവും ചക്രത്തിലെ പങ്കും അറിയൂ.',
+    anTapHint: 'ഗർഭപാത്രം, അണ്ഡാശയങ്ങൾ, ട്യൂബുകൾ അല്ലെങ്കിൽ സെർവിക്സ് തൊട്ട് പര്യവേക്ഷണം ചെയ്യൂ.',
+    anWatch: 'അണ്ഡോത്പാദനം കാണൂ', anWatching: 'കാണുന്നു…',
+    an_uterus: 'ഗർഭപാത്രം', an_ovaries: 'അണ്ഡാശയങ്ങൾ', an_tubes: 'ഫാലോപ്യൻ ട്യൂബുകൾ', an_cervix: 'സെർവിക്സ്', an_endometrium: 'എൻഡോമെട്രിയം',
+    learnAnatomyCta: 'നിങ്ങളുടെ ശരീരഘടന പര്യവേക്ഷണം ചെയ്യൂ', learnAnatomySub: 'ഇന്ററാക്ടീവ് · അവയവങ്ങൾ തൊടൂ, അണ്ഡോത്പാദനം കാണൂ',
   },
   te: {
     splashTagline: 'మీ ఆరోగ్యం, మీ స్వరం.',
@@ -2208,6 +2232,12 @@ const DICT = {
     ceMood: 'మూడ్', ceEnergy: 'శక్తి', ceFood: 'ఆహారం', ceExercise: 'వ్యాయామం', ceSymptoms: 'లక్షణాలు', ceCare: 'స్వీయ సంరక్షణ',
     phase_menstrual: 'రుతుస్రావం', phase_follicular: 'ఫోలిక్యులర్', phase_ovulation: 'అండోత్సర్గము', phase_luteal: 'లూటియల్',
     learnCycleCta: 'మీ 28-రోజుల చక్రాన్ని అన్వేషించండి', learnCycleSub: 'ఇంటరాక్టివ్ · టైమ్‌లైన్ లాగండి, వివరణ వినండి',
+    // anatomy explorer (Part 05)
+    anTitle: 'మీ శరీర నిర్మాణాన్ని అన్వేషించండి', anSub: 'ప్రతి అవయవాన్ని తాకి అది ఏమి చేస్తుందో, చక్రంలో దాని పాత్రను తెలుసుకోండి.',
+    anTapHint: 'గర్భాశయం, అండాశయాలు, ట్యూబులు లేదా గర్భాశయ ముఖద్వారాన్ని తాకి అన్వేషించండి.',
+    anWatch: 'అండోత్సర్గాన్ని చూడండి', anWatching: 'చూస్తోంది…',
+    an_uterus: 'గర్భాశయం', an_ovaries: 'అండాశయాలు', an_tubes: 'ఫెలోపియన్ ట్యూబులు', an_cervix: 'గర్భాశయ ముఖద్వారం', an_endometrium: 'ఎండోమెట్రియం',
+    learnAnatomyCta: 'మీ శరీర నిర్మాణాన్ని అన్వేషించండి', learnAnatomySub: 'ఇంటరాక్టివ్ · అవయవాలను తాకండి, అండోత్సర్గాన్ని చూడండి',
   },
   kn: {
     splashTagline: 'ನಿಮ್ಮ ಆರೋಗ್ಯ, ನಿಮ್ಮ ಧ್ವನಿ.',
