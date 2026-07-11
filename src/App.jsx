@@ -35,6 +35,7 @@ import Report from './pages/Report'
 import Doctors from './pages/Doctors'
 import Profile from './pages/Profile'
 import Guide from './pages/Guide'
+import Learn from './pages/Learn'
 import Impact from './pages/Impact'
 import Settings from './pages/Settings'
 import Timeline from './pages/Timeline'
@@ -57,7 +58,8 @@ export default function App() {
       <Route path="/report" element={<Report />} />
       <Route path="/doctors" element={<Doctors />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/guide" element={<Guide />} />
+      <Route path="/guide" element={<Learn />} />
+      <Route path="/readiness" element={<Guide />} />
       <Route path="/impact" element={<Impact />} />
       <Route path="/timeline" element={<Timeline />} />
       <Route path="/settings" element={<Settings />} />
