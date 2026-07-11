@@ -512,6 +512,12 @@ const DICT = {
     learnPts: 'pts', learnMyth: 'Myth', learnFact: 'Fact', learnNice: 'Nice!', learnNotQuite: 'Not quite —',
     learnItsMyth: "It's a myth.", learnItsFact: "It's a fact.", learnSeeScore: 'See score',
     learnMythBuster: 'Myth-buster! You really know your stuff.', learnGoodEffort: 'Great effort — you learned something new today.',
+    // cycle explorer (Part 05)
+    ceTitle: 'Cycle Explorer', ceSub: 'Drag the timeline or press play to move through your 28-day cycle.',
+    ceDay: 'Day', ceEstrogen: 'Estrogen', ceProgesterone: 'Progesterone', cePlay: 'Play', cePause: 'Pause', ceListen: 'Listen',
+    ceMood: 'Mood', ceEnergy: 'Energy', ceFood: 'Food', ceExercise: 'Exercise', ceSymptoms: 'Symptoms', ceCare: 'Self-care',
+    phase_menstrual: 'Menstrual', phase_follicular: 'Follicular', phase_ovulation: 'Ovulation', phase_luteal: 'Luteal',
+    learnCycleCta: 'Explore your 28-day cycle', learnCycleSub: 'Interactive · drag the timeline, hear it explained',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -963,6 +969,12 @@ const DICT = {
     learnPts: 'புள்ளிகள்', learnMyth: 'கட்டுக்கதை', learnFact: 'உண்மை', learnNice: 'அருமை!', learnNotQuite: 'சரியில்லை —',
     learnItsMyth: 'இது ஒரு கட்டுக்கதை.', learnItsFact: 'இது ஒரு உண்மை.', learnSeeScore: 'மதிப்பெண்ணைப் பார்',
     learnMythBuster: 'கட்டுக்கதை நீக்கி! உங்களுக்கு நன்றாகத் தெரியும்.', learnGoodEffort: 'சிறந்த முயற்சி — இன்று புதிதாக ஒன்றைக் கற்றுக்கொண்டீர்கள்.',
+    // cycle explorer (Part 05)
+    ceTitle: 'சுழற்சி எக்ஸ்ப்ளோரர்', ceSub: 'உங்கள் 28-நாள் சுழற்சி வழியே செல்ல காலக்கோட்டை இழுக்கவும் அல்லது இயக்கவும்.',
+    ceDay: 'நாள்', ceEstrogen: 'ஈஸ்ட்ரோஜன்', ceProgesterone: 'புரோஜெஸ்ட்டிரோன்', cePlay: 'இயக்கு', cePause: 'இடைநிறுத்து', ceListen: 'கேளுங்கள்',
+    ceMood: 'மனநிலை', ceEnergy: 'ஆற்றல்', ceFood: 'உணவு', ceExercise: 'உடற்பயிற்சி', ceSymptoms: 'அறிகுறிகள்', ceCare: 'சுய பராமரிப்பு',
+    phase_menstrual: 'மாதவிடாய்', phase_follicular: 'ஃபாலிகுலர்', phase_ovulation: 'அண்டவிடுப்பு', phase_luteal: 'லூட்டியல்',
+    learnCycleCta: 'உங்கள் 28-நாள் சுழற்சியை ஆராயுங்கள்', learnCycleSub: 'ஊடாடும் · காலக்கோட்டை இழுங்கள், விளக்கத்தைக் கேளுங்கள்',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
@@ -1368,6 +1380,12 @@ const DICT = {
     learnPts: 'अंक', learnMyth: 'मिथक', learnFact: 'सच', learnNice: 'बढ़िया!', learnNotQuite: 'बिल्कुल नहीं —',
     learnItsMyth: 'यह एक मिथक है।', learnItsFact: 'यह एक सच है।', learnSeeScore: 'स्कोर देखें',
     learnMythBuster: 'मिथक-तोड़क! आप वाकई जानती हैं।', learnGoodEffort: 'शानदार प्रयास — आज आपने कुछ नया सीखा।',
+    // cycle explorer (Part 05)
+    ceTitle: 'साइकल एक्सप्लोरर', ceSub: 'अपने 28-दिन के चक्र में घूमने के लिए टाइमलाइन खींचें या प्ले दबाएँ।',
+    ceDay: 'दिन', ceEstrogen: 'एस्ट्रोजन', ceProgesterone: 'प्रोजेस्टेरोन', cePlay: 'चलाएँ', cePause: 'रोकें', ceListen: 'सुनें',
+    ceMood: 'मूड', ceEnergy: 'ऊर्जा', ceFood: 'भोजन', ceExercise: 'व्यायाम', ceSymptoms: 'लक्षण', ceCare: 'स्व-देखभाल',
+    phase_menstrual: 'मासिक धर्म', phase_follicular: 'फॉलिक्युलर', phase_ovulation: 'ओव्यूलेशन', phase_luteal: 'ल्यूटियल',
+    learnCycleCta: 'अपने 28-दिन के चक्र को जानें', learnCycleSub: 'इंटरैक्टिव · टाइमलाइन खींचें, समझाया हुआ सुनें',
   },
   ml: {
     splashTagline: 'നിങ്ങളുടെ ആരോഗ്യം, നിങ്ങളുടെ ശബ്ദം.',
@@ -1773,6 +1791,12 @@ const DICT = {
     learnPts: 'പോയിന്റ്', learnMyth: 'മിഥ്യ', learnFact: 'വസ്തുത', learnNice: 'കൊള്ളാം!', learnNotQuite: 'അത്ര ശരിയല്ല —',
     learnItsMyth: 'ഇത് ഒരു മിഥ്യയാണ്.', learnItsFact: 'ഇത് ഒരു വസ്തുതയാണ്.', learnSeeScore: 'സ്കോർ കാണൂ',
     learnMythBuster: 'മിഥ്യാ ഭഞ്ജകൻ! നിങ്ങൾക്ക് നന്നായി അറിയാം.', learnGoodEffort: 'മികച്ച ശ്രമം — ഇന്ന് പുതിയതൊന്ന് പഠിച്ചു.',
+    // cycle explorer (Part 05)
+    ceTitle: 'സൈക്കിൾ എക്സ്പ്ലോറർ', ceSub: 'നിങ്ങളുടെ 28-ദിവസ ചക്രത്തിലൂടെ നീങ്ങാൻ ടൈംലൈൻ വലിക്കൂ അല്ലെങ്കിൽ പ്ലേ അമർത്തൂ.',
+    ceDay: 'ദിവസം', ceEstrogen: 'ഈസ്ട്രജൻ', ceProgesterone: 'പ്രോജസ്റ്ററോൺ', cePlay: 'പ്ലേ', cePause: 'നിർത്തൂ', ceListen: 'കേൾക്കൂ',
+    ceMood: 'മാനസികാവസ്ഥ', ceEnergy: 'ഊർജ്ജം', ceFood: 'ഭക്ഷണം', ceExercise: 'വ്യായാമം', ceSymptoms: 'ലക്ഷണങ്ങൾ', ceCare: 'സ്വയം പരിചരണം',
+    phase_menstrual: 'ആർത്തവം', phase_follicular: 'ഫോളിക്യുലർ', phase_ovulation: 'അണ്ഡോത്പാദനം', phase_luteal: 'ലൂട്ടിയൽ',
+    learnCycleCta: 'നിങ്ങളുടെ 28-ദിവസ ചക്രം പര്യവേക്ഷണം ചെയ്യൂ', learnCycleSub: 'ഇന്ററാക്ടീവ് · ടൈംലൈൻ വലിക്കൂ, വിശദീകരണം കേൾക്കൂ',
   },
   te: {
     splashTagline: 'మీ ఆరోగ్యం, మీ స్వరం.',
@@ -2178,6 +2202,12 @@ const DICT = {
     learnPts: 'పాయింట్లు', learnMyth: 'అపోహ', learnFact: 'నిజం', learnNice: 'బాగుంది!', learnNotQuite: 'సరిగ్గా కాదు —',
     learnItsMyth: 'ఇది ఒక అపోహ.', learnItsFact: 'ఇది ఒక నిజం.', learnSeeScore: 'స్కోర్ చూడండి',
     learnMythBuster: 'అపోహ ఛేదకుడు! మీకు బాగా తెలుసు.', learnGoodEffort: 'గొప్ప ప్రయత్నం — ఈరోజు కొత్తది నేర్చుకున్నారు.',
+    // cycle explorer (Part 05)
+    ceTitle: 'సైకిల్ ఎక్స్‌ప్లోరర్', ceSub: 'మీ 28-రోజుల చక్రం ద్వారా కదలడానికి టైమ్‌లైన్‌ను లాగండి లేదా ప్లే నొక్కండి.',
+    ceDay: 'రోజు', ceEstrogen: 'ఈస్ట్రోజెన్', ceProgesterone: 'ప్రొజెస్టెరాన్', cePlay: 'ప్లే', cePause: 'పాజ్', ceListen: 'వినండి',
+    ceMood: 'మూడ్', ceEnergy: 'శక్తి', ceFood: 'ఆహారం', ceExercise: 'వ్యాయామం', ceSymptoms: 'లక్షణాలు', ceCare: 'స్వీయ సంరక్షణ',
+    phase_menstrual: 'రుతుస్రావం', phase_follicular: 'ఫోలిక్యులర్', phase_ovulation: 'అండోత్సర్గము', phase_luteal: 'లూటియల్',
+    learnCycleCta: 'మీ 28-రోజుల చక్రాన్ని అన్వేషించండి', learnCycleSub: 'ఇంటరాక్టివ్ · టైమ్‌లైన్ లాగండి, వివరణ వినండి',
   },
   kn: {
     splashTagline: 'ನಿಮ್ಮ ಆರೋಗ್ಯ, ನಿಮ್ಮ ಧ್ವನಿ.',

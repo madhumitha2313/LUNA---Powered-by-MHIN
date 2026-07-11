@@ -139,4 +139,26 @@
   .delay-3 { animation-delay: 240ms; }
   .delay-4 { animation-delay: 320ms; }
   .delay-5 { animation-delay: 400ms; }
+
+  /* Cycle-explorer timeline slider thumb */
+  .mira-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #fff;
+    border: 3px solid #d97ba8;
+    box-shadow: 0 0 12px rgba(217, 123, 168, 0.6);
+    cursor: pointer;
+  }
+  .mira-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #fff;
+    border: 3px solid #d97ba8;
+    box-shadow: 0 0 12px rgba(217, 123, 168, 0.6);
+    cursor: pointer;
+  }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PageShell from '../components/layout/PageShell'
 import Card from '../components/ui/Card'
@@ -9,6 +9,7 @@ import { TOPICS, MYTHS, DAILY } from '../lib/learnContent'
 import { getProgress, isDone, level, completeLesson, recordMythScore } from '../lib/learnProgress'
 import { getProfile, getCycleStats } from '../lib/localStore'
 import { useT } from '../lib/i18n.jsx'
+import CycleExplorer from '../components/CycleExplorer'
 
 const BADGE = {
   firstperiod: 'First Guide', cycle: 'Cycle Expert', hormones: 'Hormone Aware', products: 'Products Pro',
@@ -31,6 +32,7 @@ export default function Learn() {
   const [prog, setProg] = useState(getProgress())
   const [active, setActive] = useState(null) // topic being viewed
   const [myth, setMyth] = useState(false) // myth game open
+  const [cycle, setCycle] = useState(false) // cycle explorer open
   const rec = recommendedIds()
   const daily = DAILY[new Date().getDate() % DAILY.length]
   const pct = Math.round((prog.completed.length / TOPICS.length) * 100)
@@ -73,6 +75,22 @@ export default function Learn() {
         </div>
         <p className="mt-3 text-[1.05rem] leading-relaxed text-text-secondary">{daily.text}</p>
       </div>
+
+      {/* Featured: interactive cycle explorer */}
+      <button
+        onClick={() => setCycle(true)}
+        className="group mt-4 flex w-full items-center gap-4 overflow-hidden rounded-3xl border border-accent-primary/30 bg-gradient-to-r from-[#d97ba8]/[0.16] via-[#a78bfa]/[0.1] to-transparent p-5 text-left transition-all hover:border-accent-primary/60 hover:shadow-glow"
+      >
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/[0.06] text-3xl transition-transform group-hover:scale-110">🩸</span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h2 className="font-heading text-lg font-semibold">{t('learnCycleCta')}</h2>
+            <Badge tone="ai" icon={<SparklesIcon size={12} />}>3D</Badge>
+          </div>
+          <p className="mt-0.5 text-caption text-text-secondary">{t('learnCycleSub')}</p>
+        </div>
+        <ArrowRightIcon size={20} className="ml-auto shrink-0 text-accent-primary transition-transform group-hover:translate-x-1" />
+      </button>
 
       {/* Topic cards */}
       <h2 className="mb-4 mt-10 font-heading text-lg font-semibold">{t('learnExplore')}</h2>
@@ -123,6 +141,7 @@ export default function Learn() {
 
       {active && <LessonViewer topic={active} t={t} onClose={() => setActive(null)} onComplete={onComplete} />}
       {myth && <MythGame t={t} onClose={() => setMyth(false)} onFinish={(s) => setProg(recordMythScore(s))} />}
+      {cycle && <CycleExplorer startDay={getCycleStats().cycleDay || 1} onClose={() => setCycle(false)} />}
     </PageShell>
   )
 }
@@ -139,6 +158,7 @@ function ProgStat({ label, value, sub }) {
 
 /** Swipeable reel of cards → mini quiz → completion. */
 function LessonViewer({ topic, onClose, onComplete, t }) {
+  const { lang } = useT()
   const total = topic.cards.length
   const [i, setI] = useState(0)
   const [stage, setStage] = useState('cards') // cards | quiz | done
@@ -146,6 +166,21 @@ function LessonViewer({ topic, onClose, onComplete, t }) {
 
   const isQuiz = stage === 'quiz'
   const correct = picked === topic.quiz.answer
+
+  const SR_LANG = { en: 'en-US', ta: 'ta-IN', hi: 'hi-IN', ml: 'ml-IN', te: 'te-IN', kn: 'kn-IN', bn: 'bn-IN', mr: 'mr-IN' }
+  function narrate() {
+    try {
+      const sy = window.speechSynthesis
+      if (!sy) return
+      sy.cancel()
+      const c = topic.cards[i]
+      const u = new SpeechSynthesisUtterance(`${c.h}. ${c.b}`)
+      u.lang = SR_LANG[lang] || 'en-US'
+      u.rate = 0.98
+      sy.speak(u)
+    } catch { /* ignore */ }
+  }
+  useEffect(() => () => { try { window.speechSynthesis?.cancel() } catch { /* ignore */ } }, [])
 
   return (
     <Modal onClose={onClose}>
@@ -168,9 +203,12 @@ function LessonViewer({ topic, onClose, onComplete, t }) {
           <p className="mt-3 text-[1.05rem] leading-relaxed text-text-secondary">{topic.cards[i].b}</p>
           <div className="mt-8 flex items-center justify-between">
             <button onClick={() => setI((v) => Math.max(0, v - 1))} disabled={i === 0} className="rounded-pill px-4 py-2 text-caption text-text-muted disabled:opacity-40">← {t('learnBack')}</button>
-            <Button onClick={() => (i < total - 1 ? setI(i + 1) : setStage('quiz'))} size="md">
-              {i < total - 1 ? t('learnNext') : t('learnQuiz')} <ArrowRightIcon size={16} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <button onClick={narrate} title={t('ceListen')} aria-label={t('ceListen')} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-text-secondary transition hover:border-accent-primary/50 hover:text-accent-primary">🔊</button>
+              <Button onClick={() => (i < total - 1 ? setI(i + 1) : setStage('quiz'))} size="md">
+                {i < total - 1 ? t('learnNext') : t('learnQuiz')} <ArrowRightIcon size={16} />
+              </Button>
+            </div>
           </div>
         </div>
       )}
