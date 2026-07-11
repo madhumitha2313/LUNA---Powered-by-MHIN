@@ -45,7 +45,7 @@ const ENERGY = { menstrual: 'energyLow', follicular: 'energyHigh', ovulation: 'e
 const QUICK_ACTIONS = [
   { key: 'qaTalk', to: '/voice', icon: MicIcon, tone: 'text-accent-secondary', emoji: '🎤' },
   { key: 'qaLogSym', to: '/symptoms', icon: SparklesIcon, tone: 'text-accent-ai', emoji: '🩸' },
-  { key: 'qaMood', scroll: 'mood-card', icon: HeartIcon, tone: 'text-accent-primary', emoji: '😊' },
+  { key: 'qaMood', to: '/mood', icon: HeartIcon, tone: 'text-accent-primary', emoji: '😊' },
   { key: 'qaWater', to: '/guide', icon: LeafIcon, tone: 'text-accent-secondary', emoji: '💧' },
   { key: 'qaFood', to: '/guide', icon: LeafIcon, tone: 'text-success', emoji: '🥗' },
   { key: 'qaUpload', to: '/report', icon: FileIcon, tone: 'text-success', emoji: '📄' },

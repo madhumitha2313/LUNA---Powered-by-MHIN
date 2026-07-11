@@ -140,6 +140,15 @@
   .delay-4 { animation-delay: 320ms; }
   .delay-5 { animation-delay: 400ms; }
 
+  /* Mood-room drifting particles: float from bottom to top and fade */
+  @keyframes floatUp {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    12% { opacity: 0.6; }
+    88% { opacity: 0.6; }
+    100% { transform: translateY(-108vh) translateX(20px); opacity: 0; }
+  }
+  .animate-float-up { animation: floatUp linear infinite; }
+
   /* Cycle-explorer timeline slider thumb */
   .mira-range::-webkit-slider-thumb {
     -webkit-appearance: none;
