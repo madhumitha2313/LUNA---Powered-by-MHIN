@@ -20,7 +20,7 @@ const ITEMS = [
   { to: '/home', icon: HomeGlyph, key: 'navHome' },
   { to: '/guide', icon: UsersIcon, key: 'navGuide' },
   { to: '/voice', icon: MicIcon, key: 'navTalk', center: true },
-  { to: '/timeline', icon: TrendIcon, key: 'navJourney' },
+  { to: '/journey', icon: TrendIcon, key: 'navJourney' },
   { to: '/profile', icon: ProfileGlyph, key: 'navProfile' },
 ]
 

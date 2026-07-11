@@ -50,7 +50,7 @@ const QUICK_ACTIONS = [
   { key: 'qaFood', to: '/guide', icon: LeafIcon, tone: 'text-success', emoji: '🥗' },
   { key: 'qaUpload', to: '/report', icon: FileIcon, tone: 'text-success', emoji: '📄' },
   { key: 'qaWellness', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai', emoji: '🧘' },
-  { key: 'qaCalendar', to: '/tracker', icon: TrendIcon, tone: 'text-accent-secondary', emoji: '📅' },
+  { key: 'qaCalendar', to: '/cycle', icon: TrendIcon, tone: 'text-accent-secondary', emoji: '📅' },
 ]
 
 const MOODS = [
@@ -171,7 +171,7 @@ export default function Home() {
         <div className="mt-7 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#FF4F9D]/[0.14] via-[#A855F7]/[0.06] to-transparent p-6 animate-fade-up delay-2 sm:p-7">
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold">{t('todayHealth')}</h2>
-            <Link to="/tracker" className="text-caption text-accent-secondary hover:underline">
+            <Link to="/cycle" className="text-caption text-accent-secondary hover:underline">
               {t('seeAll')} <ArrowRightIcon size={12} className="inline" />
             </Link>
           </div>

@@ -39,6 +39,8 @@ import Learn from './pages/Learn'
 import Impact from './pages/Impact'
 import Settings from './pages/Settings'
 import Timeline from './pages/Timeline'
+import Cycle from './pages/Cycle'
+import Journey from './pages/Journey'
 
 export default function App() {
   return (
@@ -62,6 +64,8 @@ export default function App() {
       <Route path="/readiness" element={<Guide />} />
       <Route path="/impact" element={<Impact />} />
       <Route path="/timeline" element={<Timeline />} />
+      <Route path="/cycle" element={<RequireOnboarding><Cycle /></RequireOnboarding>} />
+      <Route path="/journey" element={<RequireOnboarding><Journey /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
