@@ -42,6 +42,7 @@ import Timeline from './pages/Timeline'
 import Cycle from './pages/Cycle'
 import Journey from './pages/Journey'
 import Mood from './pages/Mood'
+import Nutrition from './pages/Nutrition'
 
 export default function App() {
   return (
@@ -68,6 +69,7 @@ export default function App() {
       <Route path="/cycle" element={<RequireOnboarding><Cycle /></RequireOnboarding>} />
       <Route path="/journey" element={<RequireOnboarding><Journey /></RequireOnboarding>} />
       <Route path="/mood" element={<RequireOnboarding><Mood /></RequireOnboarding>} />
+      <Route path="/nutrition" element={<RequireOnboarding><Nutrition /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
