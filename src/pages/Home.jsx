@@ -291,6 +291,7 @@ export default function Home() {
         {/* MIRA Remembers */}
         <h2 className="mb-3 mt-8 flex items-center gap-2 font-heading text-lg font-semibold animate-fade-up delay-4">
           <SparklesIcon size={18} className="text-accent-secondary" /> {t('miraRemembers')}
+          <Link to="/mira" className="ml-auto text-caption font-normal text-accent-secondary hover:underline">🧠 {t('coOpenBrain')} <ArrowRightIcon size={12} className="inline" /></Link>
         </h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {memories.slice(0, 3).map((m, i) => (
