@@ -524,6 +524,11 @@ const DICT = {
     anWatch: 'Watch ovulation', anWatching: 'Watching…',
     an_uterus: 'Uterus', an_ovaries: 'Ovaries', an_tubes: 'Fallopian tubes', an_cervix: 'Cervix', an_endometrium: 'Endometrium',
     learnAnatomyCta: 'Explore your anatomy', learnAnatomySub: 'Interactive · tap organs, watch ovulation',
+    // products explorer (Part 05)
+    pTitle: 'Menstrual products', pSub: 'Tap a product to see how it works, its pros and cons, and how to use it safely.',
+    learnProductsCta: 'Compare period products', learnProductsSub: 'Interactive · 6 products, full guide',
+    prod_pads: 'Pads', prod_tampons: 'Tampons', prod_cup: 'Menstrual cup', prod_liner: 'Panty liners', prod_cloth: 'Cloth pads', prod_underwear: 'Period underwear',
+    pWhat: 'What is it', pHow: 'How it works', pAdv: 'Advantages', pDis: 'Disadvantages', pWhen: 'When to use', pUse: 'How to use', pDispose: 'How to dispose', pMistakes: 'Common mistakes', pSafety: 'Safety tips',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -987,6 +992,11 @@ const DICT = {
     anWatch: 'அண்டவிடுப்பைப் பாருங்கள்', anWatching: 'பார்க்கிறது…',
     an_uterus: 'கருப்பை', an_ovaries: 'சினைப்பைகள்', an_tubes: 'ஃபாலோபியன் குழாய்கள்', an_cervix: 'கர்ப்பப்பை வாய்', an_endometrium: 'கருப்பை உள்ளடுக்கு',
     learnAnatomyCta: 'உங்கள் உடற்கூறை ஆராயுங்கள்', learnAnatomySub: 'ஊடாடும் · உறுப்புகளைத் தொடுங்கள், அண்டவிடுப்பைப் பாருங்கள்',
+    // products explorer (Part 05)
+    pTitle: 'மாதவிடாய் தயாரிப்புகள்', pSub: 'ஒவ்வொரு தயாரிப்பையும் தொட்டு அது எப்படி வேலை செய்கிறது, நன்மை தீமைகள், பாதுகாப்பாகப் பயன்படுத்துவது எப்படி என்பதைப் பாருங்கள்.',
+    learnProductsCta: 'மாதவிடாய் தயாரிப்புகளை ஒப்பிடுங்கள்', learnProductsSub: 'ஊடாடும் · 6 தயாரிப்புகள், முழு வழிகாட்டி',
+    prod_pads: 'பேட்கள்', prod_tampons: 'டாம்பான்கள்', prod_cup: 'மாதவிடாய் கோப்பை', prod_liner: 'பேன்டி லைனர்கள்', prod_cloth: 'துணி பேட்கள்', prod_underwear: 'மாதவிடாய் உள்ளாடை',
+    pWhat: 'இது என்ன', pHow: 'எப்படி வேலை செய்கிறது', pAdv: 'நன்மைகள்', pDis: 'தீமைகள்', pWhen: 'எப்போது பயன்படுத்த', pUse: 'எப்படிப் பயன்படுத்த', pDispose: 'எப்படி அகற்ற', pMistakes: 'பொதுவான தவறுகள்', pSafety: 'பாதுகாப்பு குறிப்புகள்',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
@@ -1404,6 +1414,11 @@ const DICT = {
     anWatch: 'ओव्यूलेशन देखें', anWatching: 'देख रहे हैं…',
     an_uterus: 'गर्भाशय', an_ovaries: 'अंडाशय', an_tubes: 'फैलोपियन ट्यूब', an_cervix: 'गर्भाशय ग्रीवा', an_endometrium: 'एंडोमेट्रियम',
     learnAnatomyCta: 'अपनी शारीरिक रचना जानें', learnAnatomySub: 'इंटरैक्टिव · अंगों को छुएँ, ओव्यूलेशन देखें',
+    // products explorer (Part 05)
+    pTitle: 'मासिक धर्म उत्पाद', pSub: 'हर उत्पाद को छूकर देखें कि वह कैसे काम करता है, उसके फायदे-नुकसान, और सुरक्षित तरीके से उपयोग कैसे करें।',
+    learnProductsCta: 'पीरियड उत्पादों की तुलना करें', learnProductsSub: 'इंटरैक्टिव · 6 उत्पाद, पूरी गाइड',
+    prod_pads: 'पैड', prod_tampons: 'टैम्पोन', prod_cup: 'मेंस्ट्रुअल कप', prod_liner: 'पैंटी लाइनर', prod_cloth: 'कपड़े के पैड', prod_underwear: 'पीरियड अंडरवियर',
+    pWhat: 'यह क्या है', pHow: 'कैसे काम करता है', pAdv: 'फायदे', pDis: 'नुकसान', pWhen: 'कब उपयोग करें', pUse: 'कैसे उपयोग करें', pDispose: 'कैसे फेंकें', pMistakes: 'आम गलतियाँ', pSafety: 'सुरक्षा सुझाव',
   },
   ml: {
     splashTagline: 'നിങ്ങളുടെ ആരോഗ്യം, നിങ്ങളുടെ ശബ്ദം.',
@@ -1821,6 +1836,11 @@ const DICT = {
     anWatch: 'അണ്ഡോത്പാദനം കാണൂ', anWatching: 'കാണുന്നു…',
     an_uterus: 'ഗർഭപാത്രം', an_ovaries: 'അണ്ഡാശയങ്ങൾ', an_tubes: 'ഫാലോപ്യൻ ട്യൂബുകൾ', an_cervix: 'സെർവിക്സ്', an_endometrium: 'എൻഡോമെട്രിയം',
     learnAnatomyCta: 'നിങ്ങളുടെ ശരീരഘടന പര്യവേക്ഷണം ചെയ്യൂ', learnAnatomySub: 'ഇന്ററാക്ടീവ് · അവയവങ്ങൾ തൊടൂ, അണ്ഡോത്പാദനം കാണൂ',
+    // products explorer (Part 05)
+    pTitle: 'ആർത്തവ ഉൽപ്പന്നങ്ങൾ', pSub: 'ഓരോ ഉൽപ്പന്നവും തൊട്ട് അത് എങ്ങനെ പ്രവർത്തിക്കുന്നു, ഗുണദോഷങ്ങൾ, സുരക്ഷിതമായി ഉപയോഗിക്കുന്നത് എങ്ങനെ എന്നു കാണൂ.',
+    learnProductsCta: 'ആർത്തവ ഉൽപ്പന്നങ്ങൾ താരതമ്യം ചെയ്യൂ', learnProductsSub: 'ഇന്ററാക്ടീവ് · 6 ഉൽപ്പന്നങ്ങൾ, പൂർണ്ണ ഗൈഡ്',
+    prod_pads: 'പാഡുകൾ', prod_tampons: 'ടാംപൺ', prod_cup: 'മെൻസ്ട്രുവൽ കപ്പ്', prod_liner: 'പാന്റി ലൈനറുകൾ', prod_cloth: 'തുണി പാഡുകൾ', prod_underwear: 'പീരിയഡ് അടിവസ്ത്രം',
+    pWhat: 'ഇത് എന്താണ്', pHow: 'എങ്ങനെ പ്രവർത്തിക്കുന്നു', pAdv: 'ഗുണങ്ങൾ', pDis: 'ദോഷങ്ങൾ', pWhen: 'എപ്പോൾ ഉപയോഗിക്കണം', pUse: 'എങ്ങനെ ഉപയോഗിക്കണം', pDispose: 'എങ്ങനെ ഒഴിവാക്കണം', pMistakes: 'സാധാരണ തെറ്റുകൾ', pSafety: 'സുരക്ഷാ നുറുങ്ങുകൾ',
   },
   te: {
     splashTagline: 'మీ ఆరోగ్యం, మీ స్వరం.',
@@ -2238,6 +2258,11 @@ const DICT = {
     anWatch: 'అండోత్సర్గాన్ని చూడండి', anWatching: 'చూస్తోంది…',
     an_uterus: 'గర్భాశయం', an_ovaries: 'అండాశయాలు', an_tubes: 'ఫెలోపియన్ ట్యూబులు', an_cervix: 'గర్భాశయ ముఖద్వారం', an_endometrium: 'ఎండోమెట్రియం',
     learnAnatomyCta: 'మీ శరీర నిర్మాణాన్ని అన్వేషించండి', learnAnatomySub: 'ఇంటరాక్టివ్ · అవయవాలను తాకండి, అండోత్సర్గాన్ని చూడండి',
+    // products explorer (Part 05)
+    pTitle: 'రుతుస్రావ ఉత్పత్తులు', pSub: 'ప్రతి ఉత్పత్తిని తాకి అది ఎలా పనిచేస్తుందో, దాని లాభనష్టాలు, సురక్షితంగా ఎలా వాడాలో చూడండి.',
+    learnProductsCta: 'పీరియడ్ ఉత్పత్తులను పోల్చండి', learnProductsSub: 'ఇంటరాక్టివ్ · 6 ఉత్పత్తులు, పూర్తి గైడ్',
+    prod_pads: 'ప్యాడ్‌లు', prod_tampons: 'ట్యాంపన్‌లు', prod_cup: 'మెన్‌స్ట్రువల్ కప్', prod_liner: 'ప్యాంటీ లైనర్‌లు', prod_cloth: 'వస్త్ర ప్యాడ్‌లు', prod_underwear: 'పీరియడ్ లోదుస్తులు',
+    pWhat: 'ఇది ఏమిటి', pHow: 'ఎలా పనిచేస్తుంది', pAdv: 'ప్రయోజనాలు', pDis: 'నష్టాలు', pWhen: 'ఎప్పుడు వాడాలి', pUse: 'ఎలా వాడాలి', pDispose: 'ఎలా పారవేయాలి', pMistakes: 'సాధారణ తప్పులు', pSafety: 'భద్రతా చిట్కాలు',
   },
   kn: {
     splashTagline: 'ನಿಮ್ಮ ಆರೋಗ್ಯ, ನಿಮ್ಮ ಧ್ವನಿ.',

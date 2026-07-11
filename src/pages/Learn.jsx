@@ -11,6 +11,7 @@ import { getProfile, getCycleStats } from '../lib/localStore'
 import { useT } from '../lib/i18n.jsx'
 import CycleExplorer from '../components/CycleExplorer'
 import AnatomyExplorer from '../components/AnatomyExplorer'
+import ProductsExplorer from '../components/ProductsExplorer'
 
 const BADGE = {
   firstperiod: 'First Guide', cycle: 'Cycle Expert', hormones: 'Hormone Aware', products: 'Products Pro',
@@ -35,6 +36,7 @@ export default function Learn() {
   const [myth, setMyth] = useState(false) // myth game open
   const [cycle, setCycle] = useState(false) // cycle explorer open
   const [anatomy, setAnatomy] = useState(false) // anatomy explorer open
+  const [products, setProducts] = useState(false) // products explorer open
   const rec = recommendedIds()
   const daily = DAILY[new Date().getDate() % DAILY.length]
   const pct = Math.round((prog.completed.length / TOPICS.length) * 100)
@@ -79,7 +81,7 @@ export default function Learn() {
       </div>
 
       {/* Featured: interactive explorers */}
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <button
           onClick={() => setCycle(true)}
           className="group flex w-full items-center gap-4 overflow-hidden rounded-3xl border border-accent-primary/30 bg-gradient-to-r from-[#d97ba8]/[0.16] via-[#a78bfa]/[0.1] to-transparent p-5 text-left transition-all hover:border-accent-primary/60 hover:shadow-glow"
@@ -107,6 +109,20 @@ export default function Learn() {
             <p className="mt-0.5 text-caption text-text-secondary">{t('learnAnatomySub')}</p>
           </div>
           <ArrowRightIcon size={20} className="ml-auto shrink-0 text-accent-ai transition-transform group-hover:translate-x-1" />
+        </button>
+        <button
+          onClick={() => setProducts(true)}
+          className="group flex w-full items-center gap-4 overflow-hidden rounded-3xl border border-success/30 bg-gradient-to-r from-[#6ee7b7]/[0.12] via-[#d97ba8]/[0.08] to-transparent p-5 text-left transition-all hover:border-success/60 hover:shadow-glow"
+        >
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/[0.06] text-3xl transition-transform group-hover:scale-110">🧴</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="font-heading text-[1.05rem] font-semibold leading-tight">{t('learnProductsCta')}</h2>
+              <Badge tone="success">6</Badge>
+            </div>
+            <p className="mt-0.5 text-caption text-text-secondary">{t('learnProductsSub')}</p>
+          </div>
+          <ArrowRightIcon size={20} className="ml-auto shrink-0 text-success transition-transform group-hover:translate-x-1" />
         </button>
       </div>
 
@@ -161,6 +177,7 @@ export default function Learn() {
       {myth && <MythGame t={t} onClose={() => setMyth(false)} onFinish={(s) => setProg(recordMythScore(s))} />}
       {cycle && <CycleExplorer startDay={getCycleStats().cycleDay || 1} onClose={() => setCycle(false)} />}
       {anatomy && <AnatomyExplorer onClose={() => setAnatomy(false)} />}
+      {products && <ProductsExplorer onClose={() => setProducts(false)} />}
     </PageShell>
   )
 }
