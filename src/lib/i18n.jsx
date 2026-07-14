@@ -656,6 +656,16 @@ const DICT = {
     nudgePeriod: 'Your period is expected in {n} days. Shall I prepare your wellness plan?', nudgePlan: 'Prepare',
     nudgeWater: 'You haven’t logged water today. A glass now will help.', nudgeLogWater: 'Log water',
     nudgeMood: 'Would you like to do a quick mood check-in?', nudgeCheckin: 'Check in',
+    // ── Part 11: Smart Planner ───────────────────────────────────────────────
+    plEngine: 'Smart Planner', plHeading: 'Your gentle daily plan', plTagline: 'MIRA suggests the right things at the right time — supportive, never spammy.', plStreak: 'Wellness streak',
+    plPrepTitle: 'Period preparation', plPrepSub: 'Your period is close — here’s a gentle checklist to feel ready and comfortable.', plPrepToday: 'today',
+    plToday: 'Today’s wellness plan', plComplete: 'complete', plAllDone: 'You completed today’s plan. Beautifully done!',
+    plHabits: 'Habit builder', plDayStreak: 'day streak', plStart: 'Tap to start',
+    plReminders: 'Smart reminders', plSuggested: 'Suggested for your phase', plAddReminder: 'Add a reminder', plReminderName: 'Reminder name', plAdd: 'Add',
+    habWater: 'Drink 2L water', habMove: 'Move for 15 min', habMood: 'Log your mood', habMeal: 'Eat a healthy meal', habSleep: 'Sleep before 11 PM', habMeditate: 'Meditate 10 min', habJournal: 'Journal a moment', habLesson: 'Complete a lesson',
+    remWater: 'Stay hydrated', remMood: 'Mood check-in', remMove: 'Move your body', remSleep: 'Wind down for sleep', remLesson: 'Today’s lesson', remIron: 'Iron-rich lunch', remWarmth: 'Warm tea & comfort', remProtein: 'Protein at lunch', remLearn: 'A quick lesson', remHydrate: 'Extra hydration', remAntiox: 'Antioxidant veg', remMagnesium: 'Magnesium snack', remBreathe: 'Evening breathing',
+    remType_hydration: 'Hydration', remType_mood: 'Mood', remType_exercise: 'Exercise', remType_sleep: 'Sleep', remType_learning: 'Learning', remType_nutrition: 'Nutrition', remType_selfcare: 'Self-care', remType_custom: 'Custom',
+    prepPads: 'Stock pads / products', prepIron: 'Iron-rich foods ready', prepHydrate: 'Keep water handy', prepWarmth: 'Heat pad / warm layers', prepGentle: 'Plan gentle movement', prepRest: 'Protect your rest',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -1251,6 +1261,16 @@ const DICT = {
     nudgePeriod: 'உங்கள் மாதவிடாய் {n} நாட்களில் எதிர்பார்க்கப்படுகிறது. உங்கள் நல வாழ்வுத் திட்டத்தைத் தயார் செய்யட்டுமா?', nudgePlan: 'தயார் செய்',
     nudgeWater: 'இன்று நீங்கள் தண்ணீரைப் பதிவு செய்யவில்லை. இப்போது ஒரு கிளாஸ் உதவும்.', nudgeLogWater: 'தண்ணீர் பதிவு',
     nudgeMood: 'விரைவான மனநிலைப் பதிவு செய்ய விரும்புகிறீர்களா?', nudgeCheckin: 'பதிவு செய்',
+    // ── Part 11: Smart Planner ───────────────────────────────────────────────
+    plEngine: 'ஸ்மார்ட் திட்டமிடுபவர்', plHeading: 'உங்கள் இதமான தினசரி திட்டம்', plTagline: 'சரியான நேரத்தில் சரியானவற்றை MIRA பரிந்துரைக்கிறது — ஆதரவாக, ஒருபோதும் தொல்லையாக இல்லை.', plStreak: 'நல்வாழ்வு தொடர்',
+    plPrepTitle: 'மாதவிடாய் தயாரிப்பு', plPrepSub: 'உங்கள் மாதவிடாய் நெருங்குகிறது — தயாராகவும் வசதியாகவும் உணர இதோ ஒரு இதமான பட்டியல்.', plPrepToday: 'இன்று',
+    plToday: 'இன்றைய நல்வாழ்வுத் திட்டம்', plComplete: 'முடிந்தது', plAllDone: 'இன்றைய திட்டத்தை முடித்தீர்கள். அருமை!',
+    plHabits: 'பழக்க உருவாக்கி', plDayStreak: 'நாள் தொடர்', plStart: 'தொடங்க தட்டவும்',
+    plReminders: 'ஸ்மார்ட் நினைவூட்டல்கள்', plSuggested: 'உங்கள் கட்டத்திற்கு பரிந்துரை', plAddReminder: 'நினைவூட்டலைச் சேர்', plReminderName: 'நினைவூட்டல் பெயர்', plAdd: 'சேர்',
+    habWater: '2L தண்ணீர் குடி', habMove: '15 நிமிடம் நகர்', habMood: 'மனநிலையைப் பதிவு செய்', habMeal: 'ஆரோக்கிய உணவு உண்', habSleep: 'இரவு 11க்கு முன் தூங்கு', habMeditate: '10 நிமிடம் தியானி', habJournal: 'ஒரு தருணத்தை எழுது', habLesson: 'ஒரு பாடத்தை முடி',
+    remWater: 'நீரேற்றமாக இரு', remMood: 'மனநிலைப் பதிவு', remMove: 'உடலை நகர்த்து', remSleep: 'தூக்கத்திற்குத் தயாராகு', remLesson: 'இன்றைய பாடம்', remIron: 'இரும்புச்சத்து மதிய உணவு', remWarmth: 'சூடான தேநீர் & ஆறுதல்', remProtein: 'மதியம் புரதம்', remLearn: 'ஒரு விரைவு பாடம்', remHydrate: 'கூடுதல் நீரேற்றம்', remAntiox: 'ஆன்டிஆக்ஸிடன்ட் காய்கறி', remMagnesium: 'மெக்னீசியம் சிற்றுண்டி', remBreathe: 'மாலை மூச்சுப் பயிற்சி',
+    remType_hydration: 'நீரேற்றம்', remType_mood: 'மனநிலை', remType_exercise: 'உடற்பயிற்சி', remType_sleep: 'தூக்கம்', remType_learning: 'கற்றல்', remType_nutrition: 'ஊட்டச்சத்து', remType_selfcare: 'சுய பராமரிப்பு', remType_custom: 'தனிப்பயன்',
+    prepPads: 'பேட்கள் / பொருட்களை சேமி', prepIron: 'இரும்புச்சத்து உணவு தயார்', prepHydrate: 'தண்ணீரை அருகில் வை', prepWarmth: 'சூடு பேட் / சூடான உடை', prepGentle: 'மென்மையான அசைவைத் திட்டமிடு', prepRest: 'உங்கள் ஓய்வைப் பாதுகா',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',

@@ -44,6 +44,7 @@ import Journey from './pages/Journey'
 import Mood from './pages/Mood'
 import Nutrition from './pages/Nutrition'
 import Mira from './pages/Mira'
+import Planner from './pages/Planner'
 
 export default function App() {
   return (
@@ -72,6 +73,7 @@ export default function App() {
       <Route path="/mood" element={<RequireOnboarding><Mood /></RequireOnboarding>} />
       <Route path="/nutrition" element={<RequireOnboarding><Nutrition /></RequireOnboarding>} />
       <Route path="/mira" element={<RequireOnboarding><Mira /></RequireOnboarding>} />
+      <Route path="/planner" element={<RequireOnboarding><Planner /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )

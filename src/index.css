@@ -140,6 +140,13 @@
   .delay-4 { animation-delay: 320ms; }
   .delay-5 { animation-delay: 400ms; }
 
+  /* Confetti burst for streak celebrations */
+  @keyframes confettiFall {
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(720deg); opacity: 0.9; }
+  }
+  .animate-confetti { animation: confettiFall linear forwards; }
+
   /* Mood-room drifting particles: float from bottom to top and fade */
   @keyframes floatUp {
     0% { transform: translateY(0) translateX(0); opacity: 0; }

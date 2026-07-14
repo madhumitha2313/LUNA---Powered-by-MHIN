@@ -49,7 +49,7 @@ const QUICK_ACTIONS = [
   { key: 'qaWater', to: '/nutrition', icon: LeafIcon, tone: 'text-accent-secondary', emoji: '💧' },
   { key: 'qaFood', to: '/nutrition', icon: LeafIcon, tone: 'text-success', emoji: '🥗' },
   { key: 'qaUpload', to: '/report', icon: FileIcon, tone: 'text-success', emoji: '📄' },
-  { key: 'qaWellness', to: '/guide', icon: UsersIcon, tone: 'text-accent-ai', emoji: '🧘' },
+  { key: 'qaWellness', to: '/planner', icon: UsersIcon, tone: 'text-accent-ai', emoji: '🧘' },
   { key: 'qaCalendar', to: '/cycle', icon: TrendIcon, tone: 'text-accent-secondary', emoji: '📅' },
 ]
 
