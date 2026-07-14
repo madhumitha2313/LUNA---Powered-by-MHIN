@@ -51,6 +51,7 @@ const QUICK_ACTIONS = [
   { key: 'qaUpload', to: '/report', icon: FileIcon, tone: 'text-success', emoji: '📄' },
   { key: 'qaWellness', to: '/planner', icon: UsersIcon, tone: 'text-accent-ai', emoji: '🧘' },
   { key: 'qaCalendar', to: '/cycle', icon: TrendIcon, tone: 'text-accent-secondary', emoji: '📅' },
+  { key: 'qaSafety', to: '/safety', icon: HeartIcon, tone: 'text-danger', emoji: '🛡️' },
 ]
 
 const MOODS = [

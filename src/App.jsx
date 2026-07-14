@@ -45,6 +45,8 @@ import Mood from './pages/Mood'
 import Nutrition from './pages/Nutrition'
 import Mira from './pages/Mira'
 import Planner from './pages/Planner'
+import Safety from './pages/Safety'
+import SosButton from './components/SosButton'
 
 export default function App() {
   return (
@@ -74,7 +76,18 @@ export default function App() {
       <Route path="/nutrition" element={<RequireOnboarding><Nutrition /></RequireOnboarding>} />
       <Route path="/mira" element={<RequireOnboarding><Mira /></RequireOnboarding>} />
       <Route path="/planner" element={<RequireOnboarding><Planner /></RequireOnboarding>} />
+      <Route path="/safety" element={<RequireOnboarding><Safety /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
+  )
+}
+
+/** App shell: routes + the always-available emergency SOS button. */
+export function AppShell() {
+  return (
+    <>
+      <App />
+      <SosButton />
+    </>
   )
 }

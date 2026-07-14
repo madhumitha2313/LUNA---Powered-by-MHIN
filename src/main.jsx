@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
-import App from './App.jsx'
+import { AppShell } from './App.jsx'
 import { LanguageProvider } from './lib/i18n.jsx'
 import './index.css'
 
@@ -30,7 +30,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Router {...routerProps}>
       <LanguageProvider>
-        <App />
+        <AppShell />
       </LanguageProvider>
     </Router>
   </React.StrictMode>
