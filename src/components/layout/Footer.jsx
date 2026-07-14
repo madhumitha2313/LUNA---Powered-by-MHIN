@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import Logo from '../Logo'
 import TrustBar from './TrustBar'
 import { useT } from '../../lib/i18n.jsx'
@@ -17,7 +18,7 @@ export default function Footer() {
         </div>
 
         <p className="mt-6 text-center text-caption text-text-muted/70">
-          © {new Date().getFullYear()} MIRA · powered by MHIN
+          © {new Date().getFullYear()} MIRA · powered by MHIN · <Link to="/design" className="hover:text-accent-secondary">Design system</Link>
         </p>
       </div>
     </footer>

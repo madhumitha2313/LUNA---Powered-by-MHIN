@@ -47,6 +47,7 @@ import Mira from './pages/Mira'
 import Planner from './pages/Planner'
 import Safety from './pages/Safety'
 import SosButton from './components/SosButton'
+import DesignSystem from './pages/DesignSystem'
 
 export default function App() {
   return (
@@ -77,6 +78,7 @@ export default function App() {
       <Route path="/mira" element={<RequireOnboarding><Mira /></RequireOnboarding>} />
       <Route path="/planner" element={<RequireOnboarding><Planner /></RequireOnboarding>} />
       <Route path="/safety" element={<RequireOnboarding><Safety /></RequireOnboarding>} />
+      <Route path="/design" element={<DesignSystem />} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )

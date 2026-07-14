@@ -26,6 +26,38 @@
   --text-muted: #94a3b8;
 
   --border: rgba(255, 255, 255, 0.08);
+
+  /* Extended MIRA design tokens (Part 16). The app's live theme above stays
+     the source of truth for existing components; these formalise the full
+     palette + scales for the design system and future theming. */
+  --brand-rose: #ff5ca8;
+  --brand-premium: #ff3d8b;
+  --brand-hot: #ff2e8a;
+  --brand-soft: #ff8cc5;
+  --brand-light: #ffd6e7;
+  --sec-lavender: #c084fc;
+  --sec-purple: #9333ea;
+  --sec-sky: #60a5fa;
+  --sec-mint: #4ade80;
+  --sec-gold: #facc15;
+  --status-success: #22c55e;
+  --status-warning: #f59e0b;
+  --status-error: #ef4444;
+  --status-info: #3b82f6;
+
+  /* Radius scale */
+  --radius-button: 20px;
+  --radius-card: 28px;
+  --radius-dialog: 32px;
+  --radius-input: 18px;
+  --radius-chip: 100px;
+
+  /* Motion tokens */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
 }
 
 @layer base {
