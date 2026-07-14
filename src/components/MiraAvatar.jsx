@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
  * Props: state = idle | listening | thinking | speaking; emotion = neutral |
  * happy | concerned; size (px).
  */
-export default function MiraAvatar({ state = 'idle', emotion = 'neutral', size = 120 }) {
+export default function MiraAvatar({ state = 'idle', emotion = 'neutral', size = 120, level = 1 }) {
   const [blink, setBlink] = useState(false)
 
   // Natural, occasional blinking.
@@ -45,10 +45,10 @@ export default function MiraAvatar({ state = 'idle', emotion = 'neutral', size =
 
   return (
     <div className="relative grid place-items-center" style={{ width: size, height: size }}>
-      {/* soft aura */}
+      {/* soft aura — grows subtly brighter as the wellness level rises */}
       <span
         className={`absolute rounded-full blur-xl ${listening ? 'animate-glow-pulse' : 'animate-breathe'}`}
-        style={{ width: size * 0.9, height: size * 0.9, background: glow, opacity: listening ? 0.5 : 0.32 }}
+        style={{ width: size * (0.88 + level * 0.02), height: size * (0.88 + level * 0.02), background: glow, opacity: Math.min(0.6, (listening ? 0.5 : 0.3) + level * 0.03) }}
       />
       {/* listening ping */}
       {listening && <span className="absolute rounded-full border-2 border-accent-primary/40 animate-ping" style={{ width: size * 0.86, height: size * 0.86 }} />}
