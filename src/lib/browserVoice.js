@@ -50,12 +50,13 @@ export function createRecognizer({ lang = 'ta-IN', onResult, onEnd, onError, onS
 }
 
 /** Speak Tamil text aloud, preferring a Tamil voice when the OS provides one. */
-export function speak(text, { lang = 'ta-IN', rate = 0.97 } = {}) {
+export function speak(text, { lang = 'ta-IN', rate = 0.97, pitch = 1 } = {}) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
   const synth = window.speechSynthesis
   const utter = new SpeechSynthesisUtterance(text)
   utter.lang = lang
   utter.rate = rate
+  utter.pitch = pitch
   const voices = synth.getVoices()
   const tamil = voices.find((v) => (v.lang || '').toLowerCase().startsWith('ta'))
   if (tamil) utter.voice = tamil

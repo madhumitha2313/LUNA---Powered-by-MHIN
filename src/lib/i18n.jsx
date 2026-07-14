@@ -666,6 +666,16 @@ const DICT = {
     remWater: 'Stay hydrated', remMood: 'Mood check-in', remMove: 'Move your body', remSleep: 'Wind down for sleep', remLesson: 'Today’s lesson', remIron: 'Iron-rich lunch', remWarmth: 'Warm tea & comfort', remProtein: 'Protein at lunch', remLearn: 'A quick lesson', remHydrate: 'Extra hydration', remAntiox: 'Antioxidant veg', remMagnesium: 'Magnesium snack', remBreathe: 'Evening breathing',
     remType_hydration: 'Hydration', remType_mood: 'Mood', remType_exercise: 'Exercise', remType_sleep: 'Sleep', remType_learning: 'Learning', remType_nutrition: 'Nutrition', remType_selfcare: 'Self-care', remType_custom: 'Custom',
     prepPads: 'Stock pads / products', prepIron: 'Iron-rich foods ready', prepHydrate: 'Keep water handy', prepWarmth: 'Heat pad / warm layers', prepGentle: 'Plan gentle movement', prepRest: 'Protect your rest',
+    // ── Part 12: MIRA Avatar & voice companion ───────────────────────────────
+    chatVoice: 'Voice',
+    perBestFriend: 'Best friend', perSister: 'Big sister', perGuide: 'Wellness guide', perCalm: 'Calm voice', perGenz: 'Gen Z', perNight: 'Gentle night',
+    modeNormal: 'Chat', modeCoach: 'Health coach', modeRelax: 'Relax', modeCycle: 'Cycle expert', modeNutrition: 'Nutrition', modeMotivate: 'Motivate',
+    modeOpenNormal: 'I’m all yours — tell me what’s on your mind. 🌸',
+    modeOpenCoach: 'Health-coach mode on. Let’s build one small healthy habit today — what shall we start with?',
+    modeOpenRelax: 'Let’s slow down together. Breathe in for four… and out for six. I’m right here with you. 🧘',
+    modeOpenCycle: 'Cycle-expert mode. Ask me anything about your phases, symptoms or what to expect next.',
+    modeOpenNutrition: 'Nutrition mode. Tell me how you’re feeling and I’ll suggest foods that genuinely help.',
+    modeOpenMotivate: 'You’ve got this. 🌟 Look how far you’ve already come — what’s one thing you’re proud of today?',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -1271,6 +1281,16 @@ const DICT = {
     remWater: 'நீரேற்றமாக இரு', remMood: 'மனநிலைப் பதிவு', remMove: 'உடலை நகர்த்து', remSleep: 'தூக்கத்திற்குத் தயாராகு', remLesson: 'இன்றைய பாடம்', remIron: 'இரும்புச்சத்து மதிய உணவு', remWarmth: 'சூடான தேநீர் & ஆறுதல்', remProtein: 'மதியம் புரதம்', remLearn: 'ஒரு விரைவு பாடம்', remHydrate: 'கூடுதல் நீரேற்றம்', remAntiox: 'ஆன்டிஆக்ஸிடன்ட் காய்கறி', remMagnesium: 'மெக்னீசியம் சிற்றுண்டி', remBreathe: 'மாலை மூச்சுப் பயிற்சி',
     remType_hydration: 'நீரேற்றம்', remType_mood: 'மனநிலை', remType_exercise: 'உடற்பயிற்சி', remType_sleep: 'தூக்கம்', remType_learning: 'கற்றல்', remType_nutrition: 'ஊட்டச்சத்து', remType_selfcare: 'சுய பராமரிப்பு', remType_custom: 'தனிப்பயன்',
     prepPads: 'பேட்கள் / பொருட்களை சேமி', prepIron: 'இரும்புச்சத்து உணவு தயார்', prepHydrate: 'தண்ணீரை அருகில் வை', prepWarmth: 'சூடு பேட் / சூடான உடை', prepGentle: 'மென்மையான அசைவைத் திட்டமிடு', prepRest: 'உங்கள் ஓய்வைப் பாதுகா',
+    // ── Part 12: MIRA Avatar & voice companion ───────────────────────────────
+    chatVoice: 'குரல்',
+    perBestFriend: 'சிறந்த தோழி', perSister: 'அக்கா', perGuide: 'நல வழிகாட்டி', perCalm: 'அமைதி குரல்', perGenz: 'ஜென் Z', perNight: 'இதமான இரவு',
+    modeNormal: 'உரையாடல்', modeCoach: 'நல பயிற்சியாளர்', modeRelax: 'ஓய்வு', modeCycle: 'சுழற்சி நிபுணர்', modeNutrition: 'ஊட்டச்சத்து', modeMotivate: 'ஊக்கம்',
+    modeOpenNormal: 'நான் முழுவதும் உங்களுக்காக — மனதில் உள்ளதைச் சொல்லுங்கள். 🌸',
+    modeOpenCoach: 'நல பயிற்சியாளர் பயன்முறை. இன்று ஒரு சிறிய ஆரோக்கிய பழக்கத்தை உருவாக்குவோம் — எதில் தொடங்கலாம்?',
+    modeOpenRelax: 'ஒன்றாக மெதுவாகுவோம். நான்கு எண்ணி மூச்சை உள்ளிழுங்கள்… ஆறு எண்ணி வெளியிடுங்கள். நான் உங்களுடன் இருக்கிறேன். 🧘',
+    modeOpenCycle: 'சுழற்சி நிபுணர் பயன்முறை. உங்கள் கட்டங்கள், அறிகுறிகள் அல்லது அடுத்து என்ன எதிர்பார்க்கலாம் என எதையும் கேளுங்கள்.',
+    modeOpenNutrition: 'ஊட்டச்சத்து பயன்முறை. நீங்கள் எப்படி உணர்கிறீர்கள் என்று சொல்லுங்கள், உண்மையிலேயே உதவும் உணவுகளைப் பரிந்துரைக்கிறேன்.',
+    modeOpenMotivate: 'உங்களால் முடியும். 🌟 எவ்வளவு தூரம் வந்துவிட்டீர்கள் என்று பாருங்கள் — இன்று நீங்கள் பெருமைப்படும் ஒன்று என்ன?',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',

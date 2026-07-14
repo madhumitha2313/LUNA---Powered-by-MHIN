@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import MiraMark from '../components/MiraMark'
+import MiraAvatar from '../components/MiraAvatar'
 import Badge from '../components/ui/Badge'
 import { ArrowRightIcon, SparklesIcon, MicIcon, LeafIcon, HeartIcon } from '../components/ui/icons'
 import { speechSupported, createRecognizer, speak, stopSpeaking } from '../lib/browserVoice'
 import { addLog, getCycleStats, getProfile, getSettings } from '../lib/localStore'
 import { detectSentiment, crisisResponse, comfortOpener } from '../lib/sentiment'
 import { detectIntent, INTENT, SYMPTOMS, GREET_KEYS, CHIP_KEYS } from '../lib/miraChat'
+import { PERSONAS, MODES, getPersona, setPersona } from '../lib/companion'
 import { useT, getLang } from '../lib/i18n.jsx'
 
 const SR_LANG = { en: 'en-IN', ta: 'ta-IN', hi: 'hi-IN', ml: 'ml-IN', te: 'te-IN', kn: 'kn-IN', bn: 'bn-IN', mr: 'mr-IN' }
@@ -25,6 +26,9 @@ export default function Voice() {
   const [interim, setInterim] = useState('')
   const [typed, setTyped] = useState('')
   const [crisis, setCrisis] = useState(null)
+  const [emotion, setEmotion] = useState('neutral') // neutral | happy | concerned
+  const [persona, setPersonaState] = useState(getPersona())
+  const [personaOpen, setPersonaOpen] = useState(false)
   const pendingRef = useRef(null) // last symptom we asked about
   const recRef = useRef(null)
   const scrollRef = useRef(null)
@@ -50,9 +54,22 @@ export default function Voice() {
       setTyping(false)
       setMessages((m) => [...m, { role: 'mira', text, recs }])
       setState('speaking')
-      speak(text)
-      setTimeout(() => setState('idle'), 900)
+      speak(text, { lang: SR_LANG[getLang()] || 'en-IN', rate: persona.rate, pitch: persona.pitch })
+      // Keep the speaking state roughly as long as the utterance.
+      const ms = Math.min(6000, 1200 + text.length * 55)
+      setTimeout(() => setState('idle'), ms)
     }, 650)
+  }
+
+  function choosePersona(id) {
+    setPersonaState(setPersona(id))
+    setPersonaOpen(false)
+  }
+
+  function pickMode(mode) {
+    setEmotion('happy')
+    setTimeout(() => setEmotion('neutral'), 2500)
+    say(t(mode.opener))
   }
 
   function process(raw) {
@@ -65,6 +82,7 @@ export default function Voice() {
     if (detectSentiment(text) === 'crisis') {
       const c = crisisResponse()
       setCrisis(c)
+      setEmotion('concerned')
       pendingRef.current = null
       say(c.message)
       return
@@ -73,6 +91,12 @@ export default function Voice() {
     const sentiment = detectSentiment(text)
     const intent = detectIntent(text)
     const pending = pendingRef.current
+
+    // Avatar emotion reacts to how the user feels.
+    const warm = ['thanks', 'greeting', 'happy'].includes(intent)
+    const nextEmotion = sentiment === 'low' || SYMPTOMS.includes(intent) ? 'concerned' : warm ? 'happy' : 'neutral'
+    setEmotion(nextEmotion)
+    if (nextEmotion !== 'neutral') setTimeout(() => setEmotion('neutral'), 4000)
 
     // If we asked a clarifying question and they replied (not a new symptom) → advise.
     if (pending && !(SYMPTOMS.includes(intent) && intent !== pending)) {
@@ -132,28 +156,54 @@ export default function Voice() {
     setTyped('')
   }
 
-  const avatarState =
-    state === 'listening' ? 'animate-pulse' : typing || state === 'speaking' ? 'animate-breathe' : 'animate-breathe'
+  const avState = state === 'listening' ? 'listening' : typing ? 'thinking' : state === 'speaking' ? 'speaking' : 'idle'
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-bg-primary">
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#FF4F9D]/[0.08] blur-[130px]" />
 
-      {/* Top bar with avatar */}
-      <header className="relative z-10 flex items-center gap-3 border-b border-white/[0.06] px-5 py-3.5">
+      {/* Top bar with expressive avatar */}
+      <header className="relative z-30 flex items-center gap-3 border-b border-white/[0.06] px-5 py-3">
         <Link to="/home" className="text-accent-secondary hover:text-text-primary">←</Link>
-        <span className={`relative inline-flex ${avatarState}`}>
-          {state === 'listening' && <span className="absolute inset-0 animate-ping rounded-full bg-accent-primary/30" />}
-          <MiraMark size={38} />
-        </span>
+        <MiraAvatar state={avState} emotion={emotion} size={48} />
         <div className="leading-tight">
           <p className="font-heading font-semibold">{t('chatTitle')}</p>
           <p className="text-caption text-accent-secondary">
             {state === 'listening' ? t('chatListening') : typing ? t('chatTyping') : state === 'speaking' ? t('chatSpeaking') : t('chatOnline')}
           </p>
         </div>
-        <Badge tone="ai" icon={<SparklesIcon size={12} />} className="ml-auto hidden sm:inline-flex">{t('chatAiCompanion')}</Badge>
+
+        {/* Voice personality picker */}
+        <div className="relative ml-auto">
+          <button onClick={() => setPersonaOpen((o) => !o)} className="flex items-center gap-1.5 rounded-pill border border-white/12 bg-white/[0.03] px-3 py-1.5 text-caption text-text-secondary hover:border-accent-primary/40">
+            <span className="text-base">{persona.emoji}</span>
+            <span className="hidden sm:inline">{t(persona.key)}</span>
+            <span className="text-[0.6rem]">▾</span>
+          </button>
+          {personaOpen && (
+            <div className="absolute right-0 z-20 mt-2 w-52 rounded-2xl border border-white/10 bg-bg-card p-1.5 shadow-lift">
+              <p className="px-2 py-1 text-[0.7rem] uppercase tracking-wide text-text-muted">{t('chatVoice')}</p>
+              {PERSONAS.map((p) => (
+                <button key={p.id} onClick={() => choosePersona(p.id)}
+                  className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[0.88rem] transition ${persona.id === p.id ? 'bg-accent-primary/15 text-text-primary' : 'text-text-secondary hover:bg-white/[0.05]'}`}>
+                  <span className="text-lg">{p.emoji}</span> {t(p.key)}
+                  {persona.id === p.id && <span className="ml-auto text-accent-secondary">✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </header>
+
+      {/* Conversation modes */}
+      <div className="relative z-10 flex gap-2 overflow-x-auto border-b border-white/[0.05] px-4 py-2 sm:px-6">
+        {MODES.map((m) => (
+          <button key={m.id} onClick={() => pickMode(m)}
+            className="flex shrink-0 items-center gap-1.5 rounded-pill border border-white/10 bg-white/[0.02] px-3 py-1 text-[0.78rem] text-text-secondary transition hover:border-accent-ai/40 hover:text-text-primary">
+            <span>{m.emoji}</span> {t(m.key)}
+          </button>
+        ))}
+      </div>
 
       {/* Conversation */}
       <main ref={scrollRef} className="relative z-10 flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
