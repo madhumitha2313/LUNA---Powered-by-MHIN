@@ -749,6 +749,14 @@ const DICT = {
     admTickets: 'Support tickets', admAudit: 'Audit log', admAuditSub: 'Every critical action is timestamped & attributable',
     admDoctorTitle: 'Doctor dashboard', admDoctorSub: 'Permission-based access to what users explicitly share.', admDocAppts: 'Appointments', admDocReports: 'Shared reports', admDocMessages: 'Messages', admDocPrivacy: 'You only see what a user has explicitly shared with you. All access is audited.',
     admNutriTitle: 'Nutritionist dashboard', admNutriSub: 'Review shared nutrition history and recommend meal plans.', admNutriPlans: 'Meal plans', admNutriShared: 'Shared reports', admNutriLibrary: 'Food library',
+    // ── Part 19: Developer Platform ──────────────────────────────────────────
+    devTitle: 'Developer Platform', devSub: 'Build on MIRA — secure, versioned, API-first.', devFooter: 'Documentation portal · sandbox uses mock data',
+    devApiFirst: 'API-first architecture', devApiFirstBody: 'Every MIRA capability is exposed through a secure, versioned REST API — the app, admin, portals, AI services and future partners all speak the same language, independently scalable and never tightly coupled.',
+    devEnvelope: 'Standard response envelope', devEnvelopeSub: 'Every response shares the same predictable shape.',
+    devAuthMethods: 'Authentication methods', devTokenFlow: 'Token flow', devAuthReq: 'Auth required', devPublic: 'Public', devResponse: 'Response',
+    devPipeline: 'AI orchestration pipeline', devPipelineSub: 'Every AI request flows through one central service.', devModelRouting: 'Model routing',
+    devWebhookEvents: 'Webhook events', devWebhookPayload: 'Signed payload',
+    devSandbox: 'Sandbox environment', devSandboxBody: 'Build and test safely with mock users, reports and AI replies — test API keys, zero production data.', devTestKey: 'Test API key (sandbox)',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -1427,6 +1435,8 @@ const DICT = {
     admTitle: 'செயல்பாட்டு பலகை', admSub: 'MIRA-வை நிர்வகிக்கவும் — பயனர்கள், AI, உள்ளடக்கம், நிபுணர்கள் — குறியீடு மாற்றமின்றி.', admDemo: 'மாதிரி தரவு',
     admFooter: 'மாதிரி/மொத்த தரவு · உற்பத்தி தரவு அனுமதி & தணிக்கை செய்யப்படும்', admBackApp: 'செயலிக்குத் திரும்பு',
     roleSuper: 'சூப்பர் நிர்வாகி', roleAdmin: 'நிர்வாகி', roleMod: 'மதிப்பீட்டாளர்', roleDoctor: 'மருத்துவர்', roleNutri: 'ஊட்டச்சத்து நிபுணர்',
+    // ── Part 19: Developer Platform ──────────────────────────────────────────
+    devTitle: 'டெவலப்பர் தளம்', devSub: 'MIRA மீது உருவாக்குங்கள் — பாதுகாப்பான, பதிப்பிடப்பட்ட, API-முதல்.', devFooter: 'ஆவணப் போர்ட்டல் · சாண்ட்பாக்ஸ் மாதிரி தரவைப் பயன்படுத்துகிறது',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
