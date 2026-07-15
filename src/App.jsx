@@ -48,6 +48,7 @@ import Planner from './pages/Planner'
 import Safety from './pages/Safety'
 import SosButton from './components/SosButton'
 import DesignSystem from './pages/DesignSystem'
+import Admin from './pages/Admin'
 
 export default function App() {
   return (
@@ -79,6 +80,7 @@ export default function App() {
       <Route path="/planner" element={<RequireOnboarding><Planner /></RequireOnboarding>} />
       <Route path="/safety" element={<RequireOnboarding><Safety /></RequireOnboarding>} />
       <Route path="/design" element={<DesignSystem />} />
+      <Route path="/admin" element={<Admin />} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )

@@ -735,6 +735,20 @@ const DICT = {
     aiMemory: 'Memory & privacy',
     aiMemoryNote: 'MIRA remembers only what helps personalise your care — on your device. You can view, pause, reset or export everything from MIRA Core.',
     aiManageMemory: 'Manage memory',
+    // ── Part 18: Operations Console (admin / doctor / nutritionist) ──────────
+    admTitle: 'Operations Console', admSub: 'Manage MIRA — users, AI, content and professionals — without code changes.', admDemo: 'Demo data',
+    admFooter: 'Sample/aggregate data · production data is permissioned & audited', admBackApp: 'Back to app',
+    roleSuper: 'Super Admin', roleAdmin: 'Admin', roleMod: 'Moderator', roleDoctor: 'Doctor', roleNutri: 'Nutritionist',
+    kpiTotal: 'Total users', kpiDau: 'Daily active', kpiMau: 'Monthly active', kpiPremium: 'Premium', kpiNew: 'New today', kpiRetention: 'Retention', kpiAi: 'AI requests', kpiReports: 'Report uploads', kpiCrash: 'Crash rate', kpiSession: 'Avg session',
+    admUserGrowth: 'User growth', admThousands: 'registered users (thousands)', admFeatureUse: 'Feature usage', admLangDist: 'Language distribution',
+    admSearchUsers: 'Search users…', admUsers: 'Users', admShown: 'shown',
+    aiModel: 'Model', aiPrompt: 'Prompt', aiLatency: 'Latency', aiHallucination: 'Hallucination', aiSafety: 'Safety alerts', aiSat: 'AI satisfaction', admPrompts: 'Prompt versions', admPromptsSub: 'Create · edit · publish · rollback',
+    admContent: 'Knowledge base (CMS)', admContentSub: 'Draft → review → published workflow', admApprove: 'Approve', admEdit: 'Edit', admView: 'View',
+    admDoctors: 'Verified professionals', admDoctorsSub: 'Approve, reject or suspend', admVerify: 'Verify', admHospitals: 'Hospitals & clinics',
+    admFlags: 'Feature flags', admFlagsSub: 'Roll out or disable features without an app update', flgDigitalTwin: 'Digital Twin', flgMoodRoom: 'Mood Room', flgVideoLessons: 'AI Video Lessons', flgTelemedicine: 'Telemedicine', flgMaintenance: 'Maintenance mode',
+    admTickets: 'Support tickets', admAudit: 'Audit log', admAuditSub: 'Every critical action is timestamped & attributable',
+    admDoctorTitle: 'Doctor dashboard', admDoctorSub: 'Permission-based access to what users explicitly share.', admDocAppts: 'Appointments', admDocReports: 'Shared reports', admDocMessages: 'Messages', admDocPrivacy: 'You only see what a user has explicitly shared with you. All access is audited.',
+    admNutriTitle: 'Nutritionist dashboard', admNutriSub: 'Review shared nutrition history and recommend meal plans.', admNutriPlans: 'Meal plans', admNutriShared: 'Shared reports', admNutriLibrary: 'Food library',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -1409,6 +1423,10 @@ const DICT = {
     aiMemory: 'நினைவகம் & தனியுரிமை',
     aiMemoryNote: 'உங்கள் பராமரிப்பைத் தனிப்பயனாக்க உதவுவதை மட்டுமே MIRA நினைவில் வைக்கிறது — உங்கள் சாதனத்தில். MIRA மையத்திலிருந்து அனைத்தையும் பார்க்கலாம், இடைநிறுத்தலாம், மீட்டமைக்கலாம் அல்லது ஏற்றுமதி செய்யலாம்.',
     aiManageMemory: 'நினைவகத்தை நிர்வகி',
+    // ── Part 18: Operations Console ──────────────────────────────────────────
+    admTitle: 'செயல்பாட்டு பலகை', admSub: 'MIRA-வை நிர்வகிக்கவும் — பயனர்கள், AI, உள்ளடக்கம், நிபுணர்கள் — குறியீடு மாற்றமின்றி.', admDemo: 'மாதிரி தரவு',
+    admFooter: 'மாதிரி/மொத்த தரவு · உற்பத்தி தரவு அனுமதி & தணிக்கை செய்யப்படும்', admBackApp: 'செயலிக்குத் திரும்பு',
+    roleSuper: 'சூப்பர் நிர்வாகி', roleAdmin: 'நிர்வாகி', roleMod: 'மதிப்பீட்டாளர்', roleDoctor: 'மருத்துவர்', roleNutri: 'ஊட்டச்சத்து நிபுணர்',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
