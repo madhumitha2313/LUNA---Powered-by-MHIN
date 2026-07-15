@@ -8,6 +8,8 @@ import { addLog, getCycleStats, getProfile, getSettings } from '../lib/localStor
 import { detectSentiment, crisisResponse, comfortOpener } from '../lib/sentiment'
 import { detectIntent, INTENT, SYMPTOMS, GREET_KEYS, CHIP_KEYS } from '../lib/miraChat'
 import { PERSONAS, MODES, getPersona, setPersona } from '../lib/companion'
+import { retrieve } from '../lib/knowledge'
+import AiTransparency from '../components/AiTransparency'
 import { useT, getLang } from '../lib/i18n.jsx'
 
 const SR_LANG = { en: 'en-IN', ta: 'ta-IN', hi: 'hi-IN', ml: 'ml-IN', te: 'te-IN', kn: 'kn-IN', bn: 'bn-IN', mr: 'mr-IN' }
@@ -29,7 +31,9 @@ export default function Voice() {
   const [emotion, setEmotion] = useState('neutral') // neutral | happy | concerned
   const [persona, setPersonaState] = useState(getPersona())
   const [personaOpen, setPersonaOpen] = useState(false)
+  const [howOpen, setHowOpen] = useState(false)
   const pendingRef = useRef(null) // last symptom we asked about
+  const pendingKbRef = useRef(null) // knowledge retrieved for the pending symptom
   const recRef = useRef(null)
   const scrollRef = useRef(null)
 
@@ -48,11 +52,11 @@ export default function Voice() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, typing, interim])
 
-  function say(text, recs) {
+  function say(text, recs, kb) {
     setTyping(true)
     setTimeout(() => {
       setTyping(false)
-      setMessages((m) => [...m, { role: 'mira', text, recs }])
+      setMessages((m) => [...m, { role: 'mira', text, recs, kb }])
       setState('speaking')
       speak(text, { lang: SR_LANG[getLang()] || 'en-IN', rate: persona.rate, pitch: persona.pitch })
       // Keep the speaking state roughly as long as the utterance.
@@ -98,18 +102,24 @@ export default function Voice() {
     setEmotion(nextEmotion)
     if (nextEmotion !== 'neutral') setTimeout(() => setEmotion('neutral'), 4000)
 
+    // Knowledge retrieval (RAG): find a relevant, cited education snippet.
+    const kb = retrieve(text)
+
     // If we asked a clarifying question and they replied (not a new symptom) → advise.
     if (pending && !(SYMPTOMS.includes(intent) && intent !== pending)) {
       const meta = INTENT[pending]
       addLog({ chat: text, intent: pending })
       pendingRef.current = null
-      say(t(meta.advice), pickRecs(meta))
+      const pendingKb = pendingKbRef.current
+      pendingKbRef.current = null
+      say(t(meta.advice), pickRecs(meta), pendingKb)
       return
     }
 
     // A new symptom → acknowledge + ask one clarifying question first.
     if (SYMPTOMS.includes(intent)) {
       pendingRef.current = intent
+      pendingKbRef.current = kb // surface the knowledge card with the advice turn
       const meta = INTENT[intent]
       const opener = meta.urgent ? t('empathyUrgent') : t('empathySymptom')
       say(`${opener} ${t(meta.ask)}`)
@@ -120,7 +130,7 @@ export default function Voice() {
     const meta = INTENT[intent] || INTENT.general
     let text2 = t(meta.advice)
     if (sentiment === 'low' && intent !== 'sad' && intent !== 'stress') text2 = comfortOpener() + ' ' + text2
-    say(text2, pickRecs(meta))
+    say(text2, pickRecs(meta), kb)
   }
 
   function pickRecs(meta) {
@@ -173,8 +183,12 @@ export default function Voice() {
           </p>
         </div>
 
+        {/* How MIRA thinks (transparency) */}
+        <button onClick={() => setHowOpen(true)} aria-label={t('aiHowTitle')} title={t('aiHowTitle')}
+          className="ml-auto grid h-9 w-9 place-items-center rounded-full border border-white/12 text-text-secondary transition hover:border-accent-ai/40 hover:text-accent-ai">ⓘ</button>
+
         {/* Voice personality picker */}
-        <div className="relative ml-auto">
+        <div className="relative">
           <button onClick={() => setPersonaOpen((o) => !o)} className="flex items-center gap-1.5 rounded-pill border border-white/12 bg-white/[0.03] px-3 py-1.5 text-caption text-text-secondary hover:border-accent-primary/40">
             <span className="text-base">{persona.emoji}</span>
             <span className="hidden sm:inline">{t(persona.key)}</span>
@@ -220,6 +234,7 @@ export default function Voice() {
                 >
                   {m.text}
                 </div>
+                {m.kb && <KnowledgeCard kb={m.kb} t={t} />}
                 {m.recs && (
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {m.recs.foods.length > 0 && <RecCard icon={LeafIcon} tone="text-success" title={t('chatRecFoods')} items={m.recs.foods} />}
@@ -308,6 +323,27 @@ export default function Voice() {
           <ArrowRightIcon size={18} />
         </button>
       </form>
+
+      {howOpen && <AiTransparency onClose={() => setHowOpen(false)} />}
+    </div>
+  )
+}
+
+/** A cited, plain-language education card retrieved from MIRA's knowledge base. */
+function KnowledgeCard({ kb, t }) {
+  return (
+    <div className={`mt-2 rounded-2xl border p-3.5 text-left ${kb.urgent ? 'border-danger/30 bg-danger/[0.06]' : 'border-accent-ai/20 bg-accent-ai/[0.05]'}`}>
+      <div className="flex items-center gap-2">
+        <span className="text-lg">{kb.emoji}</span>
+        <span className="font-heading text-caption font-semibold text-text-primary">{kb.title}</span>
+        <span className="ml-auto rounded-pill bg-white/[0.06] px-2 py-0.5 text-[0.62rem] text-text-muted">{t('kbLabel')}</span>
+      </div>
+      <p className="mt-2 text-[0.85rem] leading-relaxed text-text-secondary">{kb.summary}</p>
+      {kb.why && <p className="mt-2 text-[0.8rem] leading-relaxed text-text-muted">💡 {kb.why}</p>}
+      <div className="mt-2.5 flex items-center gap-2 border-t border-white/[0.06] pt-2">
+        <span className="text-[0.68rem] text-text-muted">📚 {kb.source}</span>
+        <span className="ml-auto text-[0.68rem] text-accent-secondary">{t('kbNotDiagnosis')}</span>
+      </div>
     </div>
   )
 }
