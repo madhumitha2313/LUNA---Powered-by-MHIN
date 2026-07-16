@@ -764,6 +764,12 @@ const DICT = {
     rmDemoTitle: 'Investor demo flow', rmDemoSub: 'A guided < 10-minute walkthrough — tap any step to open it live.',
     rmKpis: 'Success metrics (KPIs)', rmOkrs: 'OKRs', rmRelease: 'Release strategy',
     rmPerf: 'Performance targets', rmSecurity: 'Security checklist', rmRisks: 'Risk management', rmVision: 'Future vision (3–5 years)',
+    // ── Part 21: Multi-agent orchestrator ────────────────────────────────────
+    agConversation: 'Conversation Agent', agCycle: 'Cycle Intelligence', agWomens: 'Women’s Health Specialist', agNutrition: 'Nutrition Intelligence', agMood: 'Mood Intelligence', agReport: 'Report Intelligence', agRecommend: 'Recommendation Agent', agSafety: 'Safety Supervisor', agLearning: 'Learning Agent', agMemory: 'Memory Agent', agTwin: 'Digital Twin Agent', agJourney: 'Health Journey Agent',
+    agcConversation: 'Led the conversation with warmth & context', agcCycle: 'Checked your cycle phase & predictions', agcTwin: 'Forecast the days ahead', agcWomens: 'Added condition education', agcNutrition: 'Suggested foods that help', agcMood: 'Tuned tone to how you feel', agcReport: 'Ready to read shared reports', agcLearning: 'Retrieved cited education', agcRecommend: 'Merged the recommendations', agcSafetyCrisis: 'Prioritised crisis support', agcSafetyOk: 'Cleared the reply — safe & kind', agcMemory: 'Noted what matters for next time',
+    orchReasonCrisis: 'Detected distress — routed to crisis support first, above all else.', orchReasonSymptom: 'A symptom was mentioned — the cycle, safety and recommendation agents collaborated.', orchReasonKnowledge: 'A health topic came up — the specialist and learning agents added cited education.', orchReasonGeneral: 'A friendly exchange — the conversation and memory agents handled it.',
+    agTeamTitle: 'MIRA’s AI team', agTeamSub: 'One seamless companion — a coordinated team of specialists behind the scenes.', agOrchestrator: 'Orchestrator', agSafetyPassed: 'Safety supervisor validated this reply', agRoster: 'The full team', agActive: 'active', agCollaborated: 'specialists collaborated',
+    agTeamNote: 'You always talk to one MIRA. The orchestrator quietly routes each message to the right specialists, merges their work, removes conflicts, and checks safety before replying.',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -1448,6 +1454,10 @@ const DICT = {
     rmBadge: 'தயாரிப்பு & தொடக்கம்', rmTitle: 'MVP-யிலிருந்து உலகளாவிய சூழல் அமைப்பு வரை', rmSub: 'MIRA-வின் பின்னணியில் உள்ள வரைபடம், டெமோ, அளவீடுகள், தயார்நிலை.',
     rmBuilt: 'இந்த முன்னோட்டத்தில் ஏற்கனவே கட்டமைக்கப்பட்ட முக்கிய திறன்கள்',
     rmTabRoadmap: 'வரைபடம்', rmTabDemo: 'முதலீட்டாளர் டெமோ', rmTabMetrics: 'அளவீடுகள்', rmTabReadiness: 'தயார்நிலை',
+    // ── Part 21: Multi-agent orchestrator ────────────────────────────────────
+    agConversation: 'உரையாடல் முகவர்', agCycle: 'சுழற்சி நுண்ணறிவு', agWomens: 'பெண்கள் நல நிபுணர்', agNutrition: 'ஊட்டச்சத்து நுண்ணறிவு', agMood: 'மனநிலை நுண்ணறிவு', agReport: 'அறிக்கை நுண்ணறிவு', agRecommend: 'பரிந்துரை முகவர்', agSafety: 'பாதுகாப்பு மேற்பார்வையாளர்', agLearning: 'கற்றல் முகவர்', agMemory: 'நினைவக முகவர்', agTwin: 'டிஜிட்டல் இரட்டையர் முகவர்', agJourney: 'ஆரோக்கியப் பயண முகவர்',
+    agTeamTitle: 'MIRA-வின் AI குழு', agTeamSub: 'ஒரே தடையற்ற துணை — திரைக்குப் பின்னால் ஒருங்கிணைந்த நிபுணர் குழு.', agOrchestrator: 'ஒருங்கிணைப்பாளர்', agSafetyPassed: 'பாதுகாப்பு மேற்பார்வையாளர் இந்த பதிலை சரிபார்த்தார்', agRoster: 'முழு குழு', agActive: 'செயலில்', agCollaborated: 'நிபுணர்கள் ஒத்துழைத்தனர்',
+    agTeamNote: 'நீங்கள் எப்போதும் ஒரே MIRA-வுடன் பேசுகிறீர்கள். ஒருங்கிணைப்பாளர் அமைதியாக ஒவ்வொரு செய்தியையும் சரியான நிபுணர்களுக்கு வழிநடத்தி, அவர்களின் வேலையை இணைத்து, முரண்பாடுகளை நீக்கி, பதிலளிக்கும் முன் பாதுகாப்பைச் சரிபார்க்கிறார்.',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',

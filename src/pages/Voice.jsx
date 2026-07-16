@@ -9,7 +9,9 @@ import { detectSentiment, crisisResponse, comfortOpener } from '../lib/sentiment
 import { detectIntent, INTENT, SYMPTOMS, GREET_KEYS, CHIP_KEYS } from '../lib/miraChat'
 import { PERSONAS, MODES, getPersona, setPersona } from '../lib/companion'
 import { retrieve } from '../lib/knowledge'
+import { orchestrate } from '../lib/agents'
 import AiTransparency from '../components/AiTransparency'
+import AgentTeam from '../components/AgentTeam'
 import { useT, getLang } from '../lib/i18n.jsx'
 
 const SR_LANG = { en: 'en-IN', ta: 'ta-IN', hi: 'hi-IN', ml: 'ml-IN', te: 'te-IN', kn: 'kn-IN', bn: 'bn-IN', mr: 'mr-IN' }
@@ -32,6 +34,7 @@ export default function Voice() {
   const [persona, setPersonaState] = useState(getPersona())
   const [personaOpen, setPersonaOpen] = useState(false)
   const [howOpen, setHowOpen] = useState(false)
+  const [team, setTeam] = useState(null) // { agents, orchestrator } for the AI-team panel
   const pendingRef = useRef(null) // last symptom we asked about
   const pendingKbRef = useRef(null) // knowledge retrieved for the pending symptom
   const recRef = useRef(null)
@@ -52,11 +55,11 @@ export default function Voice() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, typing, interim])
 
-  function say(text, recs, kb) {
+  function say(text, recs, kb, agents) {
     setTyping(true)
     setTimeout(() => {
       setTyping(false)
-      setMessages((m) => [...m, { role: 'mira', text, recs, kb }])
+      setMessages((m) => [...m, { role: 'mira', text, recs, kb, agents }])
       setState('speaking')
       speak(text, { lang: SR_LANG[getLang()] || 'en-IN', rate: persona.rate, pitch: persona.pitch })
       // Keep the speaking state roughly as long as the utterance.
@@ -88,13 +91,19 @@ export default function Voice() {
       setCrisis(c)
       setEmotion('concerned')
       pendingRef.current = null
-      say(c.message)
+      const t2 = orchestrate({ text, sentiment: 'crisis', crisis: true })
+      say(c.message, null, null, t2)
       return
     }
 
     const sentiment = detectSentiment(text)
     const intent = detectIntent(text)
     const pending = pendingRef.current
+    const isSym = SYMPTOMS.includes(intent)
+    // Orchestrate: which specialist agents collaborate on this message.
+    const team = (kb, hasFoodRecs, hasRecs) => orchestrate({
+      text, intent, sentiment, isSymptom: isSym, kb, hasFoodRecs, hasRecs, phase: getCycleStats().phase,
+    })
 
     // Avatar emotion reacts to how the user feels.
     const warm = ['thanks', 'greeting', 'happy'].includes(intent)
@@ -112,7 +121,8 @@ export default function Voice() {
       pendingRef.current = null
       const pendingKb = pendingKbRef.current
       pendingKbRef.current = null
-      say(t(meta.advice), pickRecs(meta), pendingKb)
+      const recs = pickRecs(meta)
+      say(t(meta.advice), recs, pendingKb, orchestrate({ text, intent: pending, sentiment, isSymptom: true, kb: pendingKb, hasFoodRecs: !!recs?.foods?.length, hasRecs: !!recs, phase: getCycleStats().phase }))
       return
     }
 
@@ -122,7 +132,7 @@ export default function Voice() {
       pendingKbRef.current = kb // surface the knowledge card with the advice turn
       const meta = INTENT[intent]
       const opener = meta.urgent ? t('empathyUrgent') : t('empathySymptom')
-      say(`${opener} ${t(meta.ask)}`)
+      say(`${opener} ${t(meta.ask)}`, null, null, team(kb, false, false))
       return
     }
 
@@ -130,7 +140,8 @@ export default function Voice() {
     const meta = INTENT[intent] || INTENT.general
     let text2 = t(meta.advice)
     if (sentiment === 'low' && intent !== 'sad' && intent !== 'stress') text2 = comfortOpener() + ' ' + text2
-    say(text2, pickRecs(meta), kb)
+    const recs = pickRecs(meta)
+    say(text2, recs, kb, team(kb, !!recs?.foods?.length, !!recs))
   }
 
   function pickRecs(meta) {
@@ -235,6 +246,12 @@ export default function Voice() {
                   {m.text}
                 </div>
                 {m.kb && <KnowledgeCard kb={m.kb} t={t} />}
+                {m.agents && m.agents.agents.length > 2 && (
+                  <button onClick={() => setTeam(m.agents)} className="mt-2 flex items-center gap-1.5 rounded-pill border border-accent-ai/20 bg-accent-ai/[0.06] px-3 py-1.5 text-[0.72rem] text-text-secondary transition hover:border-accent-ai/50">
+                    <span className="flex -space-x-1">{m.agents.agents.slice(0, 4).map((a) => <span key={a.id} className="grid h-4 w-4 place-items-center rounded-full bg-bg-card text-[0.55rem] ring-1 ring-white/10">{a.emoji}</span>)}</span>
+                    {m.agents.agents.length} {t('agCollaborated')} ▾
+                  </button>
+                )}
                 {m.recs && (
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {m.recs.foods.length > 0 && <RecCard icon={LeafIcon} tone="text-success" title={t('chatRecFoods')} items={m.recs.foods} />}
@@ -325,6 +342,7 @@ export default function Voice() {
       </form>
 
       {howOpen && <AiTransparency onClose={() => setHowOpen(false)} />}
+      {team && <AgentTeam involved={team.agents} orchestrator={team.orchestrator} onClose={() => setTeam(null)} />}
     </div>
   )
 }
