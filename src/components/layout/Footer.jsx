@@ -18,7 +18,7 @@ export default function Footer() {
         </div>
 
         <p className="mt-6 text-center text-caption text-text-muted/70">
-          © {new Date().getFullYear()} MIRA · powered by MHIN · <Link to="/design" className="hover:text-accent-secondary">Design system</Link> · <Link to="/admin" className="hover:text-accent-secondary">Admin</Link> · <Link to="/developers" className="hover:text-accent-secondary">Developers</Link>
+          © {new Date().getFullYear()} MIRA · powered by MHIN · <Link to="/design" className="hover:text-accent-secondary">Design system</Link> · <Link to="/admin" className="hover:text-accent-secondary">Admin</Link> · <Link to="/developers" className="hover:text-accent-secondary">Developers</Link> · <Link to="/roadmap" className="hover:text-accent-secondary">Roadmap</Link>
         </p>
       </div>
     </footer>

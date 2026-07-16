@@ -757,6 +757,13 @@ const DICT = {
     devPipeline: 'AI orchestration pipeline', devPipelineSub: 'Every AI request flows through one central service.', devModelRouting: 'Model routing',
     devWebhookEvents: 'Webhook events', devWebhookPayload: 'Signed payload',
     devSandbox: 'Sandbox environment', devSandboxBody: 'Build and test safely with mock users, reports and AI replies — test API keys, zero production data.', devTestKey: 'Test API key (sandbox)',
+    // ── Part 20: Product roadmap & launch ────────────────────────────────────
+    rmBadge: 'Product & Launch', rmTitle: 'From MVP to a global ecosystem', rmSub: 'The roadmap, the demo, the metrics and the readiness behind MIRA.',
+    rmBuilt: 'core capabilities already built in this preview',
+    rmTabRoadmap: 'Roadmap', rmTabDemo: 'Investor demo', rmTabMetrics: 'Metrics', rmTabReadiness: 'Readiness',
+    rmDemoTitle: 'Investor demo flow', rmDemoSub: 'A guided < 10-minute walkthrough — tap any step to open it live.',
+    rmKpis: 'Success metrics (KPIs)', rmOkrs: 'OKRs', rmRelease: 'Release strategy',
+    rmPerf: 'Performance targets', rmSecurity: 'Security checklist', rmRisks: 'Risk management', rmVision: 'Future vision (3–5 years)',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -1437,6 +1444,10 @@ const DICT = {
     roleSuper: 'சூப்பர் நிர்வாகி', roleAdmin: 'நிர்வாகி', roleMod: 'மதிப்பீட்டாளர்', roleDoctor: 'மருத்துவர்', roleNutri: 'ஊட்டச்சத்து நிபுணர்',
     // ── Part 19: Developer Platform ──────────────────────────────────────────
     devTitle: 'டெவலப்பர் தளம்', devSub: 'MIRA மீது உருவாக்குங்கள் — பாதுகாப்பான, பதிப்பிடப்பட்ட, API-முதல்.', devFooter: 'ஆவணப் போர்ட்டல் · சாண்ட்பாக்ஸ் மாதிரி தரவைப் பயன்படுத்துகிறது',
+    // ── Part 20: Product roadmap & launch ────────────────────────────────────
+    rmBadge: 'தயாரிப்பு & தொடக்கம்', rmTitle: 'MVP-யிலிருந்து உலகளாவிய சூழல் அமைப்பு வரை', rmSub: 'MIRA-வின் பின்னணியில் உள்ள வரைபடம், டெமோ, அளவீடுகள், தயார்நிலை.',
+    rmBuilt: 'இந்த முன்னோட்டத்தில் ஏற்கனவே கட்டமைக்கப்பட்ட முக்கிய திறன்கள்',
+    rmTabRoadmap: 'வரைபடம்', rmTabDemo: 'முதலீட்டாளர் டெமோ', rmTabMetrics: 'அளவீடுகள்', rmTabReadiness: 'தயார்நிலை',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
