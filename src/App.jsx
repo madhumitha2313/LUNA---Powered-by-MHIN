@@ -53,6 +53,7 @@ import Developers from './pages/Developers'
 import Roadmap from './pages/Roadmap'
 import DigitalTwin from './pages/DigitalTwin'
 import Wearables from './pages/Wearables'
+import Healthcare from './pages/Healthcare'
 
 export default function App() {
   return (
@@ -89,6 +90,7 @@ export default function App() {
       <Route path="/roadmap" element={<Roadmap />} />
       <Route path="/twin" element={<RequireOnboarding><DigitalTwin /></RequireOnboarding>} />
       <Route path="/wearables" element={<RequireOnboarding><Wearables /></RequireOnboarding>} />
+      <Route path="/healthcare" element={<RequireOnboarding><Healthcare /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
