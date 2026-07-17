@@ -121,6 +121,9 @@ export default function Mira() {
         ) : (
           <p className="text-[0.92rem] text-text-secondary">{t('coTwinEmpty')}</p>
         )}
+        <div className="mt-4 flex justify-end">
+          <Button as={Link} to="/twin" size="sm" variant="secondary">{t('coTwinExplore')} <ArrowRightIcon size={14} /></Button>
+        </div>
       </Card>
 
       {/* Predictive insights */}

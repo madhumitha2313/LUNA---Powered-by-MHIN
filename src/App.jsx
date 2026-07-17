@@ -51,6 +51,7 @@ import DesignSystem from './pages/DesignSystem'
 import Admin from './pages/Admin'
 import Developers from './pages/Developers'
 import Roadmap from './pages/Roadmap'
+import DigitalTwin from './pages/DigitalTwin'
 
 export default function App() {
   return (
@@ -85,6 +86,7 @@ export default function App() {
       <Route path="/admin" element={<Admin />} />
       <Route path="/developers" element={<Developers />} />
       <Route path="/roadmap" element={<Roadmap />} />
+      <Route path="/twin" element={<RequireOnboarding><DigitalTwin /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
