@@ -111,7 +111,10 @@ export default function DigitalTwin() {
         <p className="text-[0.82rem] leading-relaxed text-text-muted">🛡️ {t('twDisclaimer')}</p>
       </div>
 
-      <div className="mt-4 text-center"><Link to="/mira" className="text-caption text-accent-secondary hover:underline">{t('aiManageMemory')} →</Link></div>
+      <div className="mt-4 flex flex-wrap justify-center gap-4 text-center">
+        <Link to="/wearables" className="text-caption text-accent-secondary hover:underline">⌚ {t('twConnectWearable')} →</Link>
+        <Link to="/mira" className="text-caption text-accent-secondary hover:underline">{t('aiManageMemory')} →</Link>
+      </div>
       <div className="h-24" />
       <BottomNav />
     </PageShell>

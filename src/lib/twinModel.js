@@ -10,6 +10,7 @@ import { getLogs, getCycleStats } from './localStore'
 import { computeHealthScore, insights as cycleInsights } from './cycleIntel'
 import { moodSummary, moodInsights } from './moodIntel'
 import { getWaterToday, WATER_GOAL } from './nutritionIntel'
+import { twinSignals } from './wearables'
 
 const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null)
 const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)))
@@ -25,9 +26,17 @@ export function bodyIndicators() {
   const stats = getCycleStats()
   const mood = moodSummary(14)
 
-  const energy = avg(logs.map((l) => ENERGY[l.energy]).filter((n) => n != null)) ?? phaseDefault(stats.phase, 'energy')
-  const sleep = avg(logs.map((l) => SLEEP[l.sleep]).filter((n) => n != null)) ?? 60
-  const stress = avg(logs.map((l) => STRESS[l.stress]).filter((n) => n != null)) ?? 62
+  // Wearable fusion: when a device is connected + allowed, measured signals
+  // blend into (and strengthen) the estimates so the twin refreshes automatically.
+  const wear = twinSignals()
+  const blend = (est, key) => (wear && wear[key] != null ? est == null ? wear[key] : est * 0.45 + wear[key] * 0.55 : est)
+
+  const energyEst = avg(logs.map((l) => ENERGY[l.energy]).filter((n) => n != null)) ?? phaseDefault(stats.phase, 'energy')
+  const sleepEst = avg(logs.map((l) => SLEEP[l.sleep]).filter((n) => n != null)) ?? (wear?.sleep != null ? null : 60)
+  const stressEst = avg(logs.map((l) => STRESS[l.stress]).filter((n) => n != null)) ?? (wear?.stress != null ? null : 62)
+  const energy = blend(energyEst, 'energy')
+  const sleep = blend(sleepEst, 'sleep') ?? 60
+  const stress = blend(stressEst, 'stress') ?? 62
   const moodV = mood.positivity != null ? mood.positivity : phaseDefault(stats.phase, 'mood')
   const hydration = Math.min(100, (getWaterToday() / WATER_GOAL) * 100) || 40
   const hormonal = stats.regularity === 'regular' ? 84 : stats.regularity === 'slightly irregular' ? 62 : stats.regularity ? 46 : 60
@@ -55,8 +64,10 @@ function phaseDefault(phase, metric) {
 export function composite() {
   const ind = bodyIndicators()
   const score = clamp(avg(ind.map((i) => i.value)))
-  const dataPoints = getLogs().length + (getCycleStats().avgCycleLength ? 3 : 0)
-  return { score, indicators: ind, ...confidence(dataPoints) }
+  const wear = twinSignals()
+  // Continuous wearable data adds a lot of confidence (many daily data points).
+  const dataPoints = getLogs().length + (getCycleStats().avgCycleLength ? 3 : 0) + (wear ? 14 : 0)
+  return { score, indicators: ind, wearable: !!wear, ...confidence(dataPoints) }
 }
 
 const CONF_LEVELS = [
