@@ -57,6 +57,7 @@ import Healthcare from './pages/Healthcare'
 import Research from './pages/Research'
 import Premium from './pages/Premium'
 import Community from './pages/Community'
+import Marketplace from './pages/Marketplace'
 
 export default function App() {
   return (
@@ -97,6 +98,7 @@ export default function App() {
       <Route path="/research" element={<RequireOnboarding><Research /></RequireOnboarding>} />
       <Route path="/premium" element={<RequireOnboarding><Premium /></RequireOnboarding>} />
       <Route path="/community" element={<RequireOnboarding><Community /></RequireOnboarding>} />
+      <Route path="/marketplace" element={<RequireOnboarding><Marketplace /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
