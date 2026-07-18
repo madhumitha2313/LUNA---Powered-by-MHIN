@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
 import MiraMark, { MiraWordmark } from '../components/MiraMark'
+import SplashLogo from '../components/SplashLogo'
 import { armDashboardTour } from '../components/DashboardTour'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
@@ -157,28 +158,18 @@ export default function Onboarding() {
         className="pointer-events-none absolute left-1/2 top-1/4 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-accent-primary/10 blur-[120px]"
       />
 
-      {/* SPLASH — two logo halves slide in, merge, glow, then the wordmark fades in */}
+      {/* SPLASH — logo present from frame 1, surrounded by minimal darker-pink
+          waves + floating particles; the wordmark & tagline settle in after. */}
       {step === 'splash' && (
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
-          <div className="relative h-32 w-32">
-            {/* left half */}
-            <div className="absolute inset-0 animate-slide-in-left" style={{ clipPath: 'inset(0 50% 0 0)' }}>
-              <MiraMark size={128} glow={false} />
-            </div>
-            {/* right half */}
-            <div className="absolute inset-0 animate-slide-in-right" style={{ clipPath: 'inset(0 0 0 50%)' }}>
-              <MiraMark size={128} glow={false} />
-            </div>
-            {/* merge glow */}
-            <div className="pointer-events-none absolute inset-0 animate-glow-pulse rounded-full bg-[#FF4F9D]/40 blur-2xl" />
-          </div>
+          <SplashLogo size={132} />
           <h1
-            className="mt-7 font-heading text-4xl font-bold tracking-tight opacity-0 animate-fade-up"
-            style={{ animationDelay: '1200ms' }}
+            className="mt-4 font-heading text-4xl font-bold tracking-tight opacity-0 animate-fade-up"
+            style={{ animationDelay: '600ms' }}
           >
             <MiraWordmark />
           </h1>
-          <p className="mt-2 text-text-secondary opacity-0 animate-fade-up" style={{ animationDelay: '1500ms' }}>
+          <p className="mt-2 text-text-secondary opacity-0 animate-fade-up" style={{ animationDelay: '900ms' }}>
             {t('splashTagline')}
           </p>
         </div>

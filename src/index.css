@@ -196,6 +196,25 @@
   }
   .animate-float-up { animation: floatUp linear infinite; }
 
+  /* ── App-open splash: present logo + minimal waves + floating particles ── */
+  /* Particles drift gently around the (stationary) logo and breathe in opacity. */
+  @keyframes splashDrift {
+    0%, 100% { transform: translate(0, 0); opacity: var(--o, 0.55); }
+    50% { transform: translate(var(--dx, 0), var(--dy, 0)); opacity: 1; }
+  }
+  .animate-splash-drift { animation: splashDrift var(--dur, 6s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
+
+  /* Thin wave lines sway slowly — smooth, elegant, low visual noise. */
+  @keyframes waveFlow {
+    0%, 100% { transform: translateX(-3px); opacity: 0.5; }
+    50% { transform: translateX(3px); opacity: 0.85; }
+  }
+  .animate-wave-flow { animation: waveFlow var(--dur, 7s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
+
+  /* Logo is present from frame 1 — only a whisper of a settle, never a reveal. */
+  @keyframes logoSettle { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  .animate-logo-settle { animation: logoSettle 450ms ease-out both; }
+
   /* Cycle-explorer timeline slider thumb */
   .mira-range::-webkit-slider-thumb {
     -webkit-appearance: none;
