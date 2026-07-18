@@ -56,6 +56,7 @@ import Wearables from './pages/Wearables'
 import Healthcare from './pages/Healthcare'
 import Research from './pages/Research'
 import Premium from './pages/Premium'
+import Community from './pages/Community'
 
 export default function App() {
   return (
@@ -95,6 +96,7 @@ export default function App() {
       <Route path="/healthcare" element={<RequireOnboarding><Healthcare /></RequireOnboarding>} />
       <Route path="/research" element={<RequireOnboarding><Research /></RequireOnboarding>} />
       <Route path="/premium" element={<RequireOnboarding><Premium /></RequireOnboarding>} />
+      <Route path="/community" element={<RequireOnboarding><Community /></RequireOnboarding>} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
