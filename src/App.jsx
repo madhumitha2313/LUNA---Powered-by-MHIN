@@ -59,6 +59,7 @@ import Premium from './pages/Premium'
 import Community from './pages/Community'
 import Marketplace from './pages/Marketplace'
 import Trust from './pages/Trust'
+import Platform from './pages/Platform'
 
 export default function App() {
   return (
@@ -101,6 +102,7 @@ export default function App() {
       <Route path="/community" element={<RequireOnboarding><Community /></RequireOnboarding>} />
       <Route path="/marketplace" element={<RequireOnboarding><Marketplace /></RequireOnboarding>} />
       <Route path="/trust" element={<RequireOnboarding><Trust /></RequireOnboarding>} />
+      <Route path="/platform" element={<Platform />} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   )
