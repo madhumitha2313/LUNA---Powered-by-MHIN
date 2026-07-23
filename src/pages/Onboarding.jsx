@@ -7,6 +7,7 @@ import { armDashboardTour } from '../components/DashboardTour'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT, LANGS, setOnboarded } from '../lib/i18n'
+import { isAuthenticated } from '../lib/authStore'
 import { saveProfile, saveSettings, addPeriod } from '../lib/localStore'
 import { isAppwriteConfigured, account } from '../lib/appwrite'
 
@@ -81,10 +82,12 @@ export default function Onboarding() {
     armDashboardTour() // show the guided tour on the first home visit
   }
 
-  // Personalising loader → persist, then into the app.
+  // Personalising loader → persist, then continue. If the visitor has an
+  // account, straight to the dashboard; otherwise on to sign up (the details
+  // they just entered are preserved and linked to their new account).
   useEffect(() => {
     if (step !== 'personalizing') return
-    const timer = setTimeout(() => navigate('/home'), 2400)
+    const timer = setTimeout(() => navigate(isAuthenticated() ? '/home' : '/signup', { replace: true }), 2400)
     return () => clearTimeout(timer)
   }, [step, navigate])
 

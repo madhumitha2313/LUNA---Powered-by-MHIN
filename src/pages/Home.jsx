@@ -16,6 +16,7 @@ import {
   MoonIcon,
 } from '../components/ui/icons'
 import { getCurrentUser } from '../lib/auth'
+import { currentUser } from '../lib/authStore'
 import { getRecentLogs } from '../lib/logs'
 import { isAppwriteDataConfigured } from '../lib/config'
 import { getLogs as getLocalLogs, getCycleStats, getProfile, addLog } from '../lib/localStore'
@@ -103,7 +104,7 @@ function isFertile(stats) {
 
 export default function Home() {
   const { t } = useT()
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(() => currentUser())
   const [logs, setLogs] = useState([])
   const [savedInsight, setSavedInsight] = useState(false)
   const [moodSaved, setMoodSaved] = useState(false)
@@ -115,7 +116,7 @@ export default function Home() {
     ;(async () => {
       const u = await getCurrentUser()
       if (!alive) return
-      setUser(u)
+      setUser(u || currentUser())
       const recent = isAppwriteDataConfigured && u ? await getRecentLogs(u.$id, 7) : getLocalLogs().slice(0, 7)
       if (!alive) return
       setLogs(recent)

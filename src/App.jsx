@@ -1,31 +1,31 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { isOnboarded } from './lib/i18n.jsx'
+import { isAuthenticated } from './lib/authStore'
 import Landing from './pages/Landing'
 import Voice from './pages/Voice'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import Legal from './pages/Legal'
 
-/** First-run gate: send new users through onboarding before the app. */
+/**
+ * Protected-route gate. Every feature that holds personal health data requires
+ * an authenticated session; unauthenticated visitors are sent to the welcome/
+ * login screen and can never reach another user's data.
+ */
 function RequireOnboarding({ children }) {
-  return isOnboarded() ? children : <Navigate to="/onboarding" replace />
+  return isAuthenticated() ? children : <Navigate to="/welcome" replace />
 }
 
 /**
- * Root entry.
- * In the single-file / preview build we ALWAYS open into the onboarding flow so
- * the demo starts with the logo animation + questions every time it's opened —
- * even if a previous run already stored the "onboarded" flag. In a normal
- * deployed build, returning users see the landing page and only first-run users
- * are sent to onboarding.
+ * Root entry. Authenticated users land on their dashboard; everyone else starts
+ * at the welcome screen (splash → welcome → login / sign up).
  */
-const PREVIEW_BUILD = import.meta.env.VITE_HASH_ROUTER === 'true'
 function RootEntry() {
-  if (PREVIEW_BUILD) return <Navigate to="/onboarding" replace />
-  return isOnboarded() ? <Landing /> : <Navigate to="/onboarding" replace />
+  return isAuthenticated() ? <Navigate to="/home" replace /> : <Navigate to="/welcome" replace />
 }
 
 import Login from './pages/Login'
+import Welcome from './pages/Welcome'
+import Signup from './pages/Signup'
 import Features from './pages/Features'
 import HowItWorks from './pages/HowItWorks'
 import Tracker from './pages/Tracker'
@@ -70,7 +70,9 @@ export default function App() {
       <Route path="/privacy" element={<Legal doc="privacy" />} />
       <Route path="/home" element={<RequireOnboarding><Home /></RequireOnboarding>} />
       <Route path="/voice" element={<RequireOnboarding><Voice /></RequireOnboarding>} />
+      <Route path="/welcome" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route path="/features" element={<Features />} />
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/tracker" element={<Tracker />} />

@@ -11,16 +11,19 @@ import './index.css'
 const useHash = import.meta.env.VITE_HASH_ROUTER === 'true'
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
 
-// Preview / demo build (hash router): force the URL to the onboarding route
-// BEFORE the router mounts, on every fresh page load. This guarantees the logo
-// + flow always show when the file or hosted preview is (re)opened, even if the
-// last session left the URL at #/home or stored the "onboarded" flag. Setting
-// the hash here (pre-mount) avoids the router desync you'd get from redirecting
-// during React's first render. In-app navigation after onboarding is untouched
-// because it never reloads the page (so this line doesn't run again).
+// Preview / demo build (hash router): set the initial route BEFORE the router
+// mounts so a fresh (re)open always resolves auth first. A signed-out visitor
+// lands on the welcome/splash screen (welcome → login / sign up); a returning
+// signed-in user has their session restored straight to the dashboard. Setting
+// the hash here (pre-mount) avoids the router desync of redirecting during
+// React's first render. In-app navigation never reloads, so this runs once.
 if (useHash) {
+  const authed = (() => { try { return !!localStorage.getItem('mira.session.v1') } catch { return false } })()
   const path = window.location.hash.replace(/^#/, '').split('?')[0]
-  if (path !== '/onboarding') window.location.hash = '#/onboarding'
+  const authPages = ['/welcome', '/login', '/signup']
+  const publicFlow = [...authPages, '/onboarding', '/terms', '/privacy']
+  if (!authed && !publicFlow.includes(path)) window.location.hash = '#/welcome'
+  else if (authed && authPages.includes(path)) window.location.hash = '#/home'
 }
 
 const Router = useHash ? HashRouter : BrowserRouter
