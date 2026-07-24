@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Logo from '../components/Logo'
+import BackButton from '../components/ui/BackButton'
 
 /**
  * Terms of Service / Privacy Policy. Health-app appropriate content, adapted for
@@ -65,7 +66,7 @@ export default function Legal({ doc = 'terms' }) {
         </p>
 
         <div className="mt-8">
-          <Link to="/onboarding" className="text-caption text-accent-secondary hover:underline">← Back</Link>
+          <BackButton fallback="/onboarding" className="text-caption text-accent-secondary hover:underline">← Back</BackButton>
         </div>
       </main>
     </div>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import BackButton from '../components/ui/BackButton'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { useT } from '../lib/i18n.jsx'
@@ -81,7 +81,7 @@ export default function Admin() {
         </div>
 
         <p className="mt-10 text-center text-[0.75rem] text-text-muted">
-          {t('admFooter')} · <Link to="/home" className="hover:text-accent-secondary">← {t('admBackApp')}</Link>
+          {t('admFooter')} · <BackButton fallback="/home" className="hover:text-accent-secondary">← {t('admBackApp')}</BackButton>
         </p>
       </div>
     </div>

@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import PageShell from '../components/layout/PageShell'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
-import { ShieldIcon, HeartIcon, SparklesIcon } from '../components/ui/icons'
+import { ShieldIcon, HeartIcon, SparklesIcon, MoonIcon } from '../components/ui/icons'
+import CycleGuideIntro from '../components/CycleGuideIntro'
 import { isAppwriteConfigured, isAppwriteDataConfigured, appwriteConfig } from '../lib/config'
 import { useT, LANGS } from '../lib/i18n.jsx'
 import {
@@ -17,6 +19,23 @@ import {
 
 export default function Settings() {
   const { t, lang, setLang } = useT()
+  const location = useLocation()
+  const sectionRefs = { language: useRef(null), notifications: useRef(null), 'privacy-security': useRef(null) }
+  const [highlight, setHighlight] = useState('')
+
+  useEffect(() => {
+    const section = new URLSearchParams(location.search).get('section')
+    const el = section && sectionRefs[section]?.current
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setHighlight(section)
+      const id = setTimeout(() => setHighlight(''), 2000)
+      return () => clearTimeout(id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search])
+
+  const ring = (key) => (highlight === key ? 'ring-2 ring-accent-primary/50' : '')
   const cfg = getAppwriteConfig()
   // Show the ACTIVE resolved config (baked-in MIRA project) so the fields reflect
   // what the app is really connected to, not just any local override.
@@ -27,6 +46,7 @@ export default function Settings() {
   })
   const [settings, setSettings] = useState(getSettings())
   const [savedMsg, setSavedMsg] = useState('')
+  const [replayGuide, setReplayGuide] = useState(false)
 
   const setAwField = (k) => (e) => setAw((p) => ({ ...p, [k]: e.target.value }))
   const setSetting = (k, v) => {
@@ -57,8 +77,7 @@ export default function Settings() {
   return (
     <PageShell max="max-w-3xl">
       <div className="mb-8">
-        <Badge tone="neutral" icon={<ShieldIcon size={14} />}>{t('menuSettings')}</Badge>
-        <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight">{t('menuSettings')}</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">{t('menuSettings')}</h1>
         {savedMsg && <p className="mt-2 text-caption text-success">{savedMsg}</p>}
       </div>
 
@@ -126,43 +145,43 @@ export default function Settings() {
         </div>
       </Card>
 
-      {/* Preferences */}
-      <Card className="mb-6">
-        <h2 className="mb-4 font-heading text-lg font-semibold">{t('preferences')}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="mb-1.5 block text-caption text-text-muted">{t('appLanguage')}</span>
-            <select
-              value={lang}
-              onChange={(e) => {
-                const code = e.target.value
-                setLang(code) // switch the whole app immediately
-                setSetting('language', LANGS.find((l) => l.code === code)?.label || 'English')
-              }}
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary focus:border-accent-primary/40 focus:outline-none"
-            >
-              {LANGS.map((l) => (
-                <option key={l.code} value={l.code} className="bg-bg-card">
-                  {l.native} — {l.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2 pt-6 text-[0.95rem] text-text-secondary">
-            <input
-              type="checkbox"
-              checked={settings.notifications}
-              onChange={(e) => setSetting('notifications', e.target.checked)}
-              className="h-4 w-4 accent-accent-primary"
-            />
-            {t('cycleReminders')}
-          </label>
-        </div>
+      {/* Language */}
+      <Card ref={sectionRefs.language} className={`mb-6 transition-shadow ${ring('language')}`}>
+        <h2 className="mb-4 font-heading text-lg font-semibold">{t('appLanguage')}</h2>
+        <select
+          value={lang}
+          onChange={(e) => {
+            const code = e.target.value
+            setLang(code) // switch the whole app immediately
+            setSetting('language', LANGS.find((l) => l.code === code)?.label || 'English')
+          }}
+          className="w-full max-w-sm rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[0.95rem] text-text-primary focus:border-accent-primary/40 focus:outline-none"
+        >
+          {LANGS.map((l) => (
+            <option key={l.code} value={l.code} className="bg-bg-card">
+              {l.native} — {l.label}
+            </option>
+          ))}
+        </select>
         <p className="mt-3 text-caption text-text-muted">{t('darkDefault')}</p>
       </Card>
 
-      {/* Data */}
-      <Card className="flex flex-col gap-3 bg-bg-secondary/40 sm:flex-row sm:items-center sm:justify-between">
+      {/* Notifications */}
+      <Card ref={sectionRefs.notifications} className={`mb-6 transition-shadow ${ring('notifications')}`}>
+        <h2 className="mb-4 font-heading text-lg font-semibold">{t('preferences')}</h2>
+        <label className="flex items-center gap-2 text-[0.95rem] text-text-secondary">
+          <input
+            type="checkbox"
+            checked={settings.notifications}
+            onChange={(e) => setSetting('notifications', e.target.checked)}
+            className="h-4 w-4 accent-accent-primary"
+          />
+          {t('cycleReminders')}
+        </label>
+      </Card>
+
+      {/* Privacy & Security / Data */}
+      <Card ref={sectionRefs['privacy-security']} className={`mb-6 flex flex-col gap-3 bg-bg-secondary/40 transition-shadow sm:flex-row sm:items-center sm:justify-between ${ring('privacy-security')}`}>
         <div className="flex items-start gap-3">
           <ShieldIcon size={20} className="mt-0.5 shrink-0 text-success" />
           <p className="text-caption text-text-secondary">{t('dataDesc')}</p>
@@ -171,6 +190,22 @@ export default function Settings() {
           {t('deleteData')}
         </Button>
       </Card>
+
+      {/* Help & Education */}
+      <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <MoonIcon size={20} className="mt-0.5 shrink-0 text-accent-secondary" />
+          <div>
+            <h2 className="font-heading text-lg font-semibold">{t('cgSettingsTitle')}</h2>
+            <p className="text-caption text-text-secondary">{t('cgSettingsDesc')}</p>
+          </div>
+        </div>
+        <Button onClick={() => setReplayGuide(true)} variant="secondary" size="md">
+          {t('cgSettingsBtn')}
+        </Button>
+      </Card>
+
+      {replayGuide && <CycleGuideIntro forceOpen onClose={() => setReplayGuide(false)} />}
     </PageShell>
   )
 }

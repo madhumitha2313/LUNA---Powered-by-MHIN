@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import { cn } from '../../lib/cn'
 
 /**
@@ -7,9 +8,10 @@ import { cn } from '../../lib/cn'
  * and the card "pops" (lifts + scales + accent glow) on hover/touch. Works with
  * pointer hover and, on touch devices, the active state.
  */
-export default function Card({ as: Tag = 'div', hover = false, className, children, ...props }) {
+const Card = forwardRef(function Card({ as: Tag = 'div', hover = false, className, children, ...props }, ref) {
   return (
     <Tag
+      ref={ref}
       className={cn(
         'card-base p-6',
         hover && [
@@ -29,4 +31,5 @@ export default function Card({ as: Tag = 'div', hover = false, className, childr
       {children}
     </Tag>
   )
-}
+})
+export default Card

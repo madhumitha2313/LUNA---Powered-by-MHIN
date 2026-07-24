@@ -11,7 +11,9 @@ import { isAuthenticated } from '../lib/authStore'
 import { saveProfile, saveSettings, addPeriod } from '../lib/localStore'
 import { isAppwriteConfigured, account } from '../lib/appwrite'
 
-const YEARS = Array.from({ length: 2015 - 1955 + 1 }, (_, i) => 2015 - i) // 2015 → 1955
+// Dynamic so the range always reaches the current year (never goes stale/outdated).
+const THIS_YEAR = new Date().getFullYear()
+const YEARS = Array.from({ length: THIS_YEAR - 1940 + 1 }, (_, i) => THIS_YEAR - i) // this year → 1940
 
 // Sample Google accounts shown in the "choose an account" chooser (preview mock —
 // a browser can't read your real Google sessions, so we show representative ones).
@@ -20,18 +22,10 @@ const SEEDED_ACCOUNTS = [
   { name: 'Kishore Raam', email: 'kishoreraammskj@gmail.com', initial: 'K', color: '#34a853' },
 ]
 
-// Short, friendly primer shown to first-time trackers (title/body are i18n keys).
-const EDU_SLIDES = [
-  { emoji: '🌙', t: 'edu1T', b: 'edu1B' },
-  { emoji: '🌸', t: 'edu2T', b: 'edu2B' },
-  { emoji: '💗', t: 'edu3T', b: 'edu3B' },
-  { emoji: '🤝', t: 'edu4T', b: 'edu4B' },
-]
-
 // Steps that carry the progress bar (the personalisation + cycle-setup wizard).
 const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod', 'regularity']
 // Order used by the ← back button (splash and the loader are excluded).
-const ORDER = ['lang', 'welcome', 'consent', 'signup', ...TRACKED, 'firstTime', 'education', 'reminders']
+const ORDER = ['lang', 'welcome', 'consent', 'signup', ...TRACKED, 'reminders']
 
 export default function Onboarding() {
   const { t, lang, setLang } = useT()
@@ -53,8 +47,6 @@ export default function Onboarding() {
   const [emailErr, setEmailErr] = useState(false)
   const [googleView, setGoogleView] = useState('chooser') // 'chooser' | 'signin'
   const [regularity, setRegularity] = useState('')
-  const [firstTime, setFirstTime] = useState(null)
-  const [eduSlide, setEduSlide] = useState(0)
 
   // Splash: logo animation (~2.8s), then move to language.
   useEffect(() => {
@@ -71,7 +63,6 @@ export default function Onboarding() {
       periodLength: periodLen,
       cycleLength: cycleLen,
       regularity: regularity || 'unsure',
-      firstTime: !!firstTime,
     })
     addPeriod(lastPeriod.toISOString())
     saveSettings({
@@ -544,69 +535,7 @@ export default function Onboarding() {
                     </button>
                   ))}
                 </div>
-                <Footer onNext={() => setStep('firstTime')} label={t('next')} disabled={!regularity} />
-              </Step>
-            )}
-
-            {/* FIRST-TIME DETECTION */}
-            {step === 'firstTime' && (
-              <Step title={t('firstTimeTitle')} subtitle={t('firstTimeSub')}>
-                <div className="mt-8 grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => {
-                      setFirstTime(true)
-                      setEduSlide(0)
-                      setStep('education')
-                    }}
-                    className="rounded-2xl border border-white/10 bg-white/[0.02] py-8 text-lg font-medium text-text-primary transition-all duration-250 hover:border-accent-primary/40 hover:bg-accent-primary/[0.06]"
-                  >
-                    🌸 {t('yesOpt')}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFirstTime(false)
-                      setStep('reminders')
-                    }}
-                    className="rounded-2xl border border-white/10 bg-white/[0.02] py-8 text-lg font-medium text-text-primary transition-all duration-250 hover:border-accent-primary/40 hover:bg-accent-primary/[0.06]"
-                  >
-                    🌸 {t('noOpt')}
-                  </button>
-                </div>
-              </Step>
-            )}
-
-            {/* AI EDUCATION (first-time users) — a short, friendly primer */}
-            {step === 'education' && (
-              <Step title={t('eduTitle')} subtitle={t('eduSub')}>
-                <div className="mt-6 rounded-2xl border border-accent-primary/20 bg-accent-primary/[0.05] p-6">
-                  <div className="text-4xl">{EDU_SLIDES[eduSlide].emoji}</div>
-                  <h3 className="mt-4 font-heading text-xl font-semibold">{t(EDU_SLIDES[eduSlide].t)}</h3>
-                  <p className="mt-2 text-[0.95rem] leading-relaxed text-text-secondary">{t(EDU_SLIDES[eduSlide].b)}</p>
-                  <div className="mt-5 flex justify-center gap-1.5">
-                    {EDU_SLIDES.map((_, i) => (
-                      <span
-                        key={i}
-                        className={`h-1.5 rounded-pill transition-all ${i === eduSlide ? 'w-6 bg-accent-primary' : 'w-1.5 bg-white/20'}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-auto flex items-center justify-between pt-8">
-                  <button
-                    onClick={() => setStep('reminders')}
-                    className="rounded-pill px-4 py-3 text-caption text-text-muted hover:text-text-secondary"
-                  >
-                    {t('skip')}
-                  </button>
-                  <Button
-                    onClick={() =>
-                      eduSlide < EDU_SLIDES.length - 1 ? setEduSlide((s) => s + 1) : setStep('reminders')
-                    }
-                    size="lg"
-                  >
-                    {eduSlide < EDU_SLIDES.length - 1 ? t('cont') : t('eduDone')} <ArrowRightIcon size={18} />
-                  </Button>
-                </div>
+                <Footer onNext={() => setStep('reminders')} label={t('next')} disabled={!regularity} />
               </Step>
             )}
 

@@ -309,7 +309,7 @@ function YouTab({ t, tick, bump }) {
             </button>
           </div>
           <ul className="mt-3 space-y-2">
-            {[['🧠', 'raiCtlMemory', '/mira'], ['📄', 'raiCtlReports', '/report'], ['🔬', 'raiCtlResearch', '/research'], ['🎙️', 'raiCtlVoice', '/settings']].map(([e, k, to]) => (
+            {[['🧠', 'raiCtlMemory', '/mira'], ['📄', 'raiCtlReports', '/report'], ['🔬', 'raiCtlResearch', '/research'], ['🎙️', 'raiCtlVoice', '/voice']].map(([e, k, to]) => (
               <li key={k}><Link to={to} className="flex items-center gap-2 text-[0.84rem] text-text-secondary hover:text-text-primary">{e} {t(k)} <ArrowRightIcon size={13} className="text-text-muted" /></Link></li>
             ))}
           </ul>

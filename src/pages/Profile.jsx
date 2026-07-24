@@ -86,7 +86,7 @@ export default function Profile() {
       {/* Quick links */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         <LinkCard to="/tracker" icon={HeartIcon} title="Cycle tracker" />
-        <LinkCard to="/symptoms" icon={SparklesIcon} title="PCOS symptoms" />
+        <LinkCard to="/symptoms" icon={SparklesIcon} title="Health profile" />
         <LinkCard to="/report" icon={ArrowRightIcon} title="My report" />
       </div>
 

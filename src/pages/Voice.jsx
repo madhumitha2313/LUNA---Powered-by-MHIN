@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import MiraAvatar from '../components/MiraAvatar'
+import BackButton from '../components/ui/BackButton'
 import Badge from '../components/ui/Badge'
 import { ArrowRightIcon, SparklesIcon, MicIcon, LeafIcon, HeartIcon } from '../components/ui/icons'
 import { speechSupported, createRecognizer, speak, stopSpeaking } from '../lib/browserVoice'
@@ -185,7 +185,7 @@ export default function Voice() {
 
       {/* Top bar with expressive avatar */}
       <header className="relative z-30 flex items-center gap-3 border-b border-white/[0.06] px-5 py-3">
-        <Link to="/home" className="text-accent-secondary hover:text-text-primary">←</Link>
+        <BackButton fallback="/home" className="text-accent-secondary hover:text-text-primary">←</BackButton>
         <MiraAvatar state={avState} emotion={emotion} size={48} />
         <div className="leading-tight">
           <p className="font-heading font-semibold">{t('chatTitle')}</p>

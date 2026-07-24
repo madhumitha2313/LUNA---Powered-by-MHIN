@@ -93,7 +93,7 @@ export default function App() {
       <Route path="/planner" element={<RequireOnboarding><Planner /></RequireOnboarding>} />
       <Route path="/safety" element={<RequireOnboarding><Safety /></RequireOnboarding>} />
       <Route path="/design" element={<DesignSystem />} />
-      <Route path="/admin" element={<Admin />} />
+      <Route path="/admin" element={<RequireOnboarding><Admin /></RequireOnboarding>} />
       <Route path="/developers" element={<Developers />} />
       <Route path="/roadmap" element={<Roadmap />} />
       <Route path="/twin" element={<RequireOnboarding><DigitalTwin /></RequireOnboarding>} />

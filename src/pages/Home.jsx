@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import BottomNav from '../components/layout/BottomNav'
 import DashboardTour from '../components/DashboardTour'
+import CycleGuideIntro, { shouldShowCycleGuide } from '../components/CycleGuideIntro'
 import Card from '../components/ui/Card'
 import {
   MicIcon,
@@ -108,6 +109,7 @@ export default function Home() {
   const [logs, setLogs] = useState([])
   const [savedInsight, setSavedInsight] = useState(false)
   const [moodSaved, setMoodSaved] = useState(false)
+  const [guideDone, setGuideDone] = useState(() => !shouldShowCycleGuide())
   const stats = getCycleStats()
   const profile = getProfile()
 
@@ -155,7 +157,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <DashboardTour />
+      {guideDone ? <DashboardTour /> : <CycleGuideIntro onClose={() => setGuideDone(true)} />}
       <Navbar />
       <main className="mx-auto max-w-5xl px-5 pb-32 pt-28 sm:px-8">
         {/* Greeting + dynamic phase message */}
