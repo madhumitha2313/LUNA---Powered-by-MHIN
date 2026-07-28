@@ -7,6 +7,7 @@
 import { getLogs, getPeriods, getProfile, getCycleStats } from './localStore'
 import { getProgress } from './learnProgress'
 import { moodSummary } from './moodIntel'
+import { completedCount as completedConditionsCount } from './conditions'
 
 const DAY = 86400000
 const monthKey = (d) => new Date(d).toISOString().slice(0, 7)
@@ -32,6 +33,7 @@ export function stats() {
   const lessons = prog.completed?.length || 0
   const firstLog = logs.length ? logs[logs.length - 1].date : null
   const spanDays = firstLog ? Math.floor((Date.now() - new Date(firstLog)) / DAY) : 0
+  const conditionsCompleted = completedConditionsCount()
 
   return {
     moodLogs: moodLogs.length,
@@ -40,6 +42,7 @@ export function stats() {
     periods: getPeriods().length,
     spanDays,
     firstLog,
+    conditionsCompleted,
   }
 }
 
@@ -53,7 +56,8 @@ export function totalXP() {
     s.lessons * 30 +
     s.gratitude * 10 +
     s.habitCompletions * 5 +
-    s.periods * 20
+    s.periods * 20 +
+    s.conditionsCompleted * 25
   )
 }
 
@@ -91,6 +95,7 @@ export function badges() {
     { id: 'selfcare', emoji: '💖', key: 'bgSelfcare', earned: s.gratitude >= 3 },
     { id: 'regular', emoji: '📈', key: 'bgRegular', earned: cycleReg && s.periods >= 3 },
     { id: 'year', emoji: '🏆', key: 'bgYear', earned: s.spanDays >= 365 },
+    { id: 'healthEd', emoji: '🎓', key: 'bgHealthEd', earned: s.conditionsCompleted >= 1 },
   ]
   return defs
 }

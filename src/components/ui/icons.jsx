@@ -124,3 +124,60 @@ export const BrainIcon = (p) => (
     <path d="M12 5v14" />
   </Svg>
 )
+
+export const PauseIcon = (p) => (
+  <Svg {...p}>
+    <rect x="6" y="5" width="4" height="14" rx="1" />
+    <rect x="14" y="5" width="4" height="14" rx="1" />
+  </Svg>
+)
+
+export const FullscreenIcon = (p) => (
+  <Svg {...p}>
+    <path d="M4 9V5a1 1 0 0 1 1-1h4" />
+    <path d="M20 9V5a1 1 0 0 0-1-1h-4" />
+    <path d="M4 15v4a1 1 0 0 0 1 1h4" />
+    <path d="M20 15v4a1 1 0 0 1-1 1h-4" />
+  </Svg>
+)
+
+export const PipIcon = (p) => (
+  <Svg {...p}>
+    <rect x="3" y="4" width="18" height="14" rx="2" />
+    <rect x="12" y="11" width="7" height="5" rx="1" fill="currentColor" stroke="none" />
+  </Svg>
+)
+
+export const XIcon = (p) => (
+  <Svg {...p}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </Svg>
+)
+
+export const ChevronDownIcon = (p) => (
+  <Svg {...p}>
+    <path d="M6 9l6 6 6-6" />
+  </Svg>
+)
+
+export const CheckCircleIcon = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8.5 12.5l2.3 2.3L16 10" />
+  </Svg>
+)
+
+export const BookmarkIcon = (p) => (
+  <Svg {...p}>
+    <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1Z" />
+  </Svg>
+)
+
+export const ShareIcon = (p) => (
+  <Svg {...p}>
+    <circle cx="18" cy="5" r="2.4" />
+    <circle cx="6" cy="12" r="2.4" />
+    <circle cx="18" cy="19" r="2.4" />
+    <path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" />
+  </Svg>
+)
