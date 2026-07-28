@@ -1,15 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageShell from '../components/layout/PageShell'
 import BottomNav from '../components/layout/BottomNav'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
+import Logo from '../components/Logo'
 import { SparklesIcon, ArrowRightIcon } from '../components/ui/icons'
 import { useT } from '../lib/i18n.jsx'
-import { digitalTwin, memories, proactiveNudges, getAISettings, setAISettings, resetLearning, exportData } from '../lib/miraCore'
+import { digitalTwin, memories, proactiveNudges, getAISettings, setAISettings, resetLearning } from '../lib/miraCore'
 import { insights as cycleInsights } from '../lib/cycleIntel'
 import { moodInsights } from '../lib/moodIntel'
+import { getProfile } from '../lib/localStore'
+import { downloadElementAsPdf, fileDateStamp } from '../lib/pdf'
 
 function fmtDay(iso, lang) {
   try { return new Date(iso).toLocaleDateString(lang === 'en' ? 'en-GB' : lang, { weekday: 'short', day: 'numeric' }) }
@@ -33,6 +36,11 @@ export default function Mira() {
   const [tick, setTick] = useState(0)
   const [ai, setAi] = useState(getAISettings())
   const [confirmReset, setConfirmReset] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadErr, setDownloadErr] = useState(false)
+  const reportRef = useRef(null)
+  const profile = getProfile()
+  const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 
   const twin = useMemo(() => digitalTwin(), [tick])
   const mem = useMemo(() => memories(), [tick])
@@ -55,14 +63,16 @@ export default function Mira() {
     setConfirmReset(false)
     setTick((v) => v + 1)
   }
-  function doExport() {
+  async function doExport() {
+    setDownloading(true)
+    setDownloadErr(false)
     try {
-      const blob = new Blob([exportData()], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url; a.download = 'mira-my-data.json'; a.click()
-      setTimeout(() => URL.revokeObjectURL(url), 1000)
-    } catch { /* ignore */ }
+      await downloadElementAsPdf(reportRef.current, `MIRA_Core_Report_${fileDateStamp()}.pdf`)
+    } catch {
+      setDownloadErr(true)
+    } finally {
+      setDownloading(false)
+    }
   }
 
   return (
@@ -178,14 +188,104 @@ export default function Mira() {
             <p className="text-caption text-text-secondary">{t('coYourDataSub')}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" size="md" onClick={doExport}>⬇️ {t('coExport')}</Button>
+            <Button variant="secondary" size="md" onClick={doExport} disabled={downloading}>⬇️ {downloading ? t('rptDownloading') : t('coExport')}</Button>
             <Button variant="secondary" size="md" onClick={() => setConfirmReset(true)}>♻️ {t('coReset')}</Button>
           </div>
         </div>
+        {downloadErr && <p className="mt-3 text-caption text-danger">{t('pdfError')}</p>}
         <p className="mt-4 text-[0.8rem] leading-relaxed text-text-muted">🛡️ {t('coEthics')}</p>
       </Card>
 
       <div className="h-24" />
+
+      {/* Hidden printable sheet — rendered off-screen (real layout, invisible
+          to the user) purely so the Download button can rasterize it to PDF. */}
+      <div style={{ position: 'absolute', top: 0, left: -10000, width: 800 }} aria-hidden="true">
+        <div ref={reportRef} className="report-sheet card-base p-8 sm:p-10">
+          <div className="flex items-start justify-between border-b border-white/[0.1] pb-6">
+            <div>
+              <Logo withTagline />
+              <p className="mt-3 font-heading text-xl font-semibold text-text-primary">{t('coHeading')}</p>
+              <p className="text-caption text-text-secondary">{profile.name || t('menuGuest')}</p>
+            </div>
+            <div className="text-right text-caption text-text-secondary">
+              <p>{t('rptGenerated')}</p>
+              <p className="font-medium text-text-primary">{today}</p>
+            </div>
+          </div>
+
+          <section className="mt-6">
+            <h2 className="report-accent mb-3 font-heading text-[0.8rem] font-semibold uppercase tracking-[0.15em] text-accent-secondary">
+              {t('coTwin')} · {twin.confidence}% {t('ciConfidence')}
+            </h2>
+            <p className="text-[0.95rem] leading-relaxed text-text-secondary">
+              {twin.hasData ? t(twin.summaryKey) : t('coTwinEmpty')}
+            </p>
+            {twin.hasData && (
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {twin.days.map((d) => (
+                  <div key={d.date} className="rounded-xl border border-white/[0.08] p-3 text-center">
+                    <p className="text-caption text-text-muted">{fmtDay(d.date, lang)}</p>
+                    <p className="mt-1 text-[0.9rem] font-medium text-text-primary">{t(`phase_${d.phase}`)}</p>
+                    <p className="text-caption text-text-secondary">{t(`twEnergy_${d.energy}`)} · {d.confidence}%</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {allInsights.length > 0 && (
+            <section className="mt-6">
+              <h2 className="report-accent mb-3 font-heading text-[0.8rem] font-semibold uppercase tracking-[0.15em] text-accent-secondary">
+                {t('coInsights')}
+              </h2>
+              <ul className="space-y-2">
+                {allInsights.map((i, n) => (
+                  <li key={n} className="flex items-start gap-2 text-[0.95rem] text-text-secondary">
+                    <span className="report-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-primary" />
+                    {fill(t, i.key, i)}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className="mt-6">
+            <h2 className="report-accent mb-3 font-heading text-[0.8rem] font-semibold uppercase tracking-[0.15em] text-accent-secondary">
+              {t('coRemembers')}
+            </h2>
+            {ai.paused ? (
+              <p className="text-caption text-text-secondary">{t('coPausedNote')}</p>
+            ) : mem.length > 0 ? (
+              <ul className="space-y-2">
+                {mem.map((m) => (
+                  <li key={m.id} className="flex items-start gap-2 text-[0.95rem] text-text-secondary">
+                    <span className="report-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-primary" />
+                    {fill(t, m.key, m.vars, m.translateVar)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-caption text-text-secondary">{t('coRemembersEmpty')}</p>
+            )}
+          </section>
+
+          {nudges.length > 0 && (
+            <section className="mt-6">
+              <h2 className="report-accent mb-3 font-heading text-[0.8rem] font-semibold uppercase tracking-[0.15em] text-accent-secondary">
+                {t('coRecommendations')}
+              </h2>
+              <ul className="space-y-2">
+                {nudges.map((n) => (
+                  <li key={n.id} className="text-[0.95rem] text-text-secondary">{fill(t, n.key, n.vars)}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <p className="mt-6 border-t border-white/[0.1] pt-4 text-caption text-text-muted">{t('coEthics')}</p>
+        </div>
+      </div>
 
       {confirmReset && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setConfirmReset(false)}>

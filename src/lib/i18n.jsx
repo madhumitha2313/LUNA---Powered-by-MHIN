@@ -1325,6 +1325,12 @@ const DICT = {
     cndWatchGuide: 'Watch guide',
     cndCompleted: 'Completed',
     bgHealthEd: 'Health Educated',
+    // ── batch-added translations ──
+    rptDownload: 'Download PDF',
+    rptDownloading: 'Preparing PDF…',
+    coRecommendations: 'Recommendations',
+    // ── batch-added translations ──
+    pdfError: 'Couldn\'t generate the PDF — please try again.',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -2568,6 +2574,12 @@ const DICT = {
     cndWatchGuide: 'வழிகாட்டியை பார்',
     cndCompleted: 'முடிந்தது',
     bgHealthEd: 'ஆரோக்கிய அறிவு பெற்றவர்',
+    // ── batch-added translations ──
+    rptDownload: 'PDF பதிவிறக்கு',
+    rptDownloading: 'PDF தயார் செய்யப்படுகிறது…',
+    coRecommendations: 'பரிந்துரைகள்',
+    // ── batch-added translations ──
+    pdfError: 'PDF உருவாக்க முடியவில்லை — மீண்டும் முயற்சிக்கவும்.',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
@@ -4012,6 +4024,12 @@ const DICT = {
     cndWatchGuide: 'गाइड देखें',
     cndCompleted: 'पूर्ण',
     bgHealthEd: 'स्वास्थ्य शिक्षित',
+    // ── batch-added translations ──
+    rptDownload: 'PDF डाउनलोड करें',
+    rptDownloading: 'PDF तैयार हो रहा है…',
+    coRecommendations: 'सिफारिशें',
+    // ── batch-added translations ──
+    pdfError: 'PDF नहीं बन सका — कृपया फिर से प्रयास करें।',
   },
   ml: {
     splashTagline: 'നിങ്ങളുടെ ആരോഗ്യം, നിങ്ങളുടെ ശബ്ദം.',

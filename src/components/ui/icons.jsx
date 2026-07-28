@@ -181,3 +181,11 @@ export const ShareIcon = (p) => (
     <path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" />
   </Svg>
 )
+
+export const DownloadIcon = (p) => (
+  <Svg {...p}>
+    <path d="M12 4v11" />
+    <path d="M7.5 11L12 15.5 16.5 11" />
+    <path d="M5 19h14" />
+  </Svg>
+)

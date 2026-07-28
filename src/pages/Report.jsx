@@ -1,10 +1,12 @@
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Button from '../components/ui/Button'
 import Logo from '../components/Logo'
-import { ArrowRightIcon, StethoscopeIcon } from '../components/ui/icons'
+import { ArrowRightIcon, StethoscopeIcon, DownloadIcon } from '../components/ui/icons'
 import { getLogs, getCycleStats, getSymptoms, getProfile } from '../lib/localStore'
 import { useT } from '../lib/i18n.jsx'
+import { downloadElementAsPdf, fileDateStamp } from '../lib/pdf'
 
 const SYMPTOM_LABELS = {
   irregular: 'symIrregular', heavy: 'symHeavy', spotting: 'symSpotting',
@@ -39,6 +41,21 @@ export default function Report() {
   const symptomKeys = Object.keys(symptoms).filter((k) => symptoms[k])
   const indicators = computeIndicators(logs, symptomKeys, stats)
   const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  const sheetRef = useRef(null)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadErr, setDownloadErr] = useState(false)
+
+  async function download() {
+    setDownloading(true)
+    setDownloadErr(false)
+    try {
+      await downloadElementAsPdf(sheetRef.current, `Health_Summary_Report_${fileDateStamp()}.pdf`)
+    } catch {
+      setDownloadErr(true)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -57,14 +74,15 @@ export default function Report() {
             <Button as={Link} to="/home" variant="secondary" size="md">
               {t('back')}
             </Button>
-            <Button onClick={() => window.print()} size="md">
-              {t('rptPrint')} <ArrowRightIcon size={16} />
+            <Button onClick={download} size="md" disabled={downloading}>
+              <DownloadIcon size={16} /> {downloading ? t('rptDownloading') : t('rptDownload')}
             </Button>
           </div>
         </div>
+        {downloadErr && <p className="no-print -mt-3 mb-4 text-caption text-danger">{t('pdfError')}</p>}
 
         {/* The printable sheet */}
-        <div className="report-sheet card-base p-8 sm:p-10">
+        <div ref={sheetRef} className="report-sheet card-base p-8 sm:p-10">
           {/* Letterhead */}
           <div className="flex items-start justify-between border-b border-white/[0.1] pb-6">
             <div>

@@ -7,6 +7,7 @@ import Badge from '../components/ui/Badge'
 import { SparklesIcon, ArrowRightIcon, HeartIcon } from '../components/ui/icons'
 import { generateGuide, guideToText } from '../lib/readinessGuide'
 import { generateGuideAI, guideApiAvailable } from '../lib/guideApi'
+import GuideJourney from '../components/GuideJourney'
 
 const RELATIONSHIPS = [
   { key: 'sister', label: 'Older sister' },
@@ -156,6 +157,11 @@ export default function Guide() {
             )}
           </div>
           {aiErr && <p className="mt-3 text-caption text-warning">{aiErr}</p>}
+        </div>
+
+        {/* Animated, step-by-step learning experience for a first-time reader */}
+        <div className="no-print mt-8">
+          <GuideJourney />
         </div>
 
         {/* The guide sheet (printable) */}

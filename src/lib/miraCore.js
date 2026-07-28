@@ -147,17 +147,4 @@ export function resetLearning() {
   })
 }
 
-/** Export everything MIRA stores locally as a JSON string. */
-export function exportData() {
-  const data = {}
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (k && k.startsWith('mira.')) data[k] = safeParse(localStorage.getItem(k))
-    }
-  } catch { /* ignore */ }
-  return JSON.stringify({ exportedAt: new Date().toISOString(), app: 'MIRA', data }, null, 2)
-}
-
-function safeParse(v) { try { return JSON.parse(v) } catch { return v } }
 function fmtShort(iso) { try { return new Date(iso).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) } catch { return '' } }

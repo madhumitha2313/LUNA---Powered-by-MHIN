@@ -70,11 +70,9 @@ export default function Navbar() {
 
 const MENU = [
   { key: 'menuMyProfile', to: '/profile' },
-  { key: 'menuHealthProfile', to: '/symptoms' },
   { key: 'menuLanguage', to: '/settings?section=language' },
   { key: 'menuNotifications', to: '/settings?section=notifications' },
   { key: 'menuPrivacy', to: '/settings?section=privacy-security' },
-  { key: 'menuHelp', to: '/guide' },
 ]
 
 function ProfileMenu({ initials, name, email }) {
