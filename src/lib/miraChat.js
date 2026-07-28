@@ -23,8 +23,12 @@ const RULES = [
   { id: 'stress', re: /stress|anxious|anxiety|worried|worry|panic|overwhelm|tension|பதற்றம|கவலை|மன\s*அழுத்தம|तनाव|चिंता|घबरा|ఒత్తిడి|ആശങ്ക/i },
   { id: 'tired', re: /tired|exhaust|fatigue|no energy|sleepy|can'?t sleep|insomnia|சோர்வு|களைப்பு|थका|थकान|नींद|అలసట|ക്ഷീണം/i },
   { id: 'food', re: /what.{0,8}(eat|food)|recommend.{0,6}food|feeling hungry|என்ன\s*சாப்பிட|क्या\s*खा|तिनडी|తినడానికి|എന്ത്\s*കഴിക്ക/i },
+  { id: 'motivation', re: /\b(motivat|encourage(ment)?|inspire|inspiration|pep talk|no energy to|don'?t feel like doing anything|feeling unmotivated)\b/i },
+  { id: 'whoAreYou', re: /\b(who|what)\s+are\s+you\b|your name|who r u|what'?s mira/i },
+  { id: 'howAreYou', re: /how\s+(are|r)\s+(you|u)\b|how'?s it going|how are you doing/i },
+  { id: 'bye', re: /^\s*(bye+|goodbye|see\s?ya|see you|talk later|ttyl|good\s?night)\b/i },
   { id: 'thanks', re: /thank|thanks|nandri|நன்றி|धन्यवाद|shukriya|ధన్యవాద|നന്ദി/i },
-  { id: 'greeting', re: /^\s*(hi+|hey+|hello|hai|vanakkam|வணக்கம்|नमस्ते|namaste|హాయ్|ഹായ്)\b/i },
+  { id: 'greeting', re: /^\s*(hi+|hey+|hello|hai|yo|sup|vanakkam|வணக்கம்|नमस्ते|namaste|హాయ్|ഹായ్)\b/i },
 ]
 
 // Symptoms where Mira asks a clarifying question before advising.
@@ -45,12 +49,28 @@ export const INTENT = {
   acne: { ask: 'askAcne', advice: 'adviceAcne', foods: ['recWater', 'recLeafyGreens'], wellness: ['recBreathing'] },
   pcos: { ask: 'askPcos', advice: 'advicePcos', foods: ['recLeafyGreens', 'recWater'], wellness: ['recShortWalk', 'recDoctor'] },
   tired: { ask: 'askTired', advice: 'adviceTired', foods: ['recDates', 'recLeafyGreens', 'recWater'], wellness: ['recShortWalk', 'recRestNap'] },
-  sad: { advice: 'replySad', foods: ['recDarkChoc'], wellness: ['recBreathing', 'recMeditate', 'recShortWalk'] },
-  stress: { advice: 'replyStress', foods: [], wellness: ['recBreathing', 'recMeditate', 'recShortWalk'] },
+  sad: { advice: ['replySad', 'replySad2'], foods: ['recDarkChoc'], wellness: ['recBreathing', 'recMeditate', 'recShortWalk'] },
+  stress: { advice: ['replyStress', 'replyStress2'], foods: [], wellness: ['recBreathing', 'recMeditate', 'recShortWalk'] },
   food: { advice: 'replyFood', foods: ['recLeafyGreens', 'recBanana', 'recDates'], wellness: [] },
-  thanks: { advice: 'replyThanks' },
-  greeting: { advice: 'replyGreeting' },
-  general: { advice: 'replyGeneral' },
+  motivation: { advice: ['replyMotivate1', 'replyMotivate2'], foods: [], wellness: ['recBreathing', 'recShortWalk'] },
+  whoAreYou: { advice: 'replyWhoAreYou' },
+  howAreYou: { advice: ['replyHowAreYou1', 'replyHowAreYou2'] },
+  bye: { advice: ['replyBye1', 'replyBye2'] },
+  thanks: { advice: ['replyThanks', 'replyThanks2', 'replyThanks3'] },
+  greeting: { advice: ['replyGreeting', 'replyGreeting2', 'replyGreeting3'] },
+  general: { advice: ['replyGeneral', 'replyGeneral2', 'replyGeneral3'] },
+}
+
+/**
+ * Pick one i18n key from a single key or an array of variant keys, avoiding
+ * immediate repetition of the last one used for that same slot (so MIRA
+ * doesn't say the exact same sentence twice in a row).
+ */
+export function pickVariant(keys, avoid) {
+  const arr = Array.isArray(keys) ? keys : [keys]
+  if (arr.length <= 1) return arr[0]
+  const choices = avoid ? arr.filter((k) => k !== avoid) : arr
+  return choices[Math.floor(Math.random() * choices.length)] || arr[0]
 }
 
 /** Rotating opening greeting keys — the component picks one by day so it varies. */

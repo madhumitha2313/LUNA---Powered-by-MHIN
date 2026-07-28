@@ -271,6 +271,73 @@ app.post('/impact', async (req, res) => {
   }
 })
 
+// ── POST /chat — MIRA AI Healthcare Companion (conversational) ──────────────
+// Real, freeform conversational replies for "Talk to MIRA" — used when a real
+// Anthropic key is configured; the browser falls back to its own offline
+// rule-based companion (src/lib/miraChat.js) otherwise, so the chat still
+// works fully in the single-file preview with no backend at all.
+const CHAT_LANG_NAMES = { en: 'English', ta: 'Tamil', hi: 'Hindi', ml: 'Malayalam', te: 'Telugu', kn: 'Kannada', bn: 'Bengali', mr: 'Marathi' }
+
+const CHAT_SYSTEM = `You are MIRA, a warm, caring, knowledgeable AI healthcare companion inside a women's health app. You are talking directly to the user in a live chat — not writing an article.
+
+Personality: warm, calm, caring, empathetic, supportive, intelligent, respectful, friendly, encouraging, patient. Never robotic or scripted — write the way a thoughtful, emotionally attuned friend who happens to be very knowledgeable about health would text back. Vary your phrasing turn to turn; never repeat a sentence you've already said in this conversation.
+
+You can discuss: menstrual health, PCOS/PCOD, endometriosis, pregnancy, nutrition, fitness, hydration, mental wellness, mood, stress, anxiety, lifestyle, sleep, medication reminders, exercise, general health and health education, plus everyday conversation — greetings, small talk, motivation, follow-ups. If asked something unrelated to health, answer it politely and naturally, then gently steer back toward health/wellness only if it fits — never force it.
+
+Understand context, incomplete sentences, typos, and casual/code-mixed phrasing. Ask a clarifying follow-up question when it would genuinely help before giving advice, instead of guessing.
+
+Safety (never break these):
+- Never diagnose a condition. Never prescribe medication, dosages, or treatment plans.
+- Never invent or guess medical facts. If you're not sure, say so plainly and recommend a qualified healthcare professional.
+- Always frame guidance as general, evidence-based education — not a personal medical judgement.
+- If anything sounds like a medical emergency (severe pain, heavy bleeding, fainting, chest pain, breathing trouble, thoughts of self-harm), clearly and calmly tell the user to seek immediate in-person medical care or call local emergency services — do not just chat through it.
+
+Keep replies conversational — usually 2 to 5 sentences. Go longer only when the user is asking for a real explanation or step-by-step guidance, and then use short, simple steps.`
+
+app.post('/chat', async (req, res) => {
+  if (!APP_ANTHROPIC_API_KEY) return res.status(503).json({ error: 'Anthropic not configured' })
+  const { messages, emotion = 'neutral', styleHint = 'warm and clear', personaHint = '', modeHint = '', lang = 'en' } = req.body || {}
+  if (!Array.isArray(messages) || !messages.length) return res.status(400).json({ error: 'messages required' })
+
+  const langName = CHAT_LANG_NAMES[lang] || 'English'
+  const system = `${CHAT_SYSTEM}
+
+Respond ONLY in ${langName}. Let this emotional register shape your tone (never say it out loud, never name the emotion — just let it come through naturally): ${styleHint}.${personaHint ? `\nYour current voice/persona: ${personaHint}.` : ''}${modeHint ? `\nConversation focus right now: ${modeHint}.` : ''}`
+
+  // Bound token usage/cost — the client keeps the full transcript for display,
+  // we only need recent context to answer well.
+  const turns = messages.slice(-16).map((m) => ({
+    role: m.role === 'user' ? 'user' : 'assistant',
+    content: String(m.text || '').slice(0, 2000),
+  }))
+  if (!turns.length || turns[0].role !== 'user') return res.status(400).json({ error: 'messages must start with a user turn' })
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': APP_ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: APP_ANTHROPIC_MODEL,
+        max_tokens: 500,
+        system,
+        messages: turns,
+      }),
+    })
+    if (!r.ok) {
+      const body = await r.text()
+      return res.status(502).json({ error: `Anthropic ${r.status}`, detail: body.slice(0, 300) })
+    }
+    const data = await r.json()
+    return res.json({ text: data.content?.[0]?.text || '' })
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+})
+
 // ── POST /stt — Sarvam Tamil speech-to-text ──────────────────────────────────
 app.post('/stt', upload.single('audio'), async (req, res) => {
   if (!SARVAM_API_KEY) return res.status(503).json({ error: 'Sarvam not configured' })

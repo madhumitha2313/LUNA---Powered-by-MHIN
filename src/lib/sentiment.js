@@ -46,6 +46,41 @@ export function detectSentiment(text) {
   return 'neutral'
 }
 
+/**
+ * Finer-grained emotion read used to shape voice + response style (never
+ * shown to the user — see EMOTION_VOICE in voiceStyle.js and the /chat system
+ * prompt). Ordered most-specific/intense first since a message can trip more
+ * than one pattern. English + Tamil (script + common romanization), matching
+ * the rest of this module's coverage.
+ */
+const EMOTION_RULES = [
+  { id: 'fearful', re: /\b(scared|afraid|terrified|frightened|fear(ful)?)\b|பயம்|பயப்படு|डर\s*लग/i },
+  { id: 'angry', re: /\b(angry|furious|mad at|pissed|so annoyed|irritat(ed|ing))\b|கோபம்|கோபமா|गुस्सा/i },
+  { id: 'overwhelmed', re: /\b(overwhelm(ed|ing)?|too much (going on|to handle)|can'?t (handle|cope|keep up)|drowning|swamped)\b/i },
+  { id: 'frustrated', re: /\b(frustrat(ed|ing)|fed up|stuck|ugh+\b|nothing (is )?work(s|ing))\b/i },
+  { id: 'anxious', re: /\b(anxious|anxiety|panic(king)?|on edge|racing (thoughts|heart))\b|பதற்றம்|घबरा(हट)?/i },
+  { id: 'worried', re: /\b(worried|worry|worrying|concerned|nervous)\b|கவலை|चिंता/i },
+  { id: 'lonely', re: /\b(lonely|so alone|no\s?one (to talk|understands)|isolated|nobody (cares|understands))\b|தனிமை|अकेला/i },
+  { id: 'sad', re: /\b(sad|down|blue|heartbroken|crying|cry(ing)?|unhappy|miserable|depress(ed|ing)?)\b|சோகம்|उदास/i },
+  { id: 'hopeful', re: /\b(hope(ful)?|looking forward|optimistic|hoping|fingers crossed)\b/i },
+  { id: 'excited', re: /\b(excited|can'?t wait|thrilled|pumped|so happy|yay+)\b/i },
+  { id: 'happy', re: /\b(happy|great|good day|awesome|glad|amazing|wonderful|joy(ful)?|feeling good)\b|சந்தோஷம்|खुश/i },
+  { id: 'calm', re: /\b(calm|relaxed|fine|i'?m ok(ay)?|peaceful|chill(ed)?)\b/i },
+]
+
+/**
+ * Detect the user's emotional tone for this message: happy, calm, sad, angry,
+ * worried, anxious, fearful, lonely, hopeful, overwhelmed, frustrated,
+ * excited, or neutral. Purely a style signal — never surfaced to the user,
+ * never used for anything safety-critical (crisis detection above is
+ * separate and always runs first).
+ */
+export function detectEmotion(text) {
+  const t = text || ''
+  for (const r of EMOTION_RULES) if (r.re.test(t)) return r.id
+  return 'neutral'
+}
+
 /** Warm, spoken crisis message (Tamil) + on-screen support content. */
 export function crisisResponse() {
   return {

@@ -3,11 +3,13 @@ import MiraAvatar from '../components/MiraAvatar'
 import BackButton from '../components/ui/BackButton'
 import Badge from '../components/ui/Badge'
 import { ArrowRightIcon, SparklesIcon, MicIcon, LeafIcon, HeartIcon } from '../components/ui/icons'
-import { speechSupported, createRecognizer, speak, stopSpeaking } from '../lib/browserVoice'
+import { speechSupported, createRecognizer, speakExpressive, stopSpeaking } from '../lib/browserVoice'
 import { addLog, getCycleStats, getProfile, getSettings } from '../lib/localStore'
-import { detectSentiment, crisisResponse, comfortOpener } from '../lib/sentiment'
-import { detectIntent, INTENT, SYMPTOMS, GREET_KEYS, CHIP_KEYS } from '../lib/miraChat'
+import { detectSentiment, detectEmotion, crisisResponse, comfortOpener } from '../lib/sentiment'
+import { detectIntent, INTENT, SYMPTOMS, GREET_KEYS, CHIP_KEYS, pickVariant } from '../lib/miraChat'
 import { PERSONAS, MODES, getPersona, setPersona } from '../lib/companion'
+import { resolveVoiceStyle } from '../lib/voiceStyle'
+import { fetchLLMReply } from '../lib/miraBrain'
 import { retrieve } from '../lib/knowledge'
 import { orchestrate } from '../lib/agents'
 import AiTransparency from '../components/AiTransparency'
@@ -37,6 +39,8 @@ export default function Voice() {
   const [team, setTeam] = useState(null) // { agents, orchestrator } for the AI-team panel
   const pendingRef = useRef(null) // last symptom we asked about
   const pendingKbRef = useRef(null) // knowledge retrieved for the pending symptom
+  const lastAdviceRef = useRef({}) // per-intent last template variant used, so MIRA doesn't repeat herself
+  const modeRef = useRef('') // current conversation-mode style hint (see MODES in companion.js)
   const recRef = useRef(null)
   const scrollRef = useRef(null)
 
@@ -55,15 +59,16 @@ export default function Voice() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, typing, interim])
 
-  function say(text, recs, kb, agents) {
+  function say(text, recs, kb, agents, emotion = 'neutral') {
     setTyping(true)
     setTimeout(() => {
       setTyping(false)
       setMessages((m) => [...m, { role: 'mira', text, recs, kb, agents }])
       setState('speaking')
-      speak(text, { lang: SR_LANG[getLang()] || 'en-IN', rate: persona.rate, pitch: persona.pitch })
+      const style = resolveVoiceStyle(persona, emotion)
+      speakExpressive(text, { lang: SR_LANG[getLang()] || 'en-IN', rate: style.rate, pitch: style.pitch, volume: style.volume, pause: style.pause })
       // Keep the speaking state roughly as long as the utterance.
-      const ms = Math.min(6000, 1200 + text.length * 55)
+      const ms = Math.min(7000, 1200 + text.length * 55)
       setTimeout(() => setState('idle'), ms)
     }, 650)
   }
@@ -74,29 +79,40 @@ export default function Voice() {
   }
 
   function pickMode(mode) {
+    modeRef.current = mode.styleHint || ''
     setEmotion('happy')
     setTimeout(() => setEmotion('neutral'), 2500)
-    say(t(mode.opener))
+    say(t(mode.opener), null, null, null, 'happy')
   }
 
-  function process(raw) {
+  // Maps the fine-grained detected emotion down to the avatar's three visual
+  // expressions (idle/happy/concerned) — MiraAvatar itself is unchanged.
+  function avatarBucket(emotion) {
+    if (['happy', 'excited', 'hopeful'].includes(emotion)) return 'happy'
+    if (['sad', 'lonely', 'worried', 'anxious', 'fearful', 'overwhelmed', 'frustrated', 'angry', 'confused'].includes(emotion)) return 'concerned'
+    return 'neutral'
+  }
+
+  async function process(raw) {
     const text = raw.trim()
     if (!text) return
     setInterim('')
-    setMessages((m) => [...m, { role: 'user', text }])
+    const history = [...messages, { role: 'user', text }]
+    setMessages(history)
 
-    // Safety first — self-harm / crisis short-circuits everything.
+    // Safety first — self-harm / crisis short-circuits everything, always local.
     if (detectSentiment(text) === 'crisis') {
       const c = crisisResponse()
       setCrisis(c)
       setEmotion('concerned')
       pendingRef.current = null
       const t2 = orchestrate({ text, sentiment: 'crisis', crisis: true })
-      say(c.message, null, null, t2)
+      say(c.message, null, null, t2, 'fearful')
       return
     }
 
     const sentiment = detectSentiment(text)
+    const emotion = detectEmotion(text)
     const intent = detectIntent(text)
     const pending = pendingRef.current
     const isSym = SYMPTOMS.includes(intent)
@@ -105,14 +121,18 @@ export default function Voice() {
       text, intent, sentiment, isSymptom: isSym, kb, hasFoodRecs, hasRecs, phase: getCycleStats().phase,
     })
 
-    // Avatar emotion reacts to how the user feels.
-    const warm = ['thanks', 'greeting', 'happy'].includes(intent)
-    const nextEmotion = sentiment === 'low' || SYMPTOMS.includes(intent) ? 'concerned' : warm ? 'happy' : 'neutral'
+    // Avatar emotion reacts to how the user feels — combines the coarse
+    // symptom/sentiment signal (unchanged) with the new fine-grained read.
+    const warm = ['thanks', 'greeting', 'howAreYou'].includes(intent)
+    const bucket = avatarBucket(emotion)
+    const nextEmotion = isSym || sentiment === 'low' || bucket === 'concerned' ? 'concerned' : warm || bucket === 'happy' ? 'happy' : 'neutral'
     setEmotion(nextEmotion)
     if (nextEmotion !== 'neutral') setTimeout(() => setEmotion('neutral'), 4000)
 
     // Knowledge retrieval (RAG): find a relevant, cited education snippet.
     const kb = retrieve(text)
+    const style = resolveVoiceStyle(persona, emotion)
+    setTyping(true) // shows immediately, including while the LLM call (if any) is in flight
 
     // If we asked a clarifying question and they replied (not a new symptom) → advise.
     if (pending && !(SYMPTOMS.includes(intent) && intent !== pending)) {
@@ -122,26 +142,36 @@ export default function Voice() {
       const pendingKb = pendingKbRef.current
       pendingKbRef.current = null
       const recs = pickRecs(meta)
-      say(t(meta.advice), recs, pendingKb, orchestrate({ text, intent: pending, sentiment, isSymptom: true, kb: pendingKb, hasFoodRecs: !!recs?.foods?.length, hasRecs: !!recs, phase: getCycleStats().phase }))
+      const localKey = pickVariant(meta.advice, lastAdviceRef.current[pending])
+      lastAdviceRef.current[pending] = localKey
+      const llmText = await fetchLLMReply({ history, emotion, styleHint: style.styleHint, personaHint: persona.styleHint, modeHint: modeRef.current, lang: getLang() })
+      say(llmText || t(localKey), recs, pendingKb, orchestrate({ text, intent: pending, sentiment, isSymptom: true, kb: pendingKb, hasFoodRecs: !!recs?.foods?.length, hasRecs: !!recs, phase: getCycleStats().phase }), emotion)
       return
     }
 
-    // A new symptom → acknowledge + ask one clarifying question first.
+    // A new symptom → acknowledge + ask one clarifying question first (kept
+    // deterministic/local — safety-relevant symptom intake shouldn't depend
+    // on a network call).
     if (SYMPTOMS.includes(intent)) {
       pendingRef.current = intent
       pendingKbRef.current = kb // surface the knowledge card with the advice turn
       const meta = INTENT[intent]
       const opener = meta.urgent ? t('empathyUrgent') : t('empathySymptom')
-      say(`${opener} ${t(meta.ask)}`, null, null, team(kb, false, false))
+      say(`${opener} ${t(meta.ask)}`, null, null, team(kb, false, false), emotion)
       return
     }
 
-    // Feelings, food, greetings, thanks, general → respond directly.
+    // Feelings, food, greetings, thanks, small talk, general → respond via
+    // the real conversational LLM when configured, falling back to the local
+    // template (still varied + emotion-aware) when it isn't.
     const meta = INTENT[intent] || INTENT.general
-    let text2 = t(meta.advice)
-    if (sentiment === 'low' && intent !== 'sad' && intent !== 'stress') text2 = comfortOpener() + ' ' + text2
+    const localKey = pickVariant(meta.advice, lastAdviceRef.current[intent])
+    lastAdviceRef.current[intent] = localKey
+    let localText = t(localKey)
+    if (sentiment === 'low' && intent !== 'sad' && intent !== 'stress') localText = comfortOpener() + ' ' + localText
     const recs = pickRecs(meta)
-    say(text2, recs, kb, team(kb, !!recs?.foods?.length, !!recs))
+    const llmText = await fetchLLMReply({ history, emotion, styleHint: style.styleHint, personaHint: persona.styleHint, modeHint: modeRef.current, lang: getLang() })
+    say(llmText || localText, recs, kb, team(kb, !!recs?.foods?.length, !!recs), emotion)
   }
 
   function pickRecs(meta) {
