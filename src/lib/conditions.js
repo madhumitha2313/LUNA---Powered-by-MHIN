@@ -36,16 +36,33 @@ export const CONDITIONS = [
     thumbTone: ['#D81B60', '#A855F7'],
     estimatedWatchTime: '4 min',
     video: { en: PLACEHOLDER_VIDEO },
+    // PCOS-only: an explicit, timestamped learning timeline (per the PCOS
+    // interactive-video spec) instead of the generic even 8-way split other
+    // conditions still use below. `at` is a fraction of the video's actual
+    // duration, derived from the given 0:00–0:34 example timeline — so it
+    // maps correctly onto whatever the real video's length turns out to be,
+    // not just this reference clip.
+    customSections: [
+      { key: 'whatIsIt', labelKey: 'cmWhatIsPCOS', at: 0 / 34 },
+      { key: 'causes', labelKey: 'cmCauses', at: 8 / 34 },
+      { key: 'symptoms', labelKey: 'cmSymptoms', at: 15 / 34 },
+      { key: 'diagnosis', labelKey: 'cmDiagnosis', at: 22 / 34 },
+      { key: 'treatment', labelKey: 'cmTreatment', at: 28 / 34 },
+      { key: 'preventionLifestyle', labelKey: 'cmPreventionLifestyle', at: 34 / 34 },
+    ],
+    completionLabel: 'PCOS Educational Guide',
     content: {
       en: {
         shortDescription: 'A common hormonal condition where the ovaries produce excess androgens, often disrupting ovulation.',
         whatIsIt: 'PCOS (Polycystic Ovary Syndrome) is a hormonal condition affecting how the ovaries work. Many small follicles form on the ovaries and eggs are released irregularly or not at all, which can affect periods and fertility.',
         causes: 'The exact cause isn’t fully understood, but insulin resistance, excess androgen (male hormone) production, and genetics all play a role. It often runs in families.',
         symptoms: 'Irregular or missed periods, excess facial/body hair, acne, scalp thinning, weight gain, and difficulty conceiving are common. Some people have few or no visible symptoms.',
+        diagnosis: 'A doctor usually looks for at least two of three signs: irregular ovulation, higher androgen levels (from blood tests or symptoms like acne/excess hair), and polycystic-looking ovaries on ultrasound. Blood tests also help rule out thyroid or other conditions with similar symptoms.',
         riskFactors: 'Family history of PCOS or diabetes, being overweight, and insulin resistance all raise the likelihood of developing PCOS.',
         prevention: 'PCOS can’t always be prevented, but maintaining a healthy weight, regular movement, and a balanced diet can reduce symptom severity and lower long-term risks.',
         treatment: 'Treatment is tailored to symptoms and goals: hormonal birth control to regulate cycles, metformin for insulin resistance, and fertility medication if trying to conceive.',
         lifestyle: 'Regular exercise, a lower-glycemic diet, stress management, and consistent sleep can meaningfully improve insulin sensitivity and cycle regularity.',
+        preventionLifestyle: 'PCOS can’t always be prevented, but a balanced, lower-glycemic diet, regular movement, stress management, and consistent sleep meaningfully reduce symptom severity and improve insulin sensitivity and cycle regularity over time.',
         whenToSeeDoctor: 'See a gynaecologist if periods are absent for 3+ months, you notice sudden excess hair growth or acne, or you’re trying to conceive without success after a year.',
       },
     },
@@ -244,6 +261,32 @@ export function getLocalized(condition, lang) {
   }
 }
 
+// Generic even split used by every condition that hasn't defined its own
+// explicit timestamped timeline (see PCOS's `customSections` above for the
+// dynamic-architecture example other conditions can adopt the same way —
+// purely a data change, no frontend change needed).
+const GENERIC_SECTIONS = [
+  { key: 'whatIsIt', labelKey: 'cmIntro' },
+  { key: 'causes', labelKey: 'cmCauses' },
+  { key: 'symptoms', labelKey: 'cmSymptoms' },
+  { key: 'riskFactors', labelKey: 'cmRisk' },
+  { key: 'prevention', labelKey: 'cmPrevention' },
+  { key: 'treatment', labelKey: 'cmTreatment' },
+  { key: 'lifestyle', labelKey: 'cmLifestyle' },
+  { key: 'whenToSeeDoctor', labelKey: 'cmDoctor' },
+]
+
+/** The learning timeline for a condition: [{key, labelKey, at}], `at` a 0–1 fraction of video duration. */
+export function getSections(condition) {
+  if (condition.customSections) return condition.customSections
+  return GENERIC_SECTIONS.map((s, i) => ({ ...s, at: i / GENERIC_SECTIONS.length }))
+}
+
+/** "PCOS Educational Guide" for conditions that define one, else the generic "{name} Awareness Guide" pattern (built by the caller, which has the translated name). */
+export function getCompletionLabel(condition) {
+  return condition.completionLabel || null
+}
+
 // ── Per-user progress (watch position, completion, history) ─────────────────
 function read(key, fallback) {
   try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback } catch { return fallback }
@@ -256,11 +299,13 @@ export function getAllProgress() {
   return read(PROGRESS_KEY, {})
 }
 export function getProgress(id) {
-  return getAllProgress()[id] || { watchedSeconds: 0, duration: 0, completed: false, lastOpened: null, section: 0 }
+  return getAllProgress()[id] || { uid: null, watchedSeconds: 0, duration: 0, completed: false, lastOpened: null, section: 0 }
 }
 export function saveProgress(id, patch) {
   const all = getAllProgress()
-  all[id] = { ...getProgress(id), ...patch, lastOpened: Date.now() }
+  let uid = null
+  try { uid = JSON.parse(localStorage.getItem('mira.session.v1'))?.uid || null } catch { /* ignore */ }
+  all[id] = { ...getProgress(id), uid, ...patch, lastOpened: Date.now() }
   write(PROGRESS_KEY, all)
   return all[id]
 }

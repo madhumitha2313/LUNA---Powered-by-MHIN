@@ -1309,7 +1309,7 @@ const DICT = {
     cmFinish: 'Finish',
     cmAskMira: 'Ask MIRA',
     cmTrackSymptoms: 'Track Symptoms',
-    cmFindSpecialists: 'Find Specialists',
+    cmFindSpecialists: 'Find Nearby Specialist',
     cmBookConsult: 'Book Consultation',
     cmComingSoon: 'Coming soon',
     cmSave: 'Save for Later',
@@ -1320,7 +1320,7 @@ const DICT = {
     cmClose: 'Close',
     cmLocalizedSoon: 'A version of this video in your language is coming soon — showing English for now.',
     cmCompleteTitle: 'You\'re all set!',
-    cmCompleteBody: 'You\'ve successfully completed the {name} Awareness Guide.',
+    cmCompleteBody: 'You\'ve successfully completed the {guide}.',
     cmContinueLearning: 'Continue Learning',
     cndWatchGuide: 'Watch guide',
     cndCompleted: 'Completed',
@@ -1331,6 +1331,11 @@ const DICT = {
     coRecommendations: 'Recommendations',
     // ── batch-added translations ──
     pdfError: 'Couldn\'t generate the PDF — please try again.',
+    // ── batch-added translations ──
+    cmWhatIsPCOS: 'What is PCOS?',
+    cmDiagnosis: 'Diagnosis',
+    cmPreventionLifestyle: 'Prevention & Healthy Lifestyle',
+    cmAwarenessGuide: 'Awareness Guide',
   },
   ta: {
     splashTagline: 'உங்கள் ஆரோக்கியம், உங்கள் குரல்.',
@@ -2558,7 +2563,7 @@ const DICT = {
     cmFinish: 'முடி',
     cmAskMira: 'MIRA-விடம் கேளுங்கள்',
     cmTrackSymptoms: 'அறிகுறிகளை கண்காணி',
-    cmFindSpecialists: 'நிபுணர்களை கண்டறி',
+    cmFindSpecialists: 'அருகிலுள்ள நிபுணரைக் கண்டறி',
     cmBookConsult: 'ஆலோசனை பதிவு',
     cmComingSoon: 'விரைவில்',
     cmSave: 'பின்னர் சேமி',
@@ -2569,7 +2574,7 @@ const DICT = {
     cmClose: 'மூடு',
     cmLocalizedSoon: 'உங்கள் மொழியில் இந்த வீடியோ விரைவில் வரும் — தற்போது ஆங்கிலத்தில் காட்டப்படுகிறது.',
     cmCompleteTitle: 'நீங்கள் தயார்!',
-    cmCompleteBody: '{name} விழிப்புணர்வு வழிகாட்டியை நீங்கள் வெற்றிகரமாக முடித்துவிட்டீர்கள்.',
+    cmCompleteBody: '{guide} வழிகாட்டியை நீங்கள் வெற்றிகரமாக முடித்துவிட்டீர்கள்.',
     cmContinueLearning: 'தொடர்ந்து கற்க',
     cndWatchGuide: 'வழிகாட்டியை பார்',
     cndCompleted: 'முடிந்தது',
@@ -2580,6 +2585,11 @@ const DICT = {
     coRecommendations: 'பரிந்துரைகள்',
     // ── batch-added translations ──
     pdfError: 'PDF உருவாக்க முடியவில்லை — மீண்டும் முயற்சிக்கவும்.',
+    // ── batch-added translations ──
+    cmWhatIsPCOS: 'PCOS என்றால் என்ன?',
+    cmDiagnosis: 'நோய் கண்டறிதல்',
+    cmPreventionLifestyle: 'தடுப்பு & ஆரோக்கியமான வாழ்க்கை முறை',
+    cmAwarenessGuide: 'விழிப்புணர்வு வழிகாட்டி',
   },
   hi: {
     splashTagline: 'आपकी सेहत, आपकी आवाज़।',
@@ -4008,7 +4018,7 @@ const DICT = {
     cmFinish: 'समाप्त',
     cmAskMira: 'MIRA से पूछें',
     cmTrackSymptoms: 'लक्षण ट्रैक करें',
-    cmFindSpecialists: 'विशेषज्ञ खोजें',
+    cmFindSpecialists: 'नज़दीकी विशेषज्ञ खोजें',
     cmBookConsult: 'परामर्श बुक करें',
     cmComingSoon: 'जल्द आ रहा है',
     cmSave: 'बाद के लिए सहेजें',
@@ -4019,7 +4029,7 @@ const DICT = {
     cmClose: 'बंद करें',
     cmLocalizedSoon: 'आपकी भाषा में यह वीडियो जल्द आएगा — फ़िलहाल अंग्रेज़ी में दिखाया जा रहा है।',
     cmCompleteTitle: 'आप तैयार हैं!',
-    cmCompleteBody: 'आपने {name} जागरूकता गाइड सफलतापूर्वक पूरी कर ली है।',
+    cmCompleteBody: 'आपने {guide} सफलतापूर्वक पूरी कर ली है।',
     cmContinueLearning: 'सीखना जारी रखें',
     cndWatchGuide: 'गाइड देखें',
     cndCompleted: 'पूर्ण',
@@ -4030,6 +4040,11 @@ const DICT = {
     coRecommendations: 'सिफारिशें',
     // ── batch-added translations ──
     pdfError: 'PDF नहीं बन सका — कृपया फिर से प्रयास करें।',
+    // ── batch-added translations ──
+    cmWhatIsPCOS: 'PCOS क्या है?',
+    cmDiagnosis: 'निदान',
+    cmPreventionLifestyle: 'रोकथाम और स्वस्थ जीवनशैली',
+    cmAwarenessGuide: 'जागरूकता गाइड',
   },
   ml: {
     splashTagline: 'നിങ്ങളുടെ ആരോഗ്യം, നിങ്ങളുടെ ശബ്ദം.',

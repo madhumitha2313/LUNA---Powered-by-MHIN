@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { PlayIcon, PauseIcon, FullscreenIcon, PipIcon } from './ui/icons'
+import { PlayIcon, PauseIcon, FullscreenIcon, PipIcon, VolumeIcon, MuteIcon } from './ui/icons'
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
@@ -20,6 +20,9 @@ const VideoPlayer = forwardRef(function VideoPlayer({ src, poster, initialTime =
   const [speed, setSpeed] = useState(1)
   const [speedOpen, setSpeedOpen] = useState(false)
   const [pipSupported, setPipSupported] = useState(false)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const [volumeOpen, setVolumeOpen] = useState(false)
   const seekedRef = useRef(false)
 
   useEffect(() => {
@@ -62,6 +65,21 @@ const VideoPlayer = forwardRef(function VideoPlayer({ src, poster, initialTime =
     setSpeed(s)
     if (videoRef.current) videoRef.current.playbackRate = s
     setSpeedOpen(false)
+  }
+  function toggleMute() {
+    const v = videoRef.current
+    if (!v) return
+    v.muted = !v.muted
+    setMuted(v.muted)
+  }
+  function changeVolume(next) {
+    const v = videoRef.current
+    if (!v) return
+    const vol = Math.max(0, Math.min(1, next))
+    v.volume = vol
+    v.muted = vol === 0
+    setVolume(vol)
+    setMuted(vol === 0)
   }
   function toggleFullscreen() {
     const el = wrapRef.current
@@ -139,6 +157,30 @@ const VideoPlayer = forwardRef(function VideoPlayer({ src, poster, initialTime =
           <span className="font-stat text-[0.72rem] tabular-nums text-white/80">{fmt(time)} / {fmt(duration)}</span>
 
           <div className="ml-auto flex items-center gap-3">
+            <div
+              className="group/vol relative flex items-center"
+              onMouseEnter={() => setVolumeOpen(true)}
+              onMouseLeave={() => setVolumeOpen(false)}
+            >
+              <button type="button" onClick={toggleMute} aria-label={muted ? 'Unmute' : 'Mute'} className="text-white/85 hover:text-white">
+                {muted || volume === 0 ? <MuteIcon size={17} /> : <VolumeIcon size={17} />}
+              </button>
+              <div className={`overflow-hidden transition-all duration-200 ${volumeOpen ? 'ml-1.5 w-16' : 'w-0'}`}>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={muted ? 0 : volume}
+                  onChange={(e) => changeVolume(Number(e.target.value))}
+                  aria-label="Volume"
+                  className="h-1 w-16 accent-accent-primary"
+                />
+              </div>
+            </div>
+            <span className="rounded-md border border-white/15 px-1.5 py-0.5 text-[0.64rem] font-medium text-white/70" title="Automatically matches quality to your connection">
+              Auto
+            </span>
             <div className="relative">
               <button
                 type="button"

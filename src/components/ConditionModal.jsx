@@ -8,19 +8,8 @@ import {
 } from './ui/icons'
 import { useT } from '../lib/i18n.jsx'
 import {
-  getLocalized, getProgress, saveProgress, markCompleted, isSaved, toggleSaved,
+  getLocalized, getSections, getCompletionLabel, getProgress, saveProgress, markCompleted, isSaved, toggleSaved,
 } from '../lib/conditions'
-
-const SECTIONS = [
-  { key: 'whatIsIt', labelKey: 'cmIntro' },
-  { key: 'causes', labelKey: 'cmCauses' },
-  { key: 'symptoms', labelKey: 'cmSymptoms' },
-  { key: 'riskFactors', labelKey: 'cmRisk' },
-  { key: 'prevention', labelKey: 'cmPrevention' },
-  { key: 'treatment', labelKey: 'cmTreatment' },
-  { key: 'lifestyle', labelKey: 'cmLifestyle' },
-  { key: 'whenToSeeDoctor', labelKey: 'cmDoctor' },
-]
 
 export default function ConditionModal({ condition, onClose }) {
   const { t, lang } = useT()
@@ -34,8 +23,10 @@ export default function ConditionModal({ condition, onClose }) {
   const playerRef = useRef(null)
 
   const { content, video, videoLocalized } = useMemo(() => getLocalized(condition, lang), [condition, lang])
+  const sections = useMemo(() => getSections(condition), [condition])
   const name = t(condition.nameKey)
   const specialist = t(condition.specialistKey)
+  const guideLabel = getCompletionLabel(condition) || `${name} ${t('cmAwarenessGuide')}`
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true))
@@ -57,7 +48,12 @@ export default function ConditionModal({ condition, onClose }) {
 
   function handleTimeUpdate(current, duration) {
     if (!duration) return
-    const idx = Math.min(SECTIONS.length - 1, Math.floor((current / duration) * SECTIONS.length))
+    const progress = current / duration
+    // The active section is the last one whose start fraction we've reached.
+    let idx = 0
+    for (let i = 0; i < sections.length; i++) {
+      if (progress >= sections[i].at) idx = i
+    }
     setSection(idx)
     saveProgress(condition.id, { watchedSeconds: current, duration })
   }
@@ -69,7 +65,7 @@ export default function ConditionModal({ condition, onClose }) {
 
   function jumpToSection(i) {
     setSection(i)
-    playerRef.current?.seek(i / SECTIONS.length)
+    playerRef.current?.seek(sections[i].at)
   }
 
   function onSave() {
@@ -87,7 +83,7 @@ export default function ConditionModal({ condition, onClose }) {
     } catch { /* clipboard unavailable */ }
   }
 
-  const sec = content[SECTIONS[section].key]
+  const sec = content[sections[section].key]
 
   return (
     <div className="fixed inset-0 z-[80] flex justify-end" aria-modal role="dialog" aria-label={name}>
@@ -133,7 +129,7 @@ export default function ConditionModal({ condition, onClose }) {
 
             {/* Interactive timeline */}
             <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
-              {SECTIONS.map((s, i) => (
+              {sections.map((s, i) => (
                 <button
                   key={s.key}
                   onClick={() => jumpToSection(i)}
@@ -153,7 +149,7 @@ export default function ConditionModal({ condition, onClose }) {
 
             {/* Synced educational card */}
             <div key={section} className="animate-fade-up mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
-              <p className="mb-1.5 text-caption uppercase tracking-wide text-accent-secondary">{t(SECTIONS[section].labelKey)}</p>
+              <p className="mb-1.5 text-caption uppercase tracking-wide text-accent-secondary">{t(sections[section].labelKey)}</p>
               <p className="text-[0.95rem] leading-relaxed text-text-secondary">{sec}</p>
               <div className="mt-4 flex items-center justify-between">
                 <button
@@ -163,7 +159,7 @@ export default function ConditionModal({ condition, onClose }) {
                 >
                   ← {t('cmPrev')}
                 </button>
-                {section < SECTIONS.length - 1 ? (
+                {section < sections.length - 1 ? (
                   <button onClick={() => jumpToSection(section + 1)} className="flex items-center gap-1 text-caption text-accent-secondary hover:underline">
                     {t('cmNext')} <ArrowRightIcon size={13} />
                   </button>
@@ -188,11 +184,11 @@ export default function ConditionModal({ condition, onClose }) {
         ) : (
           <CompletionScreen
             t={t}
-            name={name}
-            onContinue={() => setCompleted(false)}
+            guideLabel={guideLabel}
+            onAsk={() => { close(); navigate('/voice') }}
             onTrack={() => { close(); navigate('/symptoms') }}
             onFind={() => { close(); navigate('/doctors') }}
-            onAsk={() => { close(); navigate('/voice') }}
+            onContinue={() => setCompleted(false)}
           />
         )}
       </div>
@@ -220,7 +216,7 @@ function ActionBtn({ icon: Icon, label, badge, onClick, disabled, active }) {
   )
 }
 
-function CompletionScreen({ t, name, onContinue, onTrack, onFind, onAsk }) {
+function CompletionScreen({ t, guideLabel, onAsk, onTrack, onFind, onContinue }) {
   return (
     <div className="animate-fade-up flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
       <span className="relative flex h-20 w-20 items-center justify-center">
@@ -230,13 +226,13 @@ function CompletionScreen({ t, name, onContinue, onTrack, onFind, onAsk }) {
         </span>
       </span>
       <h2 className="mt-6 font-heading text-2xl font-semibold tracking-tight">{t('cmCompleteTitle')}</h2>
-      <p className="mx-auto mt-2 max-w-sm text-text-secondary">{t('cmCompleteBody').replace('{name}', name)}</p>
+      <p className="mx-auto mt-2 max-w-sm text-text-secondary">{t('cmCompleteBody').replace('{guide}', guideLabel)}</p>
 
       <div className="mt-8 w-full max-w-xs space-y-2.5">
-        <Button onClick={onContinue} size="lg" className="w-full">{t('cmContinueLearning')}</Button>
+        <Button onClick={onAsk} size="lg" className="w-full">{t('cmAskMira')}</Button>
         <SecondaryBtn onClick={onTrack}>{t('cmTrackSymptoms')}</SecondaryBtn>
         <SecondaryBtn onClick={onFind}>{t('cmFindSpecialists')}</SecondaryBtn>
-        <SecondaryBtn onClick={onAsk}>{t('cmAskMira')}</SecondaryBtn>
+        <SecondaryBtn onClick={onContinue}>{t('cmContinueLearning')}</SecondaryBtn>
       </div>
     </div>
   )

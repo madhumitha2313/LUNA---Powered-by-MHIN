@@ -189,3 +189,18 @@ export const DownloadIcon = (p) => (
     <path d="M5 19h14" />
   </Svg>
 )
+
+export const VolumeIcon = (p) => (
+  <Svg {...p}>
+    <path d="M4 10v4h4l5 4V6l-5 4H4Z" />
+    <path d="M17 9a4 4 0 0 1 0 6" />
+    <path d="M19.5 6.5a8 8 0 0 1 0 11" />
+  </Svg>
+)
+
+export const MuteIcon = (p) => (
+  <Svg {...p}>
+    <path d="M4 10v4h4l5 4V6l-5 4H4Z" />
+    <path d="M16.5 9.5l4 4M20.5 9.5l-4 4" />
+  </Svg>
+)
