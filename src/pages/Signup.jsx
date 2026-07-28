@@ -4,8 +4,10 @@ import Logo from '../components/Logo'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT, LANGS } from '../lib/i18n.jsx'
-import { signUp, loginWithProvider, passwordStrength } from '../lib/authStore'
+import { signUp, loginWithProvider, loginWithGoogleCredential, passwordStrength } from '../lib/authStore'
 import { armDashboardTour } from '../components/DashboardTour'
+import GoogleSignInButton from '../components/GoogleSignInButton'
+import { isGoogleSignInConfigured } from '../lib/googleAuth'
 
 const GENDERS = ['female', 'male', 'nonbinary', 'preferNot']
 const STRENGTH = ['', 'auWeak', 'auFair', 'auGood', 'auStrong']
@@ -36,6 +38,11 @@ export default function Signup() {
 
   function social(provider) {
     loginWithProvider(provider, { name: f.name })
+    armDashboardTour()
+    navigate('/home', { replace: true })
+  }
+  function googleProfile(profile) {
+    loginWithGoogleCredential(profile)
     armDashboardTour()
     navigate('/home', { replace: true })
   }
@@ -114,8 +121,13 @@ export default function Signup() {
         </form>
 
         <Divider t={t} />
-        <div className="grid grid-cols-3 gap-2">
-          <SocialBtn onClick={() => social('google')}>{'🔴'} Google</SocialBtn>
+        {isGoogleSignInConfigured && (
+          <div className="mb-2">
+            <GoogleSignInButton onProfile={googleProfile} />
+          </div>
+        )}
+        <div className={isGoogleSignInConfigured ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-3 gap-2'}>
+          {!isGoogleSignInConfigured && <SocialBtn onClick={() => social('google')}>{'🔴'} Google</SocialBtn>}
           <SocialBtn onClick={() => social('apple')}></SocialBtn>
           <SocialBtn onClick={() => social('phone')}>{'📱'}</SocialBtn>
         </div>

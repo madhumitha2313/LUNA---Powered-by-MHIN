@@ -27,6 +27,7 @@ export default function Navbar() {
   const profile = getProfile()
   const name = session?.name || profile.name || ''
   const initials = (name || 'M').trim().slice(0, 1).toUpperCase()
+  const picture = session?.picture || profile.picture || ''
 
   return (
     <header className="glass-nav fixed inset-x-0 top-0 z-50">
@@ -50,7 +51,7 @@ export default function Navbar() {
                 <MicIcon size={16} />
                 <span className="hidden sm:inline">{t('navTalk')}</span>
               </Button>
-              <ProfileMenu initials={initials} name={name} email={session?.email} />
+              <ProfileMenu initials={initials} name={name} email={session?.email} picture={picture} />
             </>
           ) : (
             <>
@@ -75,7 +76,7 @@ const MENU = [
   { key: 'menuPrivacy', to: '/settings?section=privacy-security' },
 ]
 
-function ProfileMenu({ initials, name, email }) {
+function ProfileMenu({ initials, name, email, picture }) {
   const { t } = useT()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -101,8 +102,8 @@ function ProfileMenu({ initials, name, email }) {
   return (
     <div ref={ref} className="relative">
       <button onClick={() => setOpen((o) => !o)} aria-label={t('menuAccount')} aria-expanded={open}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-secondary to-accent-primary font-heading text-sm font-bold text-bg-primary transition-transform duration-250 ease-luna hover:scale-105">
-        {initials}
+        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-accent-secondary to-accent-primary font-heading text-sm font-bold text-bg-primary transition-transform duration-250 ease-luna hover:scale-105">
+        {picture ? <img src={picture} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" /> : initials}
       </button>
 
       {open && (

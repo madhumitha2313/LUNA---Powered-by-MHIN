@@ -36,6 +36,15 @@ export const appwriteConfig = {
 /** Base URL for our server-side functions (Anthropic proxy, STT/TTS proxy, etc.). */
 export const functionsBaseUrl = import.meta.env.VITE_FUNCTIONS_BASE_URL || ''
 
+/**
+ * Google Identity Services client id (public — GIS client ids are meant to be
+ * embedded in the browser, they are not secrets). When set, "Continue with
+ * Google" renders Google's own account-chooser button instead of the
+ * preview's simulated sign-in form.
+ */
+export const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+export const isGoogleSignInConfigured = Boolean(googleClientId)
+
 /** Enough config for AUTH (account create / session): endpoint + project id. */
 export const isAppwriteConfigured = Boolean(appwriteConfig.endpoint && appwriteConfig.projectId)
 

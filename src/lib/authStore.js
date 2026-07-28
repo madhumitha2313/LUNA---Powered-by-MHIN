@@ -11,7 +11,7 @@
  * path, which this module defers to when a real backend is configured.
  */
 import { saveProfile, getProfile } from './localStore'
-import { setLangCode } from './i18n.jsx'
+import { setLangCode, getLang } from './i18n.jsx'
 
 const USERS_KEY = 'mira.users.v1'       // { [email]: userRecord }
 const SESSION_KEY = 'mira.session.v1'   // active session
@@ -77,7 +77,7 @@ function startSession(user, remember = true) {
   if (owner && owner !== user.uid) wipeUserData() // switching accounts → isolate
   write(OWNER_KEY, user.uid)
   const session = {
-    uid: user.uid, name: user.name, email: user.email, provider: user.provider,
+    uid: user.uid, name: user.name, email: user.email, provider: user.provider, picture: user.picture || '',
     token: genToken(), remember: !!remember, at: new Date().toISOString(),
   }
   write(SESSION_KEY, session)
@@ -95,6 +95,7 @@ function linkProfile(user) {
   if (user.gender) patch.gender = user.gender
   if (user.dob) patch.dob = user.dob
   if (user.birthYear) patch.birthYear = user.birthYear
+  if (user.picture) patch.picture = user.picture
   saveProfile(patch)
 }
 
@@ -164,6 +165,39 @@ export function loginWithProvider(provider, info = {}) {
   }
   startSession(user, true)
   return { ok: true, user }
+}
+
+// ── Google (real Identity Services credential — see src/lib/googleAuth.js) ───
+// `profile` is the verified { sub, email, name, picture, email_verified }
+// returned by verifyGoogleCredential. Creates the account on first sign-in,
+// logs in on every return visit — the account is keyed by Google's own
+// email/sub, so the same person always lands on the same MIRA account.
+export function loginWithGoogleCredential(profile) {
+  const email = (profile.email || '').trim().toLowerCase()
+  if (!email) return { ok: false, errors: { email: 'errEmailInvalid' } }
+  const users = read(USERS_KEY, {})
+  let user = users[email]
+  if (!user) {
+    user = {
+      uid: 'usr_g_' + (profile.sub || rand(6)),
+      name: profile.name || 'MIRA user',
+      email,
+      phone: '', dob: '', gender: '',
+      language: getLang(),
+      provider: 'google',
+      picture: profile.picture || '',
+      emailVerified: !!profile.email_verified,
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+    }
+  } else {
+    // Returning visitor — refresh the bits Google may have updated since.
+    user = { ...user, name: user.name || profile.name, picture: profile.picture || user.picture, provider: 'google' }
+  }
+  users[email] = user
+  write(USERS_KEY, users)
+  const session = startSession(user, true)
+  return { ok: true, user, session }
 }
 
 // ── log out ───────────────────────────────────────────────────────────────────

@@ -43,6 +43,7 @@ const {
   SARVAM_STT_MODEL = 'saarika:v2.5',
   SARVAM_TTS_MODEL = 'bulbul:v2',
   SARVAM_TTS_SPEAKER = 'anushka',
+  GOOGLE_CLIENT_ID,
 } = process.env
 
 const app = express()
@@ -57,8 +58,39 @@ app.get('/health', (_req, res) => {
     integrations: {
       anthropic: Boolean(APP_ANTHROPIC_API_KEY),
       sarvam: Boolean(SARVAM_API_KEY),
+      google: Boolean(GOOGLE_CLIENT_ID),
     },
   })
+})
+
+// ── POST /auth/google — verify a Google Identity Services credential ────────
+// The browser never trusts its own decode of the JWT for anything that
+// matters; when this proxy is reachable it re-checks the token against
+// Google's tokeninfo endpoint and confirms the audience matches our client
+// id before treating the profile as real. No client secret is needed for
+// this flow (GIS ID tokens are verified, not exchanged).
+app.post('/auth/google', async (req, res) => {
+  const { credential } = req.body || {}
+  if (!credential) return res.status(400).json({ error: 'credential required' })
+  if (!GOOGLE_CLIENT_ID) return res.status(503).json({ error: 'Google sign-in not configured' })
+  try {
+    const r = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`)
+    if (!r.ok) return res.status(401).json({ error: 'Invalid Google credential' })
+    const payload = await r.json()
+    if (payload.aud !== GOOGLE_CLIENT_ID) return res.status(401).json({ error: 'Token audience mismatch' })
+    return res.json({
+      ok: true,
+      profile: {
+        sub: payload.sub,
+        email: payload.email,
+        email_verified: payload.email_verified === 'true' || payload.email_verified === true,
+        name: payload.name,
+        picture: payload.picture,
+      },
+    })
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
 })
 
 // ── POST /extract — Anthropic structured extraction ──────────────────────────

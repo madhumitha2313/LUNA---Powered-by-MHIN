@@ -4,8 +4,10 @@ import Logo from '../components/Logo'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT } from '../lib/i18n.jsx'
-import { login, loginWithProvider } from '../lib/authStore'
+import { login, loginWithProvider, loginWithGoogleCredential } from '../lib/authStore'
 import { armDashboardTour } from '../components/DashboardTour'
+import GoogleSignInButton from '../components/GoogleSignInButton'
+import { isGoogleSignInConfigured } from '../lib/googleAuth'
 
 export default function Login() {
   const { t } = useT()
@@ -26,6 +28,11 @@ export default function Login() {
   }
   function social(provider) {
     loginWithProvider(provider)
+    armDashboardTour()
+    navigate('/home', { replace: true })
+  }
+  function googleProfile(profile) {
+    loginWithGoogleCredential(profile)
     armDashboardTour()
     navigate('/home', { replace: true })
   }
@@ -69,7 +76,11 @@ export default function Login() {
 
         <div className="my-5 flex items-center gap-3 text-caption text-text-muted"><span className="h-px flex-1 bg-white/[0.08]" />{t('auOr')}<span className="h-px flex-1 bg-white/[0.08]" /></div>
         <div className="space-y-2">
-          <SocialBtn onClick={() => social('google')}>🔴 {t('auContinueGoogle')}</SocialBtn>
+          {isGoogleSignInConfigured ? (
+            <GoogleSignInButton onProfile={googleProfile} />
+          ) : (
+            <SocialBtn onClick={() => social('google')}>🔴 {t('auContinueGoogle')}</SocialBtn>
+          )}
           <SocialBtn onClick={() => social('apple')}> {t('auContinueApple')}</SocialBtn>
           <SocialBtn onClick={() => social('phone')}>📱 {t('auContinuePhone')}</SocialBtn>
         </div>
