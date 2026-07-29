@@ -11,14 +11,21 @@
  * through the functions below, so adding a 10th condition (or a completely
  * new module like Menopause or Fertility) is purely a data change here.
  *
- * Video content: no licensed per-condition medical videos exist in this
- * offline preview, so every record's videoURL currently resolves to one
- * shared, on-brand placeholder clip (src/assets/placeholderVideo.js) — the
- * *architecture* is per-condition and per-language (see getVideo below),
- * ready to swap in real Firebase/Cloudinary/CDN URLs per record without any
- * frontend change.
+ * Video content: PCOS uses a real uploaded educational video
+ * (src/assets/videos/pcos-guide.mp4); every other condition still resolves
+ * to the shared, on-brand placeholder clip (src/assets/placeholderVideo.js)
+ * until its own video is provided. The *architecture* is per-condition and
+ * per-language (see getVideo below), so swapping in a real Firebase/
+ * Cloudinary/CDN URL per record — or another local video, as done here for
+ * PCOS — is purely a data change, no frontend change required.
  */
 import { PLACEHOLDER_VIDEO } from '../assets/placeholderVideo'
+// Real PCOS educational video (replaces the on-brand placeholder for this
+// condition only). vite.config.js raises assetsInlineLimit for .mp4 files so
+// this gets embedded as a base64 data URI in the bundle — same mechanism as
+// PLACEHOLDER_VIDEO above — keeping the app (including the single-file
+// preview build) fully self-contained with no separate file to host.
+import PCOS_VIDEO from '../assets/videos/pcos-guide.mp4'
 
 const PROGRESS_KEY = 'mira.conditionsProgress.v1'
 const SAVED_KEY = 'mira.conditionsSaved.v1'
@@ -35,7 +42,7 @@ export const CONDITIONS = [
     specialistKey: 'cnd1s',
     thumbTone: ['#D81B60', '#A855F7'],
     estimatedWatchTime: '4 min',
-    video: { en: PLACEHOLDER_VIDEO },
+    video: { en: PCOS_VIDEO },
     // PCOS-only: an explicit, timestamped learning timeline (per the PCOS
     // interactive-video spec) instead of the generic even 8-way split other
     // conditions still use below. `at` is a fraction of the video's actual

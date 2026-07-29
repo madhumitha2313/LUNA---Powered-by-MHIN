@@ -24,5 +24,13 @@ export default defineConfig(async () => {
       host: true,
       port: 5173,
     },
+    build: {
+      // Real per-condition videos (e.g. src/assets/videos/pcos-guide.mp4)
+      // must be embedded as base64 data URIs — like the existing on-brand
+      // placeholder clip — so the app (including the single-file preview
+      // build) stays fully self-contained with no separate file to host.
+      // Every other asset keeps Vite's normal 4KB default.
+      assetsInlineLimit: (filePath, content) => (filePath.endsWith('.mp4') ? true : content.length < 4096),
+    },
   }
 })
