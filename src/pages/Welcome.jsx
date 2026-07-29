@@ -43,11 +43,8 @@ export default function Welcome() {
 
       {/* CTAs */}
       <div className="relative z-10 w-full max-w-xs space-y-3">
-        <Button as={Link} to="/signup" size="lg" className="w-full">{t('auGetStarted')} <ArrowRightIcon size={16} /></Button>
+        <Button as={Link} to="/onboarding" size="lg" className="w-full">{t('auGetStarted')} <ArrowRightIcon size={16} /></Button>
         <Button as={Link} to="/login" variant="secondary" size="lg" className="w-full">{t('auHaveAccountBtn')}</Button>
-        <p className="pt-1 text-center text-[0.74rem] text-text-muted">
-          <Link to="/onboarding" className="text-accent-secondary hover:underline">{t('auHowItWorks')}</Link>
-        </p>
       </div>
     </div>
   )

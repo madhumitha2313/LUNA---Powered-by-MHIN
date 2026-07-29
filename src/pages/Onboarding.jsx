@@ -7,7 +7,7 @@ import { armDashboardTour } from '../components/DashboardTour'
 import Button from '../components/ui/Button'
 import { ArrowRightIcon, ShieldIcon } from '../components/ui/icons'
 import { useT, LANGS, setOnboarded } from '../lib/i18n'
-import { isAuthenticated, loginWithGoogleCredential } from '../lib/authStore'
+import { loginWithGoogleCredential, signUp } from '../lib/authStore'
 import { saveProfile, saveSettings, addPeriod } from '../lib/localStore'
 import { isAppwriteConfigured, account } from '../lib/appwrite'
 import GoogleSignInButton from '../components/GoogleSignInButton'
@@ -20,8 +20,10 @@ const YEARS = Array.from({ length: THIS_YEAR - 1940 + 1 }, (_, i) => THIS_YEAR -
 
 // Steps that carry the progress bar (the personalisation + cycle-setup wizard).
 const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod', 'regularity']
-// Order used by the ← back button (splash and the loader are excluded).
-const ORDER = ['lang', 'welcome', 'consent', 'signup', ...TRACKED, 'firstTime', 'edu', 'reminders']
+// Order used by the ← back button (splash and the loader are excluded). Account
+// creation (signup/credentials/verify) is deliberately LAST — the account is
+// never created until every onboarding question has been answered.
+const ORDER = ['lang', 'welcome', 'consent', ...TRACKED, 'firstTime', 'edu', 'reminders', 'review', 'signup', 'credentials', 'verify']
 
 export default function Onboarding() {
   const { t, lang, setLang } = useT()
@@ -40,8 +42,12 @@ export default function Onboarding() {
   const [consentErr, setConsentErr] = useState(false)
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
-  const [emailErr, setEmailErr] = useState(false)
+  const [confirmPass, setConfirmPass] = useState('')
+  const [credErrors, setCredErrors] = useState({})
+  const [credBusy, setCredBusy] = useState(false)
   const [regularity, setRegularity] = useState('')
+  const [firstTime, setFirstTime] = useState(null)
+  const [notifPref, setNotifPref] = useState(null)
 
   // Splash: logo animation (~2.8s), then move to language.
   useEffect(() => {
@@ -68,12 +74,12 @@ export default function Onboarding() {
     armDashboardTour() // show the guided tour on the first home visit
   }
 
-  // Personalising loader → persist, then continue. If the visitor has an
-  // account, straight to the dashboard; otherwise on to sign up (the details
-  // they just entered are preserved and linked to their new account).
+  // Personalising loader → straight to the dashboard. By the time we reach
+  // this step the account has already been created (Google or email/password
+  // — see the credentials step below), so the visitor is always signed in.
   useEffect(() => {
     if (step !== 'personalizing') return
-    const timer = setTimeout(() => navigate(isAuthenticated() ? '/home' : '/signup', { replace: true }), 2400)
+    const timer = setTimeout(() => navigate('/home', { replace: true }), 2400)
     return () => clearTimeout(timer)
   }, [step, navigate])
 
@@ -104,30 +110,51 @@ export default function Onboarding() {
     // "choose an account" list of names that were never actually signed in.
     setEmail('')
     setPass('')
-    setEmailErr(false)
-    setStep('google')
+    setConfirmPass('')
+    setCredErrors({})
+    setStep('credentials')
   }
 
   // Real Google Identity Services credential (see GoogleSignInButton) — the
-  // visitor genuinely picked this account from Google's own chooser.
+  // visitor genuinely picked this account from Google's own chooser. Google
+  // accounts are inherently email-verified, so this creates the account and
+  // finishes the flow immediately — no separate credentials/verify step.
   function handleGoogleProfile(profile) {
-    if (profile?.name) setName(profile.name)
     loginWithGoogleCredential(profile)
-    setStep('name')
+    persistAll(notifPref)
+    setStep('personalizing')
   }
 
-  // Email + password sign in / create (the honest preview fallback for Google).
-  function submitGoogleSignin() {
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-    if (!emailOk || pass.trim().length < 4) {
-      setEmailErr(true)
+  // Create the real account — the account is never created before this
+  // point, no matter how far through onboarding the visitor got.
+  async function submitCredentials(e) {
+    e?.preventDefault?.()
+    setCredBusy(true)
+    const res = await signUp({
+      name: name.trim(),
+      email: email.trim(),
+      phone: '',
+      password: pass,
+      confirm: confirmPass,
+      dob: `${year}-01-01`, // onboarding only asks for birth YEAR; a synthetic dob satisfies signUp's shape
+      gender: '',
+      language: lang,
+      terms: true, // already collected on the consent step
+    })
+    if (!res.ok) {
+      setCredErrors(res.errors)
+      setCredBusy(false)
       return
     }
-    saveProfile({ email: email.trim() })
-    setStep('name')
+    setCredErrors({})
+    setCredBusy(false)
+    persistAll(notifPref)
+    setStep('verify')
   }
 
-  async function askReminders(allow) {
+  // Notification permission choice — captured here, actually persisted once
+  // the account exists (see submitCredentials / handleGoogleProfile above).
+  async function chooseReminders(allow) {
     if (allow && typeof Notification !== 'undefined' && Notification.permission === 'default') {
       try {
         await Notification.requestPermission()
@@ -135,8 +162,8 @@ export default function Onboarding() {
         /* ignore — the toggle in Settings still works */
       }
     }
-    persistAll(allow)
-    setStep('personalizing')
+    setNotifPref(allow)
+    setStep('review')
   }
 
   const allConsent = consent.tos && consent.privacy && consent.health
@@ -311,108 +338,11 @@ export default function Onboarding() {
                       return
                     }
                     saveSettings({ consent: { ...consent, acceptedAt: new Date().toISOString() } })
-                    setStep('signup')
+                    setStep('name')
                   }}
                   label={t('next')}
                 />
               </Step>
-            )}
-
-            {/* SIGN UP */}
-            {step === 'signup' && (
-              <Step title={t('signupTitle')} subtitle={t('signupSubtitle')}>
-                <div className="mt-10 space-y-3">
-                  {isGoogleSignInConfigured ? (
-                    <GoogleSignInButton onProfile={handleGoogleProfile} />
-                  ) : (
-                    <button
-                      onClick={chooseGoogle}
-                      className="flex w-full items-center justify-center gap-3 rounded-pill border border-white/15 bg-white/[0.04] px-5 py-3.5 font-medium text-text-primary hover:bg-white/[0.08]"
-                    >
-                      <GoogleG /> {t('signupGoogle')}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setStep('name')}
-                    className="flex w-full items-center justify-center gap-2 rounded-pill border border-accent-primary/40 bg-accent-primary/10 px-5 py-3.5 font-medium text-accent-secondary hover:bg-accent-primary/20"
-                  >
-                    {t('signupEmail')}
-                  </button>
-                  <button
-                    onClick={() => setStep('name')}
-                    className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary"
-                  >
-                    {t('signupGuest')}
-                  </button>
-                </div>
-                <p className="mt-6 text-center text-caption text-text-muted">
-                  {t('signupHave')}{' '}
-                  <button
-                    onClick={() => {
-                      setOnboarded(true)
-                      navigate('/login')
-                    }}
-                    className="text-accent-secondary hover:underline"
-                  >
-                    {t('signin')}
-                  </button>
-                </p>
-              </Step>
-            )}
-
-            {/* GOOGLE FALLBACK — honest email + password sign-in (only reached
-                when neither GIS nor Appwrite's Google provider is configured) */}
-            {step === 'google' && (
-              <div className="flex flex-1 flex-col pb-8 pt-6">
-                <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-white text-[#202124] shadow-lift">
-                  <div className="p-8">
-                    <GoogleFullLogo />
-                    <h2 className="mt-6 font-heading text-[1.55rem] font-normal text-[#202124]">{t('gSignInTitle')}</h2>
-                    <p className="mt-1 text-[0.95rem] text-[#5f6368]">{t('gSignInSub')}</p>
-                    <input
-                      autoFocus
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value)
-                        setEmailErr(false)
-                      }}
-                      placeholder={t('gEmailPlaceholder')}
-                      className={`mt-6 w-full rounded-lg border bg-white px-4 py-3.5 text-[1rem] text-[#202124] outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] ${
-                        emailErr ? 'border-[#d93025]' : 'border-[#dadce0]'
-                      }`}
-                    />
-                    <input
-                      type="password"
-                      value={pass}
-                      onChange={(e) => {
-                        setPass(e.target.value)
-                        setEmailErr(false)
-                      }}
-                      onKeyDown={(e) => e.key === 'Enter' && submitGoogleSignin()}
-                      placeholder={t('gPassPlaceholder')}
-                      className={`mt-3 w-full rounded-lg border bg-white px-4 py-3.5 text-[1rem] text-[#202124] outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] ${
-                        emailErr ? 'border-[#d93025]' : 'border-[#dadce0]'
-                      }`}
-                    />
-                    {emailErr && <p className="mt-1.5 text-caption text-[#d93025]">{t('gEmailErr')}</p>}
-                    <div className="mt-7 flex items-center justify-between">
-                      <button
-                        onClick={() => setStep('signup')}
-                        className="text-[0.95rem] font-medium text-[#1a73e8] hover:underline"
-                      >
-                        {t('back')}
-                      </button>
-                      <button
-                        onClick={submitGoogleSignin}
-                        className="rounded-lg bg-[#1a73e8] px-6 py-2.5 text-[0.95rem] font-medium text-white hover:bg-[#1765cc]"
-                      >
-                        {t('gNext')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             )}
 
             {/* NAME — 1/5 */}
@@ -518,6 +448,7 @@ export default function Onboarding() {
                 <div className="mt-8 space-y-3">
                   <button
                     onClick={() => {
+                      setFirstTime(true)
                       saveProfile({ firstTimeTracking: true })
                       setStep('edu')
                     }}
@@ -527,6 +458,7 @@ export default function Onboarding() {
                   </button>
                   <button
                     onClick={() => {
+                      setFirstTime(false)
                       saveProfile({ firstTimeTracking: false, cycleGuideSeen: true })
                       setStep('reminders')
                     }}
@@ -552,15 +484,162 @@ export default function Onboarding() {
             {step === 'reminders' && (
               <Step icon iconEl={<BellIcon />} title={t('remindersTitle')} subtitle={t('remindersSub')}>
                 <div className="mt-auto space-y-3 pt-10">
-                  <Button onClick={() => askReminders(true)} size="lg" className="w-full">
+                  <Button onClick={() => chooseReminders(true)} size="lg" className="w-full">
                     {t('allow')}
                   </Button>
                   <button
-                    onClick={() => askReminders(false)}
+                    onClick={() => chooseReminders(false)}
                     className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary"
                   >
                     {t('notNow')}
                   </button>
+                </div>
+              </Step>
+            )}
+
+            {/* REVIEW & CONFIRM — everything collected so far, before the
+                account is created */}
+            {step === 'review' && (
+              <Step title={t('reviewTitle')} subtitle={t('reviewSub')}>
+                <div className="mt-6 space-y-2.5">
+                  <ReviewRow label={t('reviewLabelName')} value={name} />
+                  <ReviewRow label={t('reviewLabelBirth')} value={String(year)} />
+                  <ReviewRow label={t('reviewLabelPeriod')} value={`${periodLen} ${t('daysUnit')}`} />
+                  <ReviewRow label={t('reviewLabelCycle')} value={`${cycleLen} ${t('daysUnit')}`} />
+                  <ReviewRow label={t('reviewLabelLastPeriod')} value={lastPeriod.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })} />
+                  <ReviewRow label={t('reviewLabelRegularity')} value={t(REGULARITY_LABEL[regularity] || 'regNotSure')} />
+                  <ReviewRow label={t('reviewLabelFirstTime')} value={t(firstTime ? 'yesOpt' : 'noOpt')} />
+                  <ReviewRow label={t('reviewLabelNotifications')} value={t(notifPref ? 'allow' : 'notNow')} />
+                  <ReviewRow label={t('reviewLabelLanguage')} value={LANGS.find((l) => l.code === lang)?.native || lang} />
+                </div>
+                <Footer onNext={() => setStep('signup')} label={t('reviewConfirm')} />
+              </Step>
+            )}
+
+            {/* CREATE ACCOUNT — Google / email / guest chooser (account is
+                not created until this step, or the credentials step next) */}
+            {step === 'signup' && (
+              <Step title={t('signupTitle')} subtitle={t('signupSubtitle')}>
+                <div className="mt-10 space-y-3">
+                  {isGoogleSignInConfigured ? (
+                    <GoogleSignInButton onProfile={handleGoogleProfile} />
+                  ) : (
+                    <button
+                      onClick={chooseGoogle}
+                      className="flex w-full items-center justify-center gap-3 rounded-pill border border-white/15 bg-white/[0.04] px-5 py-3.5 font-medium text-text-primary hover:bg-white/[0.08]"
+                    >
+                      <GoogleG /> {t('signupGoogle')}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setEmail('')
+                      setPass('')
+                      setConfirmPass('')
+                      setCredErrors({})
+                      setStep('credentials')
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-pill border border-accent-primary/40 bg-accent-primary/10 px-5 py-3.5 font-medium text-accent-secondary hover:bg-accent-primary/20"
+                  >
+                    {t('signupEmail')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEmail('')
+                      setPass('')
+                      setConfirmPass('')
+                      setCredErrors({})
+                      setStep('credentials')
+                    }}
+                    className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary"
+                  >
+                    {t('signupGuest')}
+                  </button>
+                </div>
+                <p className="mt-6 text-center text-caption text-text-muted">
+                  {t('signupHave')}{' '}
+                  <button
+                    onClick={() => {
+                      setOnboarded(true)
+                      navigate('/login')
+                    }}
+                    className="text-accent-secondary hover:underline"
+                  >
+                    {t('signin')}
+                  </button>
+                </p>
+              </Step>
+            )}
+
+            {/* CREATE ACCOUNT (EMAIL & PASSWORD) — the account is created
+                right here, submitting to authStore.signUp(); this is also
+                the fallback when Google sign-in isn't configured. */}
+            {step === 'credentials' && (
+              <Step title={t('credTitle')} subtitle={t('credSub')}>
+                <form onSubmit={submitCredentials} className="mt-8 space-y-3.5" noValidate>
+                  <div>
+                    <input
+                      autoFocus
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        setCredErrors((x) => ({ ...x, email: null }))
+                      }}
+                      placeholder={t('credEmailPh')}
+                      className={`w-full rounded-2xl border bg-white/[0.03] px-5 py-4 text-text-primary placeholder:text-text-muted focus:outline-none ${
+                        credErrors.email ? 'border-danger/50' : 'border-white/10 focus:border-accent-primary/40'
+                      }`}
+                    />
+                    {credErrors.email && <p className="mt-1.5 px-1 text-caption text-danger">{t(credErrors.email)}</p>}
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      value={pass}
+                      onChange={(e) => {
+                        setPass(e.target.value)
+                        setCredErrors((x) => ({ ...x, password: null }))
+                      }}
+                      placeholder={t('credPasswordPh')}
+                      className={`w-full rounded-2xl border bg-white/[0.03] px-5 py-4 text-text-primary placeholder:text-text-muted focus:outline-none ${
+                        credErrors.password ? 'border-danger/50' : 'border-white/10 focus:border-accent-primary/40'
+                      }`}
+                    />
+                    {credErrors.password && <p className="mt-1.5 px-1 text-caption text-danger">{t(credErrors.password)}</p>}
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      value={confirmPass}
+                      onChange={(e) => {
+                        setConfirmPass(e.target.value)
+                        setCredErrors((x) => ({ ...x, confirm: null }))
+                      }}
+                      placeholder={t('credConfirmPh')}
+                      className={`w-full rounded-2xl border bg-white/[0.03] px-5 py-4 text-text-primary placeholder:text-text-muted focus:outline-none ${
+                        credErrors.confirm ? 'border-danger/50' : 'border-white/10 focus:border-accent-primary/40'
+                      }`}
+                    />
+                    {credErrors.confirm && <p className="mt-1.5 px-1 text-caption text-danger">{t(credErrors.confirm)}</p>}
+                  </div>
+                  <div className="pt-4">
+                    <Button type="submit" size="lg" className="w-full" disabled={credBusy}>
+                      {credBusy ? t('auPleaseWait') : t('credSubmit')} <ArrowRightIcon size={18} />
+                    </Button>
+                  </div>
+                </form>
+              </Step>
+            )}
+
+            {/* VERIFY EMAIL — honest, non-blocking (Google accounts skip this
+                entirely since Google already verifies the address) */}
+            {step === 'verify' && (
+              <Step icon iconEl={<MailIcon />} title={t('verifyTitle')} subtitle={t('verifySub').replace('{email}', email)}>
+                <div className="mt-auto pt-10">
+                  <Button onClick={() => setStep('personalizing')} size="lg" className="w-full">
+                    {t('cont')} <ArrowRightIcon size={18} />
+                  </Button>
                 </div>
               </Step>
             )}
@@ -572,7 +651,7 @@ export default function Onboarding() {
 }
 
 function back(step, setStep) {
-  if (step === 'google') {
+  if (step === 'credentials') {
     setStep('signup')
     return
   }
@@ -754,21 +833,26 @@ function BellIcon() {
   )
 }
 
-function GoogleFullLogo() {
-  const colors = ['#4285F4', '#EA4335', '#FBBC05', '#4285F4', '#34A853', '#EA4335']
+function MailIcon() {
   return (
-    <div className="flex items-center gap-2">
-      <GoogleG />
-      <span className="font-heading text-2xl font-medium tracking-tight">
-        {'Google'.split('').map((ch, i) => (
-          <span key={i} style={{ color: colors[i] }}>
-            {ch}
-          </span>
-        ))}
-      </span>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  )
+}
+
+/** One label/value row on the Review & Confirm step. */
+function ReviewRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-5 py-3.5">
+      <span className="text-[0.92rem] text-text-secondary">{label}</span>
+      <span className="text-[0.92rem] font-medium text-text-primary">{value}</span>
     </div>
   )
 }
+
+const REGULARITY_LABEL = { regular: 'regRegularOpt', irregular: 'regIrregularOpt', unsure: 'regNotSure' }
 
 function GoogleG() {
   return (
