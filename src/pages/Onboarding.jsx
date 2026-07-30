@@ -23,7 +23,7 @@ const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod', 'regula
 // Order used by the ← back button (splash and the loader are excluded). Account
 // creation (signup/credentials/verify) is deliberately LAST — the account is
 // never created until every onboarding question has been answered.
-const ORDER = ['lang', 'welcome', 'consent', ...TRACKED, 'firstTime', 'edu', 'reminders', 'review', 'signup', 'credentials', 'verify']
+const ORDER = ['lang', 'welcome', 'consent', ...TRACKED, 'firstTime', 'edu', 'reminders', 'review', 'signup', 'credentials']
 
 export default function Onboarding() {
   const { t, lang, setLang } = useT()
@@ -149,7 +149,11 @@ export default function Onboarding() {
     setCredErrors({})
     setCredBusy(false)
     persistAll(notifPref)
-    setStep('verify')
+    // Real accounts (Appwrite configured) need email confirmation before the
+    // dashboard is reachable — see RequireOnboarding in App.jsx. The check-
+    // your-email screen lives at its own route so it's also reachable on a
+    // later visit/refresh, not just this once, right after signup.
+    navigate('/verify-email', { replace: true })
   }
 
   // Notification permission choice — captured here, actually persisted once
@@ -631,18 +635,6 @@ export default function Onboarding() {
                 </form>
               </Step>
             )}
-
-            {/* VERIFY EMAIL — honest, non-blocking (Google accounts skip this
-                entirely since Google already verifies the address) */}
-            {step === 'verify' && (
-              <Step icon iconEl={<MailIcon />} title={t('verifyTitle')} subtitle={t('verifySub').replace('{email}', email)}>
-                <div className="mt-auto pt-10">
-                  <Button onClick={() => setStep('personalizing')} size="lg" className="w-full">
-                    {t('cont')} <ArrowRightIcon size={18} />
-                  </Button>
-                </div>
-              </Step>
-            )}
           </main>
         </>
       )}
@@ -829,15 +821,6 @@ function BellIcon() {
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  )
-}
-
-function MailIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
     </svg>
   )
 }

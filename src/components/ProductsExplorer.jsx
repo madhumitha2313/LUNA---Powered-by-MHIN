@@ -9,9 +9,18 @@ import { useT } from '../lib/i18n.jsx'
  * illustration, tap-to-switch, and offline voice narration.
  */
 
+// Tone → design-token classes only (no new colors) — gives each motion card
+// a distinct accent while staying inside the existing palette.
+const TONE = {
+  primary: { border: 'border-accent-primary', bg: 'bg-accent-primary/[0.16]', glow: 'shadow-glow', text: 'text-accent-primary' },
+  ai: { border: 'border-accent-ai', bg: 'bg-accent-ai/[0.16]', glow: 'shadow-glow-ai', text: 'text-accent-ai' },
+  success: { border: 'border-success', bg: 'bg-success/[0.16]', glow: 'shadow-glow', text: 'text-success' },
+  secondary: { border: 'border-accent-secondary', bg: 'bg-accent-secondary/[0.16]', glow: 'shadow-glow', text: 'text-accent-secondary' },
+}
+
 const PRODUCTS = [
   {
-    id: 'pads', key: 'prod_pads', emoji: '🩹',
+    id: 'pads', key: 'prod_pads', emoji: '🩹', tone: 'primary', highlight: 'Great for beginners & overnight',
     what: 'A soft absorbent strip that sticks inside your underwear and soaks up flow from the outside.',
     how: 'Absorbent layers lock in fluid; a sticky backing holds it in place. Many have “wings” that fold over the sides for security.',
     adv: 'Easy to start with, nothing goes inside the body, lots of sizes, great for overnight.',
@@ -23,7 +32,7 @@ const PRODUCTS = [
     safety: 'Change regularly to stay fresh and avoid irritation; switch brands if you get a rash.',
   },
   {
-    id: 'tampons', key: 'prod_tampons', emoji: '🧵',
+    id: 'tampons', key: 'prod_tampons', emoji: '🧵', tone: 'ai', highlight: 'Invisible under clothes',
     what: 'A small cylinder of absorbent material worn inside the vagina, absorbing flow before it leaves the body.',
     how: 'It expands gently to absorb fluid. A string stays outside for easy removal; some come with an applicator.',
     adv: 'Discreet, nothing shows, brilliant for swimming and sport, comfortable once placed right.',
@@ -35,7 +44,7 @@ const PRODUCTS = [
     safety: 'Use the lowest absorbency for your flow and never leave one in beyond 8 hours — this lowers the small risk of toxic shock syndrome (TSS).',
   },
   {
-    id: 'cup', key: 'prod_cup', emoji: '🥤',
+    id: 'cup', key: 'prod_cup', emoji: '🥤', tone: 'success', highlight: 'Reusable up to 12 hours',
     what: 'A small, flexible silicone cup worn inside the vagina that collects — rather than absorbs — your flow.',
     how: 'You fold and insert it; it springs open to form a light seal that catches fluid. Empty, rinse and reuse.',
     adv: 'Reusable for years, very economical, eco-friendly, wearable up to 12 hours, holds more than a tampon.',
@@ -47,7 +56,7 @@ const PRODUCTS = [
     safety: 'Wash your hands and the cup, sterilise between cycles, and don’t exceed 12 hours.',
   },
   {
-    id: 'liner', key: 'prod_liner', emoji: '🩲',
+    id: 'liner', key: 'prod_liner', emoji: '🩲', tone: 'secondary', highlight: 'Barely-there daily protection',
     what: 'A very thin, light pad for minimal flow, daily discharge, or backup with a tampon or cup.',
     how: 'Works like a slim pad — sticks in your underwear and absorbs small amounts.',
     adv: 'Barely noticeable, great for spotting, discharge, or the last light days.',
@@ -59,7 +68,7 @@ const PRODUCTS = [
     safety: 'Change regularly; choose unscented if your skin is easily irritated.',
   },
   {
-    id: 'cloth', key: 'prod_cloth', emoji: '🧺',
+    id: 'cloth', key: 'prod_cloth', emoji: '🧺', tone: 'success', highlight: 'Eco-friendly & gentle on skin',
     what: 'A washable fabric pad that works like a disposable pad but is reused for years.',
     how: 'Soft absorbent cloth layers soak up flow; it snaps around your underwear instead of sticking.',
     adv: 'Eco-friendly, economical over time, gentle on skin, no plastic feel.',
@@ -71,7 +80,7 @@ const PRODUCTS = [
     safety: 'Wash well and dry fully to keep them hygienic.',
   },
   {
-    id: 'underwear', key: 'prod_underwear', emoji: '🩳',
+    id: 'underwear', key: 'prod_underwear', emoji: '🩳', tone: 'ai', highlight: 'Nothing to insert, just wear',
     what: 'Absorbent underwear with built-in leak-proof layers that soak up flow — no separate product needed.',
     how: 'Special layers absorb and lock in fluid while staying dry against your skin; then you wash and reuse.',
     adv: 'Comfortable, nothing to insert, great overnight or as backup, reusable and eco-friendly.',
@@ -119,19 +128,45 @@ export default function ProductsExplorer({ onClose }) {
         </div>
         <p className="mt-1 text-caption text-text-muted">{t('pSub')}</p>
 
-        {/* Product selector */}
-        <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {PRODUCTS.map((prod) => (
-            <button key={prod.id} onClick={() => setSel(prod.id)}
-              className={`flex flex-col items-center gap-1 rounded-2xl border p-2.5 transition ${sel === prod.id ? 'border-accent-primary bg-accent-primary/[0.12]' : 'border-white/[0.06] bg-white/[0.02] hover:border-white/20'}`}>
-              <span className={`text-2xl ${sel === prod.id ? 'animate-float' : ''}`}>{prod.emoji}</span>
-              <span className="text-center text-[0.66rem] font-medium leading-tight text-text-secondary">{t(prod.key)}</span>
-            </button>
-          ))}
+        {/* Product motion cards — glassmorphism, looping preview (pure CSS,
+            silent, GPU-cheap transform/opacity only), hover lift, expand
+            state on selection. Mobile-responsive: 2 → 3 → 6 columns. */}
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {PRODUCTS.map((prod) => {
+            const tone = TONE[prod.tone]
+            const active = sel === prod.id
+            return (
+              <button
+                key={prod.id}
+                onClick={() => setSel(prod.id)}
+                className={`group relative flex flex-col items-center gap-2 overflow-hidden rounded-3xl border p-4 text-center backdrop-blur-xl transition-all duration-300 ease-luna ${
+                  active
+                    ? `${tone.border} scale-[1.04] bg-white/[0.08] ${tone.glow}`
+                    : 'border-white/10 bg-white/[0.03] hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.06]'
+                }`}
+              >
+                <span className="relative grid h-14 w-14 place-items-center rounded-2xl">
+                  <span
+                    aria-hidden
+                    className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${tone.bg} ${
+                      active ? 'animate-glow-pulse opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
+                  />
+                  <span className={`relative text-3xl transition-transform duration-500 ${active ? 'animate-float' : 'group-hover:scale-110'}`}>
+                    {prod.emoji}
+                  </span>
+                </span>
+                <span className="text-[0.72rem] font-semibold leading-tight text-text-secondary group-hover:text-text-primary">
+                  {t(prod.key)}
+                </span>
+                <span className={`text-[0.62rem] leading-tight ${active ? tone.text : 'text-text-muted'}`}>{prod.highlight}</span>
+              </button>
+            )
+          })}
         </div>
 
-        {/* Hero */}
-        <div className="mt-5 flex items-center gap-4 rounded-3xl border border-white/[0.06] bg-gradient-to-r from-[#d97ba8]/[0.14] to-transparent p-5">
+        {/* Hero — remounts (key) on selection so the fade-up/expand plays each time */}
+        <div key={p.id} className="animate-fade-up mt-5 flex items-center gap-4 rounded-3xl border border-white/[0.06] bg-gradient-to-r from-[#d97ba8]/[0.14] to-transparent p-5">
           <span className="text-5xl">{p.emoji}</span>
           <div>
             <h4 className="font-heading text-xl font-semibold">{t(p.key)}</h4>

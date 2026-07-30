@@ -4,8 +4,7 @@ import PageShell from '../components/layout/PageShell'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
-import { ShieldIcon, HeartIcon, SparklesIcon, MoonIcon } from '../components/ui/icons'
-import CycleGuideIntro from '../components/CycleGuideIntro'
+import { ShieldIcon, HeartIcon, SparklesIcon } from '../components/ui/icons'
 import { isAppwriteConfigured, isAppwriteDataConfigured, appwriteConfig } from '../lib/config'
 import { useT, LANGS } from '../lib/i18n.jsx'
 import {
@@ -46,7 +45,6 @@ export default function Settings() {
   })
   const [settings, setSettings] = useState(getSettings())
   const [savedMsg, setSavedMsg] = useState('')
-  const [replayGuide, setReplayGuide] = useState(false)
 
   const setAwField = (k) => (e) => setAw((p) => ({ ...p, [k]: e.target.value }))
   const setSetting = (k, v) => {
@@ -191,21 +189,6 @@ export default function Settings() {
         </Button>
       </Card>
 
-      {/* Help & Education */}
-      <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <MoonIcon size={20} className="mt-0.5 shrink-0 text-accent-secondary" />
-          <div>
-            <h2 className="font-heading text-lg font-semibold">{t('cgSettingsTitle')}</h2>
-            <p className="text-caption text-text-secondary">{t('cgSettingsDesc')}</p>
-          </div>
-        </div>
-        <Button onClick={() => setReplayGuide(true)} variant="secondary" size="md">
-          {t('cgSettingsBtn')}
-        </Button>
-      </Card>
-
-      {replayGuide && <CycleGuideIntro forceOpen onClose={() => setReplayGuide(false)} />}
     </PageShell>
   )
 }

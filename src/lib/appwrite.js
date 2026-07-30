@@ -9,7 +9,7 @@
  * configured (e.g. the static Pages preview with no keys), these exports are
  * null and the data layer returns empty results instead of throwing.
  */
-import { Client, Account, Databases } from 'appwrite'
+import { Client, Account, Databases, ID } from 'appwrite'
 import { appwriteConfig, isAppwriteConfigured, isAppwriteDataConfigured } from './config'
 
 let client = null
@@ -22,5 +22,5 @@ if (isAppwriteConfigured) {
   databases = new Databases(client)
 }
 
-export { client, account, databases }
+export { client, account, databases, ID }
 export { appwriteConfig, isAppwriteConfigured, isAppwriteDataConfigured }

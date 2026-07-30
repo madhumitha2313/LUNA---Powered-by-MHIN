@@ -119,6 +119,7 @@ const VideoPlayer = forwardRef(function VideoPlayer({ src, poster, initialTime =
         onPause={() => setPlaying(false)}
         onEnded={() => { setPlaying(false); onEnded?.() }}
         playsInline
+        preload="metadata"
       />
 
       {/* Center play/pause tap target */}

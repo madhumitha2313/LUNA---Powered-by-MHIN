@@ -12,6 +12,8 @@
  */
 import { saveProfile, getProfile } from './localStore'
 import { setLangCode, getLang } from './i18n.jsx'
+import { isAppwriteConfigured } from './appwrite'
+import { registerAndSendVerification, resendVerificationEmail, logout as appwriteLogout } from './auth'
 
 const USERS_KEY = 'mira.users.v1'       // { [email]: userRecord }
 const SESSION_KEY = 'mira.session.v1'   // active session
@@ -71,6 +73,81 @@ export function currentUser() { return read(SESSION_KEY, null) }
 export function isAuthenticated() { return !!currentUser() }
 export function getUserRecord(email) { return read(USERS_KEY, {})[(email || '').trim().toLowerCase()] || null }
 
+// ── email verification ────────────────────────────────────────────────────────
+// The local record (above) is always the source of truth for whether THIS app
+// treats an account as verified — Appwrite (when configured) is the real
+// delivery + confirmation mechanism, and flips this same flag on success.
+export function isEmailVerified() {
+  const session = currentUser()
+  if (!session) return false
+  const user = getUserRecord(session.email)
+  return !!user?.emailVerified
+}
+
+/**
+ * True only when verification is both required AND actually enforceable: an
+ * email/password account, still unverified, where a real verification email
+ * is confirmed to have actually gone out (user.verificationEmailSent).
+ *
+ * Deliberately NOT gated on isAppwriteConfigured alone — this app ships with
+ * a baked-in default Appwrite project id (see src/lib/config.js), so that
+ * flag is true even when the project has no SMTP/Email-Password set up, or
+ * the network can't reach it at all. Gating on the config flag would trap a
+ * real visitor behind a block that can never clear. Gating on an actual send
+ * having succeeded means the block only ever appears when there is a genuine,
+ * working way out of it (open the email, click the link).
+ */
+export function needsEmailVerification() {
+  const session = currentUser()
+  if (!session || session.provider !== 'email') return false
+  const user = getUserRecord(session.email)
+  return !!user && !user.emailVerified && !!user.verificationEmailSent
+}
+
+/** Whether a real verification email is known to have been sent for the current session's account. */
+export function verificationEmailWasSent() {
+  const session = currentUser()
+  if (!session) return false
+  return !!getUserRecord(session.email)?.verificationEmailSent
+}
+
+export function markEmailVerified(email) {
+  const users = read(USERS_KEY, {})
+  const key = (email || currentUser()?.email || '').trim().toLowerCase()
+  if (!users[key]) return false
+  users[key].emailVerified = true
+  write(USERS_KEY, users)
+  return true
+}
+
+/** Resend the real verification email (no-op, reported honestly, when Appwrite isn't configured). */
+export async function resendVerification() {
+  if (!isAppwriteConfigured) return { ok: false, error: 'not-configured' }
+  const res = await resendVerificationEmail()
+  if (res.ok) {
+    const session = currentUser()
+    const key = (session?.email || '').trim().toLowerCase()
+    const users = read(USERS_KEY, {})
+    if (key && users[key]) {
+      users[key].verificationEmailSent = true
+      write(USERS_KEY, users)
+    }
+  }
+  return res
+}
+
+/** "Change email" from the verify screen — discard this still-unverified account so they can re-register. */
+export function abandonUnverifiedAccount(email) {
+  const key = (email || '').trim().toLowerCase()
+  const users = read(USERS_KEY, {})
+  if (users[key] && !users[key].emailVerified) {
+    delete users[key]
+    write(USERS_KEY, users)
+  }
+  del(SESSION_KEY)
+  del(OWNER_KEY)
+}
+
 // ── session lifecycle ─────────────────────────────────────────────────────────
 function startSession(user, remember = true) {
   const owner = read(OWNER_KEY, null)
@@ -124,12 +201,29 @@ export async function signUp(form) {
     provider: 'email', pwd: await hashPwd(form.password, salt), salt,
     createdAt: new Date().toISOString(), lastLogin: null,
     birthYear: form.dob ? new Date(form.dob).getFullYear() : undefined,
+    emailVerified: false,
   }
   users[email] = user
   write(USERS_KEY, users)
   if (user.language) { try { setLangCode(user.language) } catch { /* ignore */ } }
   startSession(user, true) // auto-login right after registration
-  return { ok: true, user }
+
+  // Real verification email — best-effort, never blocks account creation.
+  // Requires Appwrite configured with Email/Password auth + SMTP set up in
+  // its console; this app's own local account (above) is unaffected either way.
+  // Recorded on the user so needsEmailVerification() only ever blocks when a
+  // real email is confirmed to have actually gone out (see that function).
+  let verificationSent = false
+  if (isAppwriteConfigured) {
+    const res = await registerAndSendVerification({ name: user.name, email, password: form.password })
+    verificationSent = res.ok
+  }
+  const usersNow = read(USERS_KEY, {})
+  if (usersNow[email]) {
+    usersNow[email].verificationEmailSent = verificationSent
+    write(USERS_KEY, usersNow)
+  }
+  return { ok: true, user, verificationSent }
 }
 
 // ── log in ────────────────────────────────────────────────────────────────────
@@ -203,7 +297,7 @@ export function loginWithGoogleCredential(profile) {
 // ── log out ───────────────────────────────────────────────────────────────────
 export async function logout() {
   // Best-effort: end any real Appwrite session too.
-  try { const m = await import('./auth'); await m.logout() } catch { /* ignore */ }
+  try { await appwriteLogout() } catch { /* ignore */ }
   wipeUserData()          // clear cached user-specific data
   del(SESSION_KEY)        // remove token / session
   del(OWNER_KEY)

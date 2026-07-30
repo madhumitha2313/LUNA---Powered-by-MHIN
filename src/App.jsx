@@ -1,18 +1,24 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { isAuthenticated } from './lib/authStore'
+import { isAuthenticated, needsEmailVerification } from './lib/authStore'
 import Landing from './pages/Landing'
 import Voice from './pages/Voice'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
+import VerifyEmail from './pages/VerifyEmail'
 import Legal from './pages/Legal'
 
 /**
  * Protected-route gate. Every feature that holds personal health data requires
  * an authenticated session; unauthenticated visitors are sent to the welcome/
- * login screen and can never reach another user's data.
+ * login screen and can never reach another user's data. An email/password
+ * account that hasn't confirmed its address yet (and has a real backend able
+ * to eventually confirm it) is sent to the verification screen instead —
+ * never straight into the dashboard.
  */
 function RequireOnboarding({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/welcome" replace />
+  if (!isAuthenticated()) return <Navigate to="/welcome" replace />
+  if (needsEmailVerification()) return <Navigate to="/verify-email" replace />
+  return children
 }
 
 /**
@@ -66,6 +72,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<RootEntry />} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/terms" element={<Legal doc="terms" />} />
       <Route path="/privacy" element={<Legal doc="privacy" />} />
       <Route path="/home" element={<RequireOnboarding><Home /></RequireOnboarding>} />
