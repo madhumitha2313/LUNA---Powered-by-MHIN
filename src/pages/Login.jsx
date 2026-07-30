@@ -16,7 +16,6 @@ export default function Login() {
   const [errors, setErrors] = useState({})
   const [show, setShow] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [forgot, setForgot] = useState(false)
   const set = (k) => (e) => { setF((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })); setErrors((x) => ({ ...x, [k]: null })) }
 
   async function onSubmit(e) {
@@ -65,9 +64,8 @@ export default function Login() {
               <input type="checkbox" checked={f.remember} onChange={set('remember')} className="h-4 w-4 accent-accent-primary" />
               {t('auRemember')}
             </label>
-            <button type="button" onClick={() => setForgot((v) => !v)} className="text-caption text-accent-secondary hover:underline">{t('auForgot')}</button>
+            <Link to="/reset-password" className="text-caption text-accent-secondary hover:underline">{t('auForgot')}</Link>
           </div>
-          {forgot && <p className="rounded-xl border border-accent-ai/20 bg-accent-ai/[0.06] px-3 py-2 text-[0.78rem] text-text-secondary">{t('auForgotNote')}</p>}
 
           <Button type="submit" size="lg" className="w-full" disabled={busy}>
             {busy ? t('auPleaseWait') : t('auLoginBtn')} <ArrowRightIcon size={16} />

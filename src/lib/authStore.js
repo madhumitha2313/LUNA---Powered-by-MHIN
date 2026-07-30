@@ -1,22 +1,29 @@
 /**
  * MIRA authentication & session management.
  *
- * A complete, production-shaped auth layer. In this offline preview it runs a
- * fully-functional LOCAL provider — accounts are created with SHA-256 + salt
- * password hashing (Web Crypto), duplicate emails are rejected, sessions carry
- * a token and persist across refresh/reopen, and each user's health data is
- * isolated (switching accounts never exposes another user's data). The same
- * surface (signUp / login / logout / currentUser / isAuthenticated) maps 1:1
- * onto Appwrite/Firebase for production — see src/lib/auth.js for the Appwrite
- * path, which this module defers to when a real backend is configured.
+ * Real Appwrite-backed authentication — see src/lib/auth.js for the actual
+ * Account API calls. This module is a thin, SYNCHRONOUS local mirror of that
+ * real session (so the rest of the app — every RequireOnboarding check,
+ * Navbar, every page — can keep reading isAuthenticated()/currentUser()
+ * synchronously exactly as before, no refactor needed there): every write to
+ * that mirror happens only after a genuine Appwrite call has actually
+ * succeeded. There is no local password store and no offline mock account
+ * path for email/password or Google — without a reachable, configured
+ * Appwrite project, signUp/login honestly fail instead of pretending to work.
  */
 import { saveProfile, getProfile } from './localStore'
 import { setLangCode, getLang } from './i18n.jsx'
 import { isAppwriteConfigured } from './appwrite'
-import { registerAndSendVerification, resendVerificationEmail, logout as appwriteLogout } from './auth'
+import {
+  registerAccount,
+  loginAccount,
+  resendVerificationEmail,
+  logout as appwriteLogout,
+  getCurrentUser,
+} from './auth'
 
-const USERS_KEY = 'mira.users.v1'       // { [email]: userRecord }
-const SESSION_KEY = 'mira.session.v1'   // active session
+const USERS_KEY = 'mira.users.v1'       // { [email]: userRecord } — local mirror of the real Appwrite account
+const SESSION_KEY = 'mira.session.v1'   // active session mirror
 const OWNER_KEY = 'mira.dataOwner.v1'   // uid that owns the current on-device health data
 
 // Per-user health/app data — wiped on logout and on switching accounts so no
@@ -34,19 +41,6 @@ function read(k, f) { try { return JSON.parse(localStorage.getItem(k)) || f } ca
 function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)) } catch { /* ignore */ } }
 function del(k) { try { localStorage.removeItem(k) } catch { /* ignore */ } }
 
-// ── crypto helpers ────────────────────────────────────────────────────────────
-async function hashPwd(pwd, salt) {
-  try {
-    const data = new TextEncoder().encode(salt + '::' + pwd)
-    const buf = await crypto.subtle.digest('SHA-256', data)
-    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
-  } catch {
-    // extremely old browser fallback — still salted, never plain text stored
-    let h = 0; const s = salt + '::' + pwd
-    for (let i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0 }
-    return 'x' + (h >>> 0).toString(16)
-  }
-}
 function rand(n = 8) {
   try { return [...crypto.getRandomValues(new Uint8Array(n))].map((b) => b.toString(16).padStart(2, '0')).join('') }
   catch { return Math.random().toString(16).slice(2) + Date.now().toString(16) }
@@ -73,10 +67,42 @@ export function currentUser() { return read(SESSION_KEY, null) }
 export function isAuthenticated() { return !!currentUser() }
 export function getUserRecord(email) { return read(USERS_KEY, {})[(email || '').trim().toLowerCase()] || null }
 
+/**
+ * Reconcile the local session mirror with the REAL Appwrite session on app
+ * load — this is what makes "persist sessions" / "handle expired sessions"
+ * real instead of assumed: if Appwrite says the session is gone (expired,
+ * revoked, cleared on another device), the local mirror is cleared too; if
+ * Appwrite's emailVerification has flipped true since we last checked (the
+ * visitor verified in another tab, or came back after clicking the emailed
+ * link on a different device), that's picked up here as well. Call once on
+ * app mount (see AppShell in App.jsx) — everything else stays synchronous.
+ */
+export async function syncSession() {
+  if (!isAppwriteConfigured) return
+  const session = currentUser()
+  if (!session) return
+  const appwriteUser = await getCurrentUser()
+  if (!appwriteUser) {
+    // Appwrite has no active session for us anymore — the session expired or
+    // was revoked elsewhere. Reflect that honestly instead of trusting a
+    // stale local mirror.
+    if (session.provider === 'email' || session.provider === 'google') {
+      wipeUserData()
+      del(SESSION_KEY)
+      del(OWNER_KEY)
+    }
+    return
+  }
+  const users = read(USERS_KEY, {})
+  const key = (appwriteUser.email || '').trim().toLowerCase()
+  if (users[key]) {
+    users[key].emailVerified = appwriteUser.emailVerification
+    write(USERS_KEY, users)
+  }
+  write(SESSION_KEY, { ...session, email: appwriteUser.email, name: session.name || appwriteUser.name })
+}
+
 // ── email verification ────────────────────────────────────────────────────────
-// The local record (above) is always the source of truth for whether THIS app
-// treats an account as verified — Appwrite (when configured) is the real
-// delivery + confirmation mechanism, and flips this same flag on success.
 export function isEmailVerified() {
   const session = currentUser()
   if (!session) return false
@@ -84,27 +110,15 @@ export function isEmailVerified() {
   return !!user?.emailVerified
 }
 
-/**
- * True only when verification is both required AND actually enforceable: an
- * email/password account, still unverified, where a real verification email
- * is confirmed to have actually gone out (user.verificationEmailSent).
- *
- * Deliberately NOT gated on isAppwriteConfigured alone — this app ships with
- * a baked-in default Appwrite project id (see src/lib/config.js), so that
- * flag is true even when the project has no SMTP/Email-Password set up, or
- * the network can't reach it at all. Gating on the config flag would trap a
- * real visitor behind a block that can never clear. Gating on an actual send
- * having succeeded means the block only ever appears when there is a genuine,
- * working way out of it (open the email, click the link).
- */
+/** Email/password accounts must verify before reaching protected routes. Google accounts are pre-verified. */
 export function needsEmailVerification() {
   const session = currentUser()
   if (!session || session.provider !== 'email') return false
   const user = getUserRecord(session.email)
-  return !!user && !user.emailVerified && !!user.verificationEmailSent
+  return !!user && !user.emailVerified
 }
 
-/** Whether a real verification email is known to have been sent for the current session's account. */
+/** Whether the verification email is known to have actually been sent (drives the verify screen's messaging). */
 export function verificationEmailWasSent() {
   const session = currentUser()
   if (!session) return false
@@ -120,7 +134,7 @@ export function markEmailVerified(email) {
   return true
 }
 
-/** Resend the real verification email (no-op, reported honestly, when Appwrite isn't configured). */
+/** Resend the real verification email. Rate-limited to 1 per 60s — see lastVerificationSentAt. */
 export async function resendVerification() {
   if (!isAppwriteConfigured) return { ok: false, error: 'not-configured' }
   const res = await resendVerificationEmail()
@@ -130,20 +144,33 @@ export async function resendVerification() {
     const users = read(USERS_KEY, {})
     if (key && users[key]) {
       users[key].verificationEmailSent = true
+      users[key].lastVerificationSentAt = new Date().toISOString()
       write(USERS_KEY, users)
     }
   }
   return res
 }
 
-/** "Change email" from the verify screen — discard this still-unverified account so they can re-register. */
-export function abandonUnverifiedAccount(email) {
+/** Seconds remaining before another resend is allowed (0 = ready now). */
+export function resendCooldownSeconds() {
+  const session = currentUser()
+  const user = session && getUserRecord(session.email)
+  const last = user?.lastVerificationSentAt
+  if (!last) return 0
+  const elapsed = (Date.now() - new Date(last).getTime()) / 1000
+  return Math.max(0, Math.ceil(60 - elapsed))
+}
+
+/** "Change email" from the verify screen — sign out of the unverified account and return to registration. */
+export async function abandonUnverifiedAccount(email) {
   const key = (email || '').trim().toLowerCase()
+  try { await appwriteLogout() } catch { /* ignore */ }
   const users = read(USERS_KEY, {})
   if (users[key] && !users[key].emailVerified) {
     delete users[key]
     write(USERS_KEY, users)
   }
+  wipeUserData()
   del(SESSION_KEY)
   del(OWNER_KEY)
 }
@@ -179,7 +206,7 @@ function linkProfile(user) {
 /** Remove all user-specific health/app data from the device. */
 export function wipeUserData() { DATA_KEYS.forEach(del) }
 
-// ── sign up ───────────────────────────────────────────────────────────────────
+// ── sign up — real Appwrite account, real session, real verification email ────
 export async function signUp(form) {
   const email = (form.email || '').trim().toLowerCase()
   const errors = {}
@@ -190,60 +217,75 @@ export async function signUp(form) {
   if (form.password !== form.confirm) errors.confirm = 'errPwdMatch'
   if (!form.dob) errors.dob = 'errDobReq'
   if (!form.terms) errors.terms = 'errTermsReq'
-  const users = read(USERS_KEY, {})
-  if (users[email]) errors.email = 'errEmailTaken'
   if (Object.keys(errors).length) return { ok: false, errors }
 
-  const salt = rand(8)
-  const user = {
-    uid: genUid(), name: form.name.trim(), email, phone: form.phone || '',
-    dob: form.dob || '', gender: form.gender || '', language: form.language || 'en',
-    provider: 'email', pwd: await hashPwd(form.password, salt), salt,
-    createdAt: new Date().toISOString(), lastLogin: null,
-    birthYear: form.dob ? new Date(form.dob).getFullYear() : undefined,
-    emailVerified: false,
+  if (!isAppwriteConfigured) {
+    return { ok: false, errors: { email: 'errBackendUnavailable' } }
   }
+
+  const res = await registerAccount({ name: form.name.trim(), email, password: form.password })
+  if (!res.ok) {
+    if (res.code === 409) return { ok: false, errors: { email: 'errEmailTaken' } }
+    return { ok: false, errors: { email: 'errBackendError' } }
+  }
+
+  const user = {
+    uid: res.user.$id, name: res.user.name, email: res.user.email,
+    phone: form.phone || '', dob: form.dob || '', gender: form.gender || '',
+    language: form.language || 'en', provider: 'email',
+    createdAt: res.user.$createdAt || new Date().toISOString(), lastLogin: null,
+    birthYear: form.dob ? new Date(form.dob).getFullYear() : undefined,
+    emailVerified: !!res.user.emailVerification,
+    verificationEmailSent: !!res.verificationSent,
+    lastVerificationSentAt: res.verificationSent ? new Date().toISOString() : null,
+  }
+  const users = read(USERS_KEY, {})
   users[email] = user
   write(USERS_KEY, users)
   if (user.language) { try { setLangCode(user.language) } catch { /* ignore */ } }
   startSession(user, true) // auto-login right after registration
-
-  // Real verification email — best-effort, never blocks account creation.
-  // Requires Appwrite configured with Email/Password auth + SMTP set up in
-  // its console; this app's own local account (above) is unaffected either way.
-  // Recorded on the user so needsEmailVerification() only ever blocks when a
-  // real email is confirmed to have actually gone out (see that function).
-  let verificationSent = false
-  if (isAppwriteConfigured) {
-    const res = await registerAndSendVerification({ name: user.name, email, password: form.password })
-    verificationSent = res.ok
-  }
-  const usersNow = read(USERS_KEY, {})
-  if (usersNow[email]) {
-    usersNow[email].verificationEmailSent = verificationSent
-    write(USERS_KEY, usersNow)
-  }
-  return { ok: true, user, verificationSent }
+  return { ok: true, user, verificationSent: !!res.verificationSent }
 }
 
-// ── log in ────────────────────────────────────────────────────────────────────
+// ── log in — real Appwrite session ─────────────────────────────────────────────
 export async function login(form) {
   const email = (form.email || '').trim().toLowerCase()
   const errors = {}
   if (!validateEmail(email)) errors.email = 'errEmailInvalid'
   if (!form.password) errors.password = 'errPwdReq'
   if (Object.keys(errors).length) return { ok: false, errors }
+
+  if (!isAppwriteConfigured) {
+    return { ok: false, errors: { email: 'errBackendUnavailable' } }
+  }
+
+  const res = await loginAccount(email, form.password)
+  if (!res.ok) {
+    if (res.code === 401) return { ok: false, errors: { password: 'errPwdWrong' } }
+    if (res.type === 'user_not_found') return { ok: false, errors: { email: 'errNoAccount' } }
+    return { ok: false, errors: { email: 'errBackendError' } }
+  }
+
+  const appwriteUser = res.user
   const users = read(USERS_KEY, {})
-  const user = users[email]
-  if (!user) return { ok: false, errors: { email: 'errNoAccount' } }
-  const pwd = await hashPwd(form.password, user.salt)
-  if (pwd !== user.pwd) return { ok: false, errors: { password: 'errPwdWrong' } }
+  const existing = users[email] || {}
+  const user = {
+    ...existing,
+    uid: appwriteUser.$id, name: appwriteUser.name || existing.name, email: appwriteUser.email,
+    provider: existing.provider || 'email',
+    createdAt: existing.createdAt || appwriteUser.$createdAt,
+    emailVerified: !!appwriteUser.emailVerification,
+  }
+  users[email] = user
+  write(USERS_KEY, users)
   startSession(user, form.remember !== false)
   if (user.language) { try { setLangCode(user.language) } catch { /* ignore */ } }
   return { ok: true, user }
 }
 
-// ── social / phone (future-ready; simulated in preview) ───────────────────────
+// ── social / phone (Apple + phone are not implemented for real anywhere in
+// this app yet — Google below IS real; these two remain clearly-labeled
+// placeholders until a real Apple/phone provider is wired up) ─────────────────
 export function loginWithProvider(provider, info = {}) {
   const email = (info.email || `${provider}.user@mira.app`).toLowerCase()
   const users = read(USERS_KEY, {})
@@ -266,6 +308,8 @@ export function loginWithProvider(provider, info = {}) {
 // returned by verifyGoogleCredential. Creates the account on first sign-in,
 // logs in on every return visit — the account is keyed by Google's own
 // email/sub, so the same person always lands on the same MIRA account.
+// Google accounts are inherently email-verified — never blocked by
+// needsEmailVerification (provider !== 'email').
 export function loginWithGoogleCredential(profile) {
   const email = (profile.email || '').trim().toLowerCase()
   if (!email) return { ok: false, errors: { email: 'errEmailInvalid' } }
@@ -296,7 +340,6 @@ export function loginWithGoogleCredential(profile) {
 
 // ── log out ───────────────────────────────────────────────────────────────────
 export async function logout() {
-  // Best-effort: end any real Appwrite session too.
   try { await appwriteLogout() } catch { /* ignore */ }
   wipeUserData()          // clear cached user-specific data
   del(SESSION_KEY)        // remove token / session

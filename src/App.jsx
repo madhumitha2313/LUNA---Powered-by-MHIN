@@ -1,10 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { isAuthenticated, needsEmailVerification } from './lib/authStore'
+import { useEffect } from 'react'
+import { isAuthenticated, needsEmailVerification, syncSession } from './lib/authStore'
 import Landing from './pages/Landing'
 import Voice from './pages/Voice'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import VerifyEmail from './pages/VerifyEmail'
+import ResetPassword from './pages/ResetPassword'
 import Legal from './pages/Legal'
 
 /**
@@ -73,6 +75,7 @@ export default function App() {
       <Route path="/" element={<RootEntry />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/terms" element={<Legal doc="terms" />} />
       <Route path="/privacy" element={<Legal doc="privacy" />} />
       <Route path="/home" element={<RequireOnboarding><Home /></RequireOnboarding>} />
@@ -83,9 +86,9 @@ export default function App() {
       <Route path="/features" element={<Features />} />
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/tracker" element={<Tracker />} />
-      <Route path="/symptoms" element={<Symptoms />} />
+      <Route path="/symptoms" element={<RequireOnboarding><Symptoms /></RequireOnboarding>} />
       <Route path="/conditions" element={<Conditions />} />
-      <Route path="/report" element={<Report />} />
+      <Route path="/report" element={<RequireOnboarding><Report /></RequireOnboarding>} />
       <Route path="/doctors" element={<Doctors />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/guide" element={<Learn />} />
@@ -112,13 +115,20 @@ export default function App() {
       <Route path="/marketplace" element={<RequireOnboarding><Marketplace /></RequireOnboarding>} />
       <Route path="/trust" element={<RequireOnboarding><Trust /></RequireOnboarding>} />
       <Route path="/platform" element={<Platform />} />
-      <Route path="/settings" element={<Settings />} />
+      <Route path="/settings" element={<RequireOnboarding><Settings /></RequireOnboarding>} />
     </Routes>
   )
 }
 
 /** App shell: routes + the always-available emergency SOS button. */
 export function AppShell() {
+  // Reconcile the local session mirror with the real Appwrite session once on
+  // load — picks up an expired/revoked session or a verification that
+  // happened elsewhere, without making every route check async.
+  useEffect(() => {
+    syncSession()
+  }, [])
+
   return (
     <>
       <App />

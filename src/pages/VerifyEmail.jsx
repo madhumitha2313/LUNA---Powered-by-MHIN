@@ -10,6 +10,7 @@ import {
   resendVerification,
   abandonUnverifiedAccount,
   verificationEmailWasSent,
+  resendCooldownSeconds,
 } from '../lib/authStore'
 import { confirmEmailVerification } from '../lib/auth'
 
@@ -41,6 +42,7 @@ export default function VerifyEmail() {
   // Whether a real email is confirmed sent — NOT the same as "Appwrite has a
   // project id configured" (see needsEmailVerification in authStore.js for why).
   const [emailSent, setEmailSent] = useState(() => verificationEmailWasSent())
+  const [cooldown, setCooldown] = useState(() => resendCooldownSeconds())
 
   const params = new URLSearchParams(location.search)
   const userId = params.get('userId')
@@ -78,11 +80,20 @@ export default function VerifyEmail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Tick the 60s resend cooldown down once a second while it's active.
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const id = setInterval(() => setCooldown(resendCooldownSeconds()), 1000)
+    return () => clearInterval(id)
+  }, [cooldown])
+
   async function handleResend() {
+    if (cooldown > 0) return
     setResendState('sending')
     const res = await resendVerification()
     if (res.ok) setEmailSent(true)
     setResendState(res.ok ? 'sent' : 'failed')
+    setCooldown(resendCooldownSeconds())
     setTimeout(() => setResendState('idle'), 3000)
   }
 
@@ -93,8 +104,8 @@ export default function VerifyEmail() {
     else window.location.href = 'mailto:'
   }
 
-  function changeEmail() {
-    abandonUnverifiedAccount(session?.email)
+  async function changeEmail() {
+    await abandonUnverifiedAccount(session?.email)
     navigate('/signup', { replace: true })
   }
 
@@ -138,8 +149,8 @@ export default function VerifyEmail() {
         {t('verifySub').replace('{email}', session?.email || '')}
       </p>
       {!emailSent && (
-        <p className="mx-auto mt-3 max-w-sm rounded-xl border border-accent-ai/20 bg-accent-ai/[0.06] px-3.5 py-2.5 text-center text-[0.78rem] leading-relaxed text-text-secondary">
-          {t('veLocalNote')}
+        <p className="mx-auto mt-3 max-w-sm rounded-xl border border-danger/20 bg-danger/[0.06] px-3.5 py-2.5 text-center text-[0.78rem] leading-relaxed text-text-secondary">
+          {t('veSendFailedNote')}
         </p>
       )}
       <div className="mt-7 w-full max-w-xs space-y-2.5">
@@ -148,7 +159,7 @@ export default function VerifyEmail() {
         </Button>
         <button
           onClick={handleResend}
-          disabled={resendState === 'sending'}
+          disabled={resendState === 'sending' || cooldown > 0}
           className="w-full rounded-pill border border-white/12 px-5 py-3 text-[0.92rem] text-text-secondary transition hover:border-accent-primary/40 hover:text-text-primary disabled:opacity-50"
         >
           {resendState === 'sending'
@@ -157,19 +168,13 @@ export default function VerifyEmail() {
               ? t('veResendSent')
               : resendState === 'failed'
                 ? t('veResendFailed')
-                : t('veResend')}
+                : cooldown > 0
+                  ? t('veResendWait').replace('{s}', String(cooldown))
+                  : t('veResend')}
         </button>
         <button onClick={changeEmail} className="w-full rounded-pill px-5 py-3 text-caption text-text-muted hover:text-text-secondary">
           {t('veChangeEmail')}
         </button>
-        {!emailSent && (
-          <button
-            onClick={() => navigate('/home', { replace: true })}
-            className="w-full rounded-pill px-5 py-3 text-caption text-accent-secondary hover:underline"
-          >
-            {t('veContinueAnyway')}
-          </button>
-        )}
       </div>
     </Screen>
   )
