@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { isAuthenticated, needsEmailVerification, syncSession } from './lib/authStore'
+import IntroSplash from './components/IntroSplash'
 import Landing from './pages/Landing'
 import Voice from './pages/Voice'
 import Home from './pages/Home'
@@ -128,6 +129,11 @@ export function AppShell() {
   useEffect(() => {
     syncSession()
   }, [])
+
+  // MIRA logo intro — plays once every time the app opens, then routing
+  // continues exactly as before (Welcome / dashboard, unchanged).
+  const [introDone, setIntroDone] = useState(false)
+  if (!introDone) return <IntroSplash onDone={() => setIntroDone(true)} />
 
   return (
     <>
