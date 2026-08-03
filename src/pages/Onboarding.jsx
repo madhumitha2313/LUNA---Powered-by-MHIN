@@ -16,10 +16,10 @@ import { isGoogleSignInConfigured } from '../lib/googleAuth'
 
 // Dynamic so the range always reaches the current year (never goes stale/outdated).
 const THIS_YEAR = new Date().getFullYear()
-const YEARS = Array.from({ length: THIS_YEAR - 1940 + 1 }, (_, i) => THIS_YEAR - i) // this year → 1940
+const YEARS = Array.from({ length: THIS_YEAR - 1900 + 1 }, (_, i) => THIS_YEAR - i) // this year → 1900
 
 // Steps that carry the progress bar (the personalisation + cycle-setup wizard).
-const TRACKED = ['name', 'birth', 'periodLen', 'cycleLen', 'lastPeriod', 'regularity']
+const TRACKED = ['name', 'birth', 'cycleLen', 'periodLen', 'lastPeriod', 'regularity']
 // Order used by the ← back button (splash and the loader are excluded). Account
 // creation (signup/credentials/verify) is deliberately LAST — the account is
 // never created until every onboarding question has been answered.
@@ -184,7 +184,7 @@ export default function Onboarding() {
           waves + floating particles; the wordmark & tagline settle in after. */}
       {step === 'splash' && (
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
-          <SplashLogo size={132} />
+          <SplashLogo size={82} />
           <h1
             className="mt-4 font-heading text-4xl font-bold tracking-tight opacity-0 animate-fade-up"
             style={{ animationDelay: '600ms' }}
@@ -385,22 +385,22 @@ export default function Onboarding() {
                     </button>
                   ))}
                 </div>
-                <Footer onNext={() => setStep('periodLen')} label={t('next')} />
-              </Step>
-            )}
-
-            {/* PERIOD LENGTH — 3/5 */}
-            {step === 'periodLen' && (
-              <Step title={t('periodLenTitle')}>
-                <NumberPicker min={1} max={15} value={periodLen} onChange={setPeriodLen} unit={t('daysUnit')} />
                 <Footer onNext={() => setStep('cycleLen')} label={t('next')} />
               </Step>
             )}
 
-            {/* CYCLE LENGTH — 4/5 */}
+            {/* CYCLE LENGTH — 3/5 */}
             {step === 'cycleLen' && (
               <Step title={t('cycleLenTitle')}>
                 <NumberPicker min={21} max={40} value={cycleLen} onChange={setCycleLen} unit={t('daysUnit')} />
+                <Footer onNext={() => setStep('periodLen')} label={t('next')} />
+              </Step>
+            )}
+
+            {/* PERIOD LENGTH — 4/5 */}
+            {step === 'periodLen' && (
+              <Step title={t('periodLenTitle')}>
+                <NumberPicker min={1} max={15} value={periodLen} onChange={setPeriodLen} unit={t('daysUnit')} />
                 <Footer onNext={() => setStep('lastPeriod')} label={t('next')} />
               </Step>
             )}

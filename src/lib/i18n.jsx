@@ -1404,6 +1404,7 @@ const DICT = {
     pdfError: 'Couldn\'t generate the PDF — please try again.',
     // ── batch-added translations ──
     cmWhatIsPCOS: 'What is PCOS?',
+    cmWhatIsPCOD: 'What is PCOD?',
     cmDiagnosis: 'Diagnosis',
     cmPreventionLifestyle: 'Prevention & Healthy Lifestyle',
     cmAwarenessGuide: 'Awareness Guide',

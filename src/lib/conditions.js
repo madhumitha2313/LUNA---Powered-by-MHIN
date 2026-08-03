@@ -20,12 +20,14 @@
  * PCOS — is purely a data change, no frontend change required.
  */
 import { PLACEHOLDER_VIDEO } from '../assets/placeholderVideo'
-// Real PCOS educational video (replaces the on-brand placeholder for this
-// condition only). vite.config.js raises assetsInlineLimit for .mp4 files so
-// this gets embedded as a base64 data URI in the bundle — same mechanism as
-// PLACEHOLDER_VIDEO above — keeping the app (including the single-file
-// preview build) fully self-contained with no separate file to host.
+// Real PCOS / PCOD educational videos (replace the on-brand placeholder for
+// these two conditions only). vite.config.js raises assetsInlineLimit for
+// .mp4 files so these get embedded as base64 data URIs in the bundle — same
+// mechanism as PLACEHOLDER_VIDEO above — keeping the app (including the
+// single-file preview build) fully self-contained with no separate file to
+// host.
 import PCOS_VIDEO from '../assets/videos/pcos-guide.mp4'
+import PCOD_VIDEO from '../assets/videos/pcod-guide.mp4'
 
 const PROGRESS_KEY = 'mira.conditionsProgress.v1'
 const SAVED_KEY = 'mira.conditionsSaved.v1'
@@ -80,17 +82,31 @@ export const CONDITIONS = [
     specialistKey: 'cnd2s',
     thumbTone: ['#FF4F9D', '#7C3AED'],
     estimatedWatchTime: '3 min',
-    video: { en: PLACEHOLDER_VIDEO },
+    video: { en: PCOD_VIDEO },
+    // PCOD-only: an explicit, timestamped learning timeline, same architecture
+    // as PCOS's customSections above — `at` is a fraction of the video's
+    // actual duration so it maps correctly regardless of the real clip length.
+    customSections: [
+      { key: 'whatIsIt', labelKey: 'cmWhatIsPCOD', at: 0 },
+      { key: 'causes', labelKey: 'cmCauses', at: 0.235 },
+      { key: 'symptoms', labelKey: 'cmSymptoms', at: 0.441 },
+      { key: 'diagnosis', labelKey: 'cmDiagnosis', at: 0.647 },
+      { key: 'treatment', labelKey: 'cmTreatment', at: 0.824 },
+      { key: 'preventionLifestyle', labelKey: 'cmPreventionLifestyle', at: 0.985 },
+    ],
+    completionLabel: 'PCOD Educational Guide',
     content: {
       en: {
         shortDescription: 'A common condition where immature eggs accumulate in the ovaries, causing them to enlarge.',
         whatIsIt: 'PCOD (Polycystic Ovarian Disease) occurs when the ovaries release immature or partially mature eggs, which build up over time and can form cysts. It’s generally milder and more common than PCOS.',
         causes: 'Poor lifestyle habits, stress, and hormonal imbalance are the main contributors. Unlike PCOS, insulin resistance is less central.',
         symptoms: 'Irregular periods, mild weight gain, and pelvic discomfort. Many people with PCOD can still ovulate and conceive with fewer complications than PCOS.',
+        diagnosis: 'A doctor typically reviews your period history and does a pelvic ultrasound to check for enlarged ovaries with multiple immature follicles, along with blood tests to rule out other hormonal causes.',
         riskFactors: 'Sedentary lifestyle, poor diet, high stress, and being overweight increase the likelihood of PCOD.',
         prevention: 'A balanced diet, regular physical activity, and stress reduction significantly lower the risk and severity of PCOD.',
         treatment: 'Often managed with lifestyle changes alone; hormonal medication may be added if periods stay irregular or symptoms persist.',
         lifestyle: 'Consistent exercise, whole-food nutrition, and adequate sleep usually improve PCOD symptoms within a few months.',
+        preventionLifestyle: 'A balanced diet, regular physical activity, and stress reduction significantly lower the risk and severity of PCOD — consistent exercise, whole-food nutrition, and adequate sleep usually improve symptoms within a few months.',
         whenToSeeDoctor: 'Consult a gynaecologist if periods are irregular for several cycles in a row or you notice new pelvic pain.',
       },
     },
