@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
+import BottomNav from '../components/layout/BottomNav'
 import Logo from '../components/Logo'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
@@ -178,6 +179,9 @@ export default function Impact() {
           </Button>
         </div>
       </main>
+      <div className="no-print">
+        <BottomNav />
+      </div>
     </div>
   )
 }

@@ -16,7 +16,7 @@ import { useT } from '../../lib/i18n.jsx'
 const LINKS = [
   { key: 'navFeatures', to: '/features' },
   { key: 'navConditions', to: '/conditions' },
-  { key: 'navGuide', to: '/guide' },
+  { key: 'navLearn', to: '/guide' },
   { key: 'navDashboard', to: '/home' },
 ]
 
@@ -71,6 +71,7 @@ export default function Navbar() {
 
 const MENU = [
   { key: 'menuMyProfile', to: '/profile' },
+  { key: 'navExplore', to: '/explore' },
   { key: 'menuLanguage', to: '/settings?section=language' },
   { key: 'menuNotifications', to: '/settings?section=notifications' },
   { key: 'menuPrivacy', to: '/settings?section=privacy-security' },

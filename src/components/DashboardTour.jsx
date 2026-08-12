@@ -41,7 +41,7 @@ function disarm() {
 const FEATURES = [
   { icon: HeartIcon, tone: 'text-accent-primary', name: 'qaTracker', desc: 'tourTrackerD', to: '/tracker' },
   { icon: MicIcon, tone: 'text-accent-secondary', name: 'navTalk', desc: 'tourVoiceD', to: '/voice' },
-  { icon: UsersIcon, tone: 'text-accent-ai', name: 'navGuide', desc: 'tourGuideD', to: '/guide' },
+  { icon: UsersIcon, tone: 'text-accent-ai', name: 'navLearn', desc: 'tourGuideD', to: '/guide' },
   { icon: FileIcon, tone: 'text-success', name: 'qaReport', desc: 'tourReportD', to: '/report' },
   { icon: StethoscopeIcon, tone: 'text-accent-secondary', name: 'navConditions', desc: 'tourCondD', to: '/conditions' },
   { icon: ShieldIcon, tone: 'text-accent-ai', name: 'menuSettings', desc: 'tourSettingsD', to: '/settings' },

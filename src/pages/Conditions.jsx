@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageShell from '../components/layout/PageShell'
+import BottomNav from '../components/layout/BottomNav'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -112,6 +113,7 @@ export default function Conditions() {
       </div>
 
       {open && <ConditionModal condition={open} onClose={() => setOpen(null)} />}
+      <BottomNav />
     </PageShell>
   )
 }

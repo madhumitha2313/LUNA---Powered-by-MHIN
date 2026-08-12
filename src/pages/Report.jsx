@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
+import BottomNav from '../components/layout/BottomNav'
 import Button from '../components/ui/Button'
 import Logo from '../components/Logo'
 import { ArrowRightIcon, StethoscopeIcon, DownloadIcon } from '../components/ui/icons'
@@ -189,6 +190,9 @@ export default function Report() {
           </Button>
         </div>
       </main>
+      <div className="no-print">
+        <BottomNav />
+      </div>
     </div>
   )
 }
